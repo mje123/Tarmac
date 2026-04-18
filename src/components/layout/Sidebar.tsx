@@ -60,6 +60,7 @@ export default function Sidebar({ user }: SidebarProps) {
       <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <Image src="/logo-white.png" alt="TARMAC" width={40} height={40} className="shrink-0" />
         <span className="text-xl font-bold text-white tracking-tight">TARMAC</span>
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full tracking-wider" style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>BETA</span>
       </div>
 
       {/* Nav */}
