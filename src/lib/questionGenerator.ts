@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+
 
 const CATEGORIES = [
   'Regulations', 'Airspace', 'Weather Theory', 'Weather Services',
@@ -53,6 +53,7 @@ Return ONLY a valid JSON array, no markdown, no explanation:
   }
 ]`
 
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 8000,

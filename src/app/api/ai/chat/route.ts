@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+
 
 const SYSTEM_PROMPT = `You are TARMAC AI, an expert AI flight instructor helping student pilots prepare for their FAA Private Pilot (Airplane) written knowledge test.
 
@@ -177,6 +177,7 @@ Base explanation from FAA database: ${explanation}${reference ? `\nFAA Reference
       anthropicMessages = [{ role: 'user' as const, content: initialUserMsg }]
     }
 
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 600,
