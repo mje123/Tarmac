@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { canAccessExam } from '@/lib/utils'
-import { ClipboardList, Lock, Trophy, TrendingUp, CheckSquare, Calendar } from 'lucide-react'
+import { ClipboardList, Trophy, TrendingUp, CheckSquare, Calendar } from 'lucide-react'
 
 interface ExamSession {
   id: string
@@ -17,31 +16,6 @@ export default async function ExamHubPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('subscription_status, subscription_expires_at')
-    .eq('id', user.id)
-    .single()
-
-  const isExpired = profile?.subscription_expires_at
-    ? new Date(profile.subscription_expires_at) < new Date()
-    : true
-
-  const hasAccess = profile && canAccessExam(profile.subscription_status) && !isExpired
-
-  if (!hasAccess) {
-    return (
-      <div className="flex items-center justify-center min-h-screen p-8">
-        <div className="glass-card p-10 max-w-md text-center">
-          <Lock className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Study Pass Required</h2>
-          <p className="text-white/60 mb-6">Practice exams are available with Study Pass.</p>
-          <a href="/settings" className="btn-gold inline-flex justify-center px-8 py-3">Upgrade Now</a>
-        </div>
-      </div>
-    )
-  }
 
   const { data: sessions } = await supabase
     .from('test_sessions')

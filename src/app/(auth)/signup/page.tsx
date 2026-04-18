@@ -41,11 +41,7 @@ function SignupForm() {
     }
 
     if (data.session) {
-      if (plan) {
-        router.push(`/api/stripe/checkout?plan=${plan}`)
-      } else {
-        router.push('/dashboard')
-      }
+      router.push('/dashboard')
     } else {
       setSuccess(true)
       setLoading(false)

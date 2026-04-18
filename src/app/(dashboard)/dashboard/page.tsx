@@ -122,19 +122,6 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Upgrade banner for free users */}
-      {user.subscription_status === 'free' && (
-        <div className="mb-6 p-4 rounded-xl flex items-center justify-between gap-4" style={{ background: 'linear-gradient(135deg, rgba(255,182,39,0.1), rgba(62,146,204,0.1))', border: '1px solid rgba(255,182,39,0.2)' }}>
-          <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-[#FFB627] shrink-0" />
-            <div>
-              <div className="font-medium text-white text-sm">You're on the free trial</div>
-              <div className="text-white/60 text-xs">Limited to 20 practice questions. Upgrade for unlimited access + practice exams.</div>
-            </div>
-          </div>
-          <Link href="/#pricing" className="btn-gold text-sm px-4 py-2 shrink-0">Upgrade</Link>
-        </div>
-      )}
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -221,29 +208,16 @@ export default async function DashboardPage() {
             <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
           </Link>
 
-          {user.subscription_status !== 'free' ? (
-            <a href="/exam-session" target="_blank" rel="noopener noreferrer" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,182,39,0.15)' }}>
-                <ClipboardList className="w-6 h-6 text-[#FFB627]" />
-              </div>
-              <div className="flex-1">
-                <div className="font-semibold text-white">Take Practice Exam</div>
-                <div className="text-white/50 text-sm">60Q · 150 min · Opens in new tab</div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
-            </a>
-          ) : (
-            <Link href="/#pricing" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block" style={{ opacity: 0.7 }}>
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,182,39,0.1)' }}>
-                <ClipboardList className="w-6 h-6 text-[#FFB627]/60" />
-              </div>
-              <div className="flex-1">
-                <div className="font-semibold text-white/70">Practice Exam</div>
-                <div className="text-[#FFB627] text-xs font-medium">Upgrade to unlock</div>
-              </div>
-              <span className="text-xs text-[#FFB627] font-semibold">Upgrade →</span>
-            </Link>
-          )}
+          <a href="/exam-session" target="_blank" rel="noopener noreferrer" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,182,39,0.15)' }}>
+              <ClipboardList className="w-6 h-6 text-[#FFB627]" />
+            </div>
+            <div className="flex-1">
+              <div className="font-semibold text-white">Take Practice Exam</div>
+              <div className="text-white/50 text-sm">60Q · 150 min · Opens in new tab</div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+          </a>
 
           <a href="/supplement.pdf" target="_blank" rel="noopener noreferrer" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(34,197,94,0.15)' }}>
