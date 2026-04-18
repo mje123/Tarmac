@@ -350,7 +350,7 @@ export default function LandingPage() {
       <section className="relative pt-36 pb-28 px-6 overflow-hidden">
         {/* Hero background photo */}
         <div className="absolute inset-0 pointer-events-none">
-          <Image src="/hero-ramp.jpeg" alt="" fill className="object-cover object-center" priority />
+          <Image src="/hero.png" alt="" fill className="object-cover object-center" priority />
           {/* Strong uniform dark overlay for text readability */}
           <div className="absolute inset-0" style={{ background: 'rgba(5,18,55,0.70)' }} />
           {/* Subtle vignette */}
