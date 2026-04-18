@@ -40,7 +40,8 @@ export default function SupplementViewer({ figureRef }: Props) {
   const [expanded, setExpanded] = useState(true)
   const figureKey = parseFigureKey(figureRef)
   const page = FIGURE_PAGES[figureKey]
-  const pdfUrl = `/supplement.pdf${page ? `#page=${page}` : ''}`
+  const baseUrl = process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'
+  const pdfUrl = `${baseUrl}${page ? `#page=${page}` : ''}`
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,182,39,0.3)', background: 'rgba(255,182,39,0.05)' }}>
