@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { formatDate } from '@/lib/utils'
 import AdminClient from './AdminClient'
+
+const STUDY_PASS_PRICE = 9 // USD/month estimate
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -14,15 +15,19 @@ export default async function AdminPage() {
   const [
     { count: totalUsers },
     { count: totalQuestions },
+    { count: totalSessions },
     { data: subscriptions },
     { data: recentUsers },
     { data: recentSessions },
+    { data: scoredSessions },
   ] = await Promise.all([
     supabase.from('users').select('id', { count: 'exact', head: true }),
     supabase.from('questions').select('id', { count: 'exact', head: true }),
+    supabase.from('test_sessions').select('id', { count: 'exact', head: true }),
     supabase.from('users').select('subscription_status').neq('subscription_status', 'free'),
-    supabase.from('users').select('*').order('created_at', { ascending: false }).limit(10),
+    supabase.from('users').select('*').order('created_at', { ascending: false }).limit(20),
     supabase.from('test_sessions').select('*, users(email, full_name)').order('started_at', { ascending: false }).limit(10),
+    supabase.from('test_sessions').select('score, total_questions').eq('session_type', 'real_exam').not('score', 'is', null).limit(500),
   ])
 
   const subCounts = (subscriptions || []).reduce((acc: Record<string, number>, u) => {
@@ -30,12 +35,27 @@ export default async function AdminPage() {
     return acc
   }, {})
 
+  const totalPaid = Object.values(subCounts).reduce((a, b) => a + b, 0)
+  const mrr = (subCounts['study_pass'] || 0) * STUDY_PASS_PRICE
+
+  let avgScore = 0
+  let passRate = 0
+  if (scoredSessions && scoredSessions.length > 0) {
+    const pcts = scoredSessions.map(s => (s.score / (s.total_questions || 60)) * 100)
+    avgScore = Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length)
+    passRate = Math.round((pcts.filter(p => p >= 70).length / pcts.length) * 100)
+  }
+
   return (
     <AdminClient
       stats={{
         totalUsers: totalUsers || 0,
         totalQuestions: totalQuestions || 0,
+        totalSessions: totalSessions || 0,
+        avgScore,
+        passRate,
         subCounts,
+        mrr,
       }}
       recentUsers={recentUsers || []}
       recentSessions={recentSessions || []}

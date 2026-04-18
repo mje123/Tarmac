@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const FREE_QUESTION_LIMIT = 20
+const FREE_QUESTION_LIMIT = 10
 
 export async function POST(request: NextRequest) {
   try {

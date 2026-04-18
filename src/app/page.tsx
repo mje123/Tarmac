@@ -165,7 +165,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'Do you offer refunds?',
-        a: 'Refund requests are handled case-by-case. Contact us at mewing713@gmail.com if you have an issue and we\'ll work with you.',
+        a: 'All purchases are final and non-refundable. This includes partial months, unused periods, and dissatisfaction with exam outcomes — we cannot guarantee you will pass your FAA test. If you believe you were charged in error due to a technical fault on our end, email mewing713@gmail.com within 7 days of the charge.',
       },
       {
         q: 'Can multiple students share one account?',
@@ -331,7 +331,7 @@ export default function LandingPage() {
       {/* ── Nav ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4" style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(10,36,99,0.08)', boxShadow: '0 1px 20px rgba(10,36,99,0.07)' }}>
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="TARMAC" width={28} height={28} />
+          <Image src="/logo.png" alt="TARMAC" width={36} height={36} />
           <span className="text-xl font-bold text-[#0A2463] tracking-tight">TARMAC</span>
         </Link>
         <div className="hidden md:flex items-center gap-7 text-sm text-[#0A2463]/75">
@@ -851,12 +851,34 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Inspirational banner ── */}
+      <section className="relative h-72 md:h-96 overflow-hidden">
+        <Image
+          src="/mountains.png"
+          alt="Aircraft flying over mountains at sunset"
+          fill
+          className="object-cover object-center"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
+          style={{ background: 'linear-gradient(to bottom, rgba(10,36,99,0.45), rgba(10,36,99,0.7))' }}>
+          <p className="text-white/70 text-sm font-semibold uppercase tracking-widest mb-3">The goal</p>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight max-w-2xl">
+            Every flight starts with a written test.
+          </h2>
+          <p className="mt-4 text-white/70 text-lg max-w-xl">
+            Let's make sure you pass it the first time.
+          </p>
+        </div>
+      </section>
+
       {/* ── Pricing ── */}
       <section id="pricing" className="py-20 px-6" style={{ background: '#ffffff' }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl font-bold text-[#0A2463] mb-3">Simple, transparent pricing</h2>
             <p className="text-[#0A2463]/75">No tricks. No hidden fees. Cancel anytime.</p>
+            <p className="text-[#0A2463]/40 text-xs mt-2">All sales final. We do not guarantee exam results. See <Link href="/terms" className="underline hover:text-[#0A2463]/60">Terms</Link>.</p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {/* Free */}
@@ -987,8 +1009,10 @@ export default function LandingPage() {
             <a href="#pricing" className="hover:text-[#0A2463]/70 transition-colors">Pricing</a>
             <a href="#faq" className="hover:text-[#0A2463]/70 transition-colors">FAQ</a>
             <a href="mailto:mewing713@gmail.com" className="hover:text-[#0A2463]/70 transition-colors">Support</a>
+            <Link href="/terms" className="hover:text-[#0A2463]/70 transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-[#0A2463]/70 transition-colors">Privacy</Link>
           </div>
-          <p className="text-[#0A2463]/45 text-xs">Not affiliated with the FAA. Study responsibly.</p>
+          <p className="text-[#0A2463]/45 text-xs">Not affiliated with the FAA. Results not guaranteed.</p>
         </div>
       </footer>
     </div>

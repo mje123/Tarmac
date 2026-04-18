@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, Bot, ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
+import { Send, Loader2, Bot, ChevronDown, ChevronUp, Lock } from 'lucide-react'
+import { getAIMsgsUsed, incrementAIMsgs, isAILimitReached, AI_MSG_LIMIT } from '@/lib/aiMessageLimit'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -24,8 +25,13 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [msgsUsed, setMsgsUsed] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setMsgsUsed(getAIMsgsUsed())
+  }, [])
 
   useEffect(() => {
     if (open && messages.length === 0) {
@@ -41,11 +47,18 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  const limitReached = msgsUsed >= AI_MSG_LIMIT
+
   async function sendMessage(text?: string) {
     const userMsg = (text ?? input).trim()
     if (!userMsg || loading) return
-    setInput('')
 
+    if (isAILimitReached()) {
+      setMsgsUsed(AI_MSG_LIMIT)
+      return
+    }
+
+    setInput('')
     const newMessages: Message[] = [...messages, { role: 'user', content: userMsg }]
     setMessages(newMessages)
     setLoading(true)
@@ -54,14 +67,13 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
       const res = await fetch('/api/ai/general-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: newMessages,
-          currentQuestionContext,
-        }),
+        body: JSON.stringify({ messages: newMessages, currentQuestionContext }),
       })
       const data = await res.json()
       if (data.message) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
+        const used = incrementAIMsgs()
+        setMsgsUsed(used)
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error — please try again.' }])
@@ -136,7 +148,7 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
           </div>
 
           {/* Suggested prompts — only show if just the welcome message */}
-          {messages.length === 1 && (
+          {messages.length === 1 && !limitReached && (
             <div className="px-4 pb-3 flex flex-wrap gap-2">
               {SUGGESTED.map(s => (
                 <button
@@ -151,29 +163,44 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
             </div>
           )}
 
-          {/* Input */}
-          <div className="px-4 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
-            <form onSubmit={e => { e.preventDefault(); sendMessage() }} className="flex gap-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder="Ask about regulations, weather, airspace..."
-                disabled={loading}
-                className="flex-1 text-sm"
-                style={{ borderRadius: '12px', padding: '10px 14px' }}
-              />
-              <button
-                type="submit"
-                disabled={loading || !input.trim()}
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg, #3E92CC, #2a7ab5)' }}
+          {/* Limit wall */}
+          {limitReached ? (
+            <div className="mx-4 mb-4 rounded-xl p-4 text-center" style={{ background: 'rgba(255,182,39,0.08)', border: '1px solid rgba(255,182,39,0.2)' }}>
+              <Lock className="w-5 h-5 text-[#FFB627] mx-auto mb-2" />
+              <div className="text-sm font-semibold text-white mb-1">Free limit reached ({AI_MSG_LIMIT} messages)</div>
+              <div className="text-xs text-white/50 mb-3">Upgrade to Study Pass for unlimited AI Tutor access.</div>
+              <a
+                href="/dashboard/settings"
+                className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-[#0A2463]"
+                style={{ background: 'linear-gradient(135deg, #FFB627, #e5a020)' }}
               >
-                {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
-              </button>
-            </form>
-          </div>
+                Upgrade Now →
+              </a>
+            </div>
+          ) : (
+            <div className="px-4 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+              <form onSubmit={e => { e.preventDefault(); sendMessage() }} className="flex gap-2">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  placeholder={`Ask about regulations, weather, airspace… (${AI_MSG_LIMIT - msgsUsed} left)`}
+                  disabled={loading}
+                  className="flex-1 text-sm"
+                  style={{ borderRadius: '12px', padding: '10px 14px' }}
+                />
+                <button
+                  type="submit"
+                  disabled={loading || !input.trim()}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
+                  style={{ background: 'linear-gradient(135deg, #3E92CC, #2a7ab5)' }}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       )}
     </div>

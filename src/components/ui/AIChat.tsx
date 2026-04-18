@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Question, AIMessage } from '@/types'
-import { X, Send, Loader2, Bot } from 'lucide-react'
+import { X, Send, Loader2, Bot, Lock } from 'lucide-react'
+import { getAIMsgsUsed, incrementAIMsgs, isAILimitReached, AI_MSG_LIMIT } from '@/lib/aiMessageLimit'
 
 interface AIChatProps {
   question: Question
@@ -17,10 +18,12 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
   const [messages, setMessages] = useState<AIMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [msgsUsed, setMsgsUsed] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [convId, setConvId] = useState(conversationId)
 
   useEffect(() => {
+    setMsgsUsed(getAIMsgsUsed())
     initConversation()
   }, [])
 
@@ -55,7 +58,7 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
         setMessages([{ role: 'assistant', content: data.message }])
         if (data.conversationId) setConvId(data.conversationId)
       }
-    } catch (e) {
+    } catch {
       setMessages([{ role: 'assistant', content: 'Sorry, I had trouble connecting. Please try again.' }])
     } finally {
       setLoading(false)
@@ -65,6 +68,11 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault()
     if (!input.trim() || loading) return
+
+    if (isAILimitReached()) {
+      setMsgsUsed(AI_MSG_LIMIT)
+      return
+    }
 
     const userMsg = input.trim()
     setInput('')
@@ -96,6 +104,8 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
       if (data.message) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
         if (data.conversationId) setConvId(data.conversationId)
+        const used = incrementAIMsgs()
+        setMsgsUsed(used)
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error. Please try again.' }])
@@ -110,6 +120,8 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
     C: question.option_c,
     ...(question.option_d ? { D: question.option_d } : {}),
   }
+
+  const limitReached = msgsUsed >= AI_MSG_LIMIT
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
@@ -177,26 +189,41 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
+        {/* Input / limit wall */}
         <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <form onSubmit={sendMessage} className="flex gap-3">
-            <input
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              placeholder="Ask a follow-up question..."
-              disabled={loading && messages.length === 0}
-              className="flex-1"
-            />
-            <button
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="btn-primary px-4 py-3 shrink-0"
-              style={{ padding: '12px 16px' }}
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
+          {limitReached ? (
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,182,39,0.08)', border: '1px solid rgba(255,182,39,0.2)' }}>
+              <Lock className="w-5 h-5 text-[#FFB627] mx-auto mb-2" />
+              <div className="text-sm font-semibold text-white mb-1">Free limit reached ({AI_MSG_LIMIT} messages)</div>
+              <div className="text-xs text-white/50 mb-3">Upgrade to Study Pass for unlimited AI Tutor access.</div>
+              <a
+                href="/dashboard/settings"
+                className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-[#0A2463]"
+                style={{ background: 'linear-gradient(135deg, #FFB627, #e5a020)' }}
+              >
+                Upgrade Now →
+              </a>
+            </div>
+          ) : (
+            <form onSubmit={sendMessage} className="flex gap-3">
+              <input
+                type="text"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder={`Ask a follow-up… (${AI_MSG_LIMIT - msgsUsed} free messages left)`}
+                disabled={loading && messages.length === 0}
+                className="flex-1"
+              />
+              <button
+                type="submit"
+                disabled={loading || !input.trim()}
+                className="btn-primary px-4 py-3 shrink-0"
+                style={{ padding: '12px 16px' }}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          )}
           {onContinue && (
             <button
               onClick={onContinue}
