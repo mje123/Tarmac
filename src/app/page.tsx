@@ -74,7 +74,7 @@ const FAQ_SECTIONS = [
     items: [
       {
         q: 'Are these the exact questions from the FAA test?',
-        a: 'No. The FAA does not publish their current test bank. Our questions are FAA-style, based on the Airman Certification Standards, designed to teach the concepts you need to know. You\'ll see the same CONCEPTS on the real test — often in slightly different wording. That\'s why understanding > memorization.',
+        a: 'No. TARMAC questions are original practice questions — not official FAA test questions. They are built around the Airman Certification Standards (ACS) to teach the exact concepts the FAA tests you on. You\'ll see the same topics on the real exam, often worded differently. That\'s exactly why understanding the concept beats memorizing any specific question.',
       },
       {
         q: 'Will I see the exact same questions on the real test?',
@@ -384,12 +384,13 @@ export default function LandingPage() {
             </a>
           </div>
           <p className="text-white/65 text-sm">No credit card required. No time limit on free trial.</p>
+          <p className="text-white/45 text-xs mt-2">Questions are not official FAA test questions — they are original practice questions designed to teach the concepts you need to pass.</p>
 
           <div className="grid grid-cols-3 gap-6 max-w-sm mx-auto mt-14 pt-14 border-t border-white/25">
             {[
               { val: '9', label: 'ACS Knowledge Areas' },
               { val: '24/7', label: 'AI Tutor Access' },
-              { val: '20', label: 'Free Questions' },
+              { val: '10', label: 'Free Questions' },
             ].map(s => (
               <div key={s.label}>
                 <div className="text-3xl font-bold text-[#FFB627]">{s.val}</div>
