@@ -9,17 +9,21 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tarmac.study'
+    const successUrl = 'https://tarmac.study/dashboard?checkout=success'
+    const cancelUrl = 'https://tarmac.study'
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      payment_method_types: ['card'],
       line_items: [{ price: process.env.STRIPE_STUDY_PASS_PRICE_ID!, quantity: 1 }],
       metadata: { userId: user.id },
-      success_url: `${appUrl}/dashboard?checkout=success`,
-      cancel_url: `${appUrl}/`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       customer_email: user.email,
     })
+
+    if (!session.url) {
+      return NextResponse.json({ error: 'Stripe returned no checkout URL' }, { status: 500 })
+    }
 
     return NextResponse.json({ url: session.url })
   } catch (error: unknown) {
