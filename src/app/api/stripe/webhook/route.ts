@@ -42,6 +42,30 @@ export async function POST(request: NextRequest) {
           subscription_expires_at: periodEnd,
           updated_at: new Date().toISOString(),
         }).eq('id', userId)
+
+        // Track influencer referral if a promo code was used
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const discounts = (session as any).total_details?.breakdown?.discounts ?? (session as any).discounts ?? []
+        const promoCode = discounts?.[0]?.discount?.promotion_code
+        if (promoCode) {
+          const promoDetails = await stripe.promotionCodes.retrieve(promoCode as string)
+          const code = promoDetails.code?.toUpperCase()
+          if (code) {
+            const { data: influencer } = await supabase
+              .from('influencers')
+              .select('id')
+              .eq('promo_code', code)
+              .single()
+            if (influencer) {
+              await supabase.from('influencer_referrals').insert({
+                influencer_id: influencer.id,
+                user_id: userId,
+                promo_code: code,
+                amount_cents: 3499,
+              })
+            }
+          }
+        }
         break
       }
 

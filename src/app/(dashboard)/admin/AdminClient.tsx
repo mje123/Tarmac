@@ -3,23 +3,23 @@
 import { useState } from 'react'
 import { formatDate } from '@/lib/utils'
 import {
-  Users,
-  BookOpen,
-  CreditCard,
-  TrendingUp,
-  Shield,
-  Plus,
-  Loader2,
-  CheckCircle,
-  BarChart3,
-  Target,
-  Activity,
-  UserCheck,
-  UserX,
-  ShieldCheck,
-  DollarSign,
-  Trash2,
+  Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
+  CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
+  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare,
 } from 'lucide-react'
+
+interface Influencer {
+  id: string
+  name: string
+  email: string
+  promo_code: string
+  commission_pct: number
+  created_at: string
+  referralCount: number
+  totalRevenueCents: number
+  commissionOwedCents: number
+  unpaidReferrals: number
+}
 
 interface AdminClientProps {
   stats: {
@@ -37,32 +37,40 @@ interface AdminClientProps {
 
 const SUB_COLORS: Record<string, string> = {
   study_pass: 'text-[#3E92CC] bg-[#3E92CC]/10',
-  checkride_prep: 'text-[#FFB627] bg-[#FFB627]/10',
-  annual: 'text-green-400 bg-green-400/10',
   free: 'text-white/40 bg-white/5',
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers'>('overview')
   const [users, setUsers] = useState(initialUsers)
+  const [influencers, setInfluencers] = useState<Influencer[]>([])
+  const [influencersLoaded, setInfluencersLoaded] = useState(false)
   const [newQ, setNewQ] = useState({
-    question_text: '',
-    option_a: '',
-    option_b: '',
-    option_c: '',
-    option_d: '',
-    correct_answer: 'A',
-    category: 'Regulations',
-    difficulty: 'medium',
-    explanation: '',
-    reference: '',
+    question_text: '', option_a: '', option_b: '', option_c: '', option_d: '',
+    correct_answer: 'A', category: 'Regulations', difficulty: 'medium', explanation: '', reference: '',
   })
+  const [newInf, setNewInf] = useState({ name: '', email: '', promo_code: '', commission_pct: 20 })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [infLoading, setInfLoading] = useState<string | null>(null)
+  const [addingInf, setAddingInf] = useState(false)
 
   const totalPaid = Object.values(stats.subCounts).reduce((a, b) => a + b, 0)
   const freeUsers = stats.totalUsers - totalPaid
+
+  async function loadInfluencers() {
+    if (influencersLoaded) return
+    const res = await fetch('/api/admin/influencers')
+    const data = await res.json()
+    setInfluencers(data)
+    setInfluencersLoaded(true)
+  }
+
+  function handleTabChange(t: typeof tab) {
+    setTab(t)
+    if (t === 'influencers') loadInfluencers()
+  }
 
   async function saveQuestion(e: React.FormEvent) {
     e.preventDefault()
@@ -78,26 +86,21 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
         setNewQ({ question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_answer: 'A', category: 'Regulations', difficulty: 'medium', explanation: '', reference: '' })
         setTimeout(() => setSaved(false), 3000)
       }
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
 
   async function updateUser(id: string, payload: Record<string, unknown>) {
     setActionLoading(id)
     try {
       const res = await fetch(`/api/admin/users/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
       if (res.ok) {
         const updated = await res.json()
         setUsers(prev => prev.map(u => (u.id === id ? { ...u, ...updated } : u)))
       }
-    } finally {
-      setActionLoading(null)
-    }
+    } finally { setActionLoading(null) }
   }
 
   function grantStudyPass(id: string) {
@@ -105,14 +108,50 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     expires.setFullYear(expires.getFullYear() + 1)
     updateUser(id, { subscription_status: 'study_pass', subscription_expires_at: expires.toISOString() })
   }
+  function revokeSubscription(id: string) { updateUser(id, { subscription_status: 'free', subscription_expires_at: null }) }
+  function toggleAdmin(id: string, current: boolean) { updateUser(id, { is_admin: !current }) }
 
-  function revokeSubscription(id: string) {
-    updateUser(id, { subscription_status: 'free', subscription_expires_at: null })
+  async function addInfluencer(e: React.FormEvent) {
+    e.preventDefault()
+    setAddingInf(true)
+    try {
+      const res = await fetch('/api/admin/influencers', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newInf),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setInfluencers(prev => [{ ...data, referralCount: 0, totalRevenueCents: 0, commissionOwedCents: 0, unpaidReferrals: 0 }, ...prev])
+        setNewInf({ name: '', email: '', promo_code: '', commission_pct: 20 })
+      }
+    } finally { setAddingInf(false) }
   }
 
-  function toggleAdmin(id: string, currentIsAdmin: boolean) {
-    updateUser(id, { is_admin: !currentIsAdmin })
+  async function markPaid(id: string) {
+    setInfLoading(id)
+    try {
+      const res = await fetch(`/api/admin/influencers/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markAllPaid: true }),
+      })
+      if (res.ok) {
+        setInfluencers(prev => prev.map(inf => inf.id === id
+          ? { ...inf, commissionOwedCents: 0, unpaidReferrals: 0 }
+          : inf
+        ))
+      }
+    } finally { setInfLoading(null) }
   }
+
+  async function deleteInfluencer(id: string) {
+    setInfLoading(id)
+    try {
+      await fetch(`/api/admin/influencers/${id}`, { method: 'DELETE' })
+      setInfluencers(prev => prev.filter(inf => inf.id !== id))
+    } finally { setInfLoading(null) }
+  }
+
+  const totalCommissionOwed = influencers.reduce((sum, inf) => sum + inf.commissionOwedCents, 0)
 
   return (
     <div className="p-8 max-w-6xl mx-auto animate-fade-in">
@@ -122,13 +161,10 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-8">
-        {(['overview', 'questions', 'users'] as const).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}
-          >
+      <div className="flex gap-2 mb-8 flex-wrap">
+        {(['overview', 'questions', 'users', 'influencers'] as const).map(t => (
+          <button key={t} onClick={() => handleTabChange(t)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t}
           </button>
         ))}
@@ -136,7 +172,6 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {tab === 'overview' && (
         <div>
-          {/* Top stat cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             {[
               { label: 'Total Users', value: stats.totalUsers, icon: <Users className="w-5 h-5 text-[#3E92CC]" /> },
@@ -150,8 +185,6 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
             ))}
           </div>
-
-          {/* Second row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Total Sessions', value: stats.totalSessions, icon: <Activity className="w-5 h-5 text-blue-400" /> },
@@ -165,25 +198,23 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
             ))}
           </div>
-
           <div className="grid md:grid-cols-2 gap-6">
             <div className="glass-card p-6">
               <h3 className="font-semibold text-white mb-4">Recent Users</h3>
               <div className="space-y-3">
-                {recentSessions.slice(0, 8).map((u: Record<string, unknown>) => (
+                {recentUsers.slice(0, 8).map((u: Record<string, unknown>) => (
                   <div key={u.id as string} className="flex items-center justify-between">
                     <div>
                       <div className="text-sm font-medium text-white">{u.full_name as string || u.email as string}</div>
                       <div className="text-xs text-white/40">{formatDate(u.created_at as string)}</div>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || ''}`}>
+                    <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || 'text-white/40 bg-white/5'}`}>
                       {u.subscription_status as string}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
-
             <div className="glass-card p-6">
               <h3 className="font-semibold text-white mb-4">Recent Sessions</h3>
               <div className="space-y-3">
@@ -206,8 +237,6 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
             </div>
           </div>
-
-          {/* Subscription breakdown */}
           <div className="glass-card p-6 mt-6">
             <h3 className="font-semibold text-white mb-4">User Breakdown</h3>
             <div className="grid grid-cols-3 gap-4">
@@ -237,25 +266,13 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
           <form onSubmit={saveQuestion} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">Question Text</label>
-              <textarea
-                value={newQ.question_text}
-                onChange={e => setNewQ(p => ({ ...p, question_text: e.target.value }))}
-                placeholder="Enter the question..."
-                rows={3}
-                required
-              />
+              <textarea value={newQ.question_text} onChange={e => setNewQ(p => ({ ...p, question_text: e.target.value }))} placeholder="Enter the question..." rows={3} required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               {(['a', 'b', 'c', 'd'] as const).map(opt => (
                 <div key={opt}>
                   <label className="block text-sm font-medium text-white/80 mb-2">Option {opt.toUpperCase()}</label>
-                  <input
-                    type="text"
-                    value={newQ[`option_${opt}` as keyof typeof newQ] as string}
-                    onChange={e => setNewQ(p => ({ ...p, [`option_${opt}`]: e.target.value }))}
-                    placeholder={`Option ${opt.toUpperCase()}`}
-                    required
-                  />
+                  <input type="text" value={newQ[`option_${opt}` as keyof typeof newQ] as string} onChange={e => setNewQ(p => ({ ...p, [`option_${opt}`]: e.target.value }))} placeholder={`Option ${opt.toUpperCase()}`} required />
                 </div>
               ))}
             </div>
@@ -281,22 +298,11 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             </div>
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">Explanation</label>
-              <textarea
-                value={newQ.explanation}
-                onChange={e => setNewQ(p => ({ ...p, explanation: e.target.value }))}
-                placeholder="Brief explanation of the correct answer..."
-                rows={2}
-                required
-              />
+              <textarea value={newQ.explanation} onChange={e => setNewQ(p => ({ ...p, explanation: e.target.value }))} placeholder="Explanation..." rows={2} required />
             </div>
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">Reference (optional)</label>
-              <input
-                type="text"
-                value={newQ.reference}
-                onChange={e => setNewQ(p => ({ ...p, reference: e.target.value }))}
-                placeholder="e.g. FAR 91.155"
-              />
+              <input type="text" value={newQ.reference} onChange={e => setNewQ(p => ({ ...p, reference: e.target.value }))} placeholder="e.g. FAR 91.155" />
             </div>
             <button type="submit" disabled={saving} className="btn-primary justify-center py-3">
               {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : saved ? <><CheckCircle className="w-5 h-5" /> Saved!</> : <><Plus className="w-5 h-5" /> Add Question</>}
@@ -334,7 +340,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                         <div className="text-white/40 text-xs">{u.email as string}</div>
                       </td>
                       <td className="py-3">
-                        <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || ''}`}>
+                        <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || 'text-white/40 bg-white/5'}`}>
                           {u.subscription_status as string}
                         </span>
                       </td>
@@ -342,32 +348,18 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                       <td className="py-3 text-white/40">{u.subscription_expires_at ? formatDate(u.subscription_expires_at as string) : '—'}</td>
                       <td className="py-3">
                         <div className="flex gap-1.5">
-                          {isLoading ? (
-                            <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
-                          ) : (
+                          {isLoading ? <Loader2 className="w-4 h-4 text-white/40 animate-spin" /> : (
                             <>
                               {isFree ? (
-                                <button
-                                  onClick={() => grantStudyPass(u.id as string)}
-                                  title="Grant Study Pass (1 year)"
-                                  className="p-1.5 rounded-lg hover:bg-green-400/10 text-green-400 transition-colors"
-                                >
+                                <button onClick={() => grantStudyPass(u.id as string)} title="Grant Study Pass (1 year)" className="p-1.5 rounded-lg hover:bg-green-400/10 text-green-400 transition-colors">
                                   <UserCheck className="w-4 h-4" />
                                 </button>
                               ) : (
-                                <button
-                                  onClick={() => revokeSubscription(u.id as string)}
-                                  title="Revoke subscription"
-                                  className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400 transition-colors"
-                                >
+                                <button onClick={() => revokeSubscription(u.id as string)} title="Revoke" className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400 transition-colors">
                                   <UserX className="w-4 h-4" />
                                 </button>
                               )}
-                              <button
-                                onClick={() => toggleAdmin(u.id as string, isAdmin)}
-                                title={isAdmin ? 'Remove admin' : 'Make admin'}
-                                className={`p-1.5 rounded-lg transition-colors ${isAdmin ? 'text-[#FFB627] hover:bg-[#FFB627]/10' : 'text-white/30 hover:text-[#FFB627] hover:bg-[#FFB627]/10'}`}
-                              >
+                              <button onClick={() => toggleAdmin(u.id as string, isAdmin)} title={isAdmin ? 'Remove admin' : 'Make admin'} className={`p-1.5 rounded-lg transition-colors ${isAdmin ? 'text-[#FFB627] hover:bg-[#FFB627]/10' : 'text-white/30 hover:text-[#FFB627] hover:bg-[#FFB627]/10'}`}>
                                 <ShieldCheck className="w-4 h-4" />
                               </button>
                             </>
@@ -379,6 +371,117 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {tab === 'influencers' && (
+        <div className="space-y-6">
+          {/* Summary */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="glass-card p-5">
+              <div className="flex items-center gap-2 mb-2"><Link2 className="w-5 h-5 text-[#3E92CC]" /><span className="text-white/50 text-xs">Total Influencers</span></div>
+              <div className="text-3xl font-bold text-white">{influencers.length}</div>
+            </div>
+            <div className="glass-card p-5">
+              <div className="flex items-center gap-2 mb-2"><Users className="w-5 h-5 text-green-400" /><span className="text-white/50 text-xs">Total Referrals</span></div>
+              <div className="text-3xl font-bold text-white">{influencers.reduce((s, i) => s + i.referralCount, 0)}</div>
+            </div>
+            <div className="glass-card p-5">
+              <div className="flex items-center gap-2 mb-2"><DollarSign className="w-5 h-5 text-[#FFB627]" /><span className="text-white/50 text-xs">Commission Owed</span></div>
+              <div className="text-3xl font-bold text-[#FFB627]">${(totalCommissionOwed / 100).toFixed(2)}</div>
+            </div>
+          </div>
+
+          {/* Add influencer */}
+          <div className="glass-card p-6">
+            <h3 className="font-semibold text-white mb-4 flex items-center gap-2"><Plus className="w-4 h-4 text-[#3E92CC]" /> Add Influencer</h3>
+            <form onSubmit={addInfluencer} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <label className="block text-xs text-white/50 mb-1">Name *</label>
+                <input type="text" value={newInf.name} onChange={e => setNewInf(p => ({ ...p, name: e.target.value }))} placeholder="Jake Paul" required />
+              </div>
+              <div>
+                <label className="block text-xs text-white/50 mb-1">Email</label>
+                <input type="email" value={newInf.email} onChange={e => setNewInf(p => ({ ...p, email: e.target.value }))} placeholder="jake@email.com" />
+              </div>
+              <div>
+                <label className="block text-xs text-white/50 mb-1">Promo Code * (must match Stripe exactly)</label>
+                <input type="text" value={newInf.promo_code} onChange={e => setNewInf(p => ({ ...p, promo_code: e.target.value.toUpperCase() }))} placeholder="JAKE20" required />
+              </div>
+              <div>
+                <label className="block text-xs text-white/50 mb-1">Commission %</label>
+                <input type="number" min={1} max={100} value={newInf.commission_pct} onChange={e => setNewInf(p => ({ ...p, commission_pct: parseInt(e.target.value) }))} />
+              </div>
+              <div className="md:col-span-4">
+                <button type="submit" disabled={addingInf} className="btn-primary py-2.5 px-6 text-sm">
+                  {addingInf ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" /> Add Influencer</>}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Influencer table */}
+          <div className="glass-card p-6">
+            <h3 className="font-semibold text-white mb-4">Influencers</h3>
+            {influencers.length === 0 ? (
+              <p className="text-white/30 text-sm">No influencers yet. Add one above.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-white/40 text-left">
+                      <th className="pb-3 font-medium">Name</th>
+                      <th className="pb-3 font-medium">Code</th>
+                      <th className="pb-3 font-medium">Commission</th>
+                      <th className="pb-3 font-medium">Referrals</th>
+                      <th className="pb-3 font-medium">Revenue</th>
+                      <th className="pb-3 font-medium">Owed</th>
+                      <th className="pb-3 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {influencers.map(inf => (
+                      <tr key={inf.id}>
+                        <td className="py-3">
+                          <div className="font-medium text-white">{inf.name}</div>
+                          {inf.email && <div className="text-xs text-white/40">{inf.email}</div>}
+                        </td>
+                        <td className="py-3">
+                          <span className="text-xs px-2 py-1 rounded-md font-mono font-bold text-[#FFB627] bg-[#FFB627]/10">
+                            {inf.promo_code}
+                          </span>
+                        </td>
+                        <td className="py-3 text-white/60">{inf.commission_pct}%</td>
+                        <td className="py-3 text-white">{inf.referralCount}</td>
+                        <td className="py-3 text-white">${(inf.totalRevenueCents / 100).toFixed(2)}</td>
+                        <td className="py-3">
+                          <span className={`font-semibold ${inf.commissionOwedCents > 0 ? 'text-[#FFB627]' : 'text-white/30'}`}>
+                            ${(inf.commissionOwedCents / 100).toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <div className="flex gap-1.5">
+                            {infLoading === inf.id ? <Loader2 className="w-4 h-4 text-white/40 animate-spin" /> : (
+                              <>
+                                {inf.unpaidReferrals > 0 && (
+                                  <button onClick={() => markPaid(inf.id)} title="Mark commission paid" className="p-1.5 rounded-lg hover:bg-green-400/10 text-green-400 transition-colors">
+                                    <CheckSquare className="w-4 h-4" />
+                                  </button>
+                                )}
+                                <button onClick={() => deleteInfluencer(inf.id)} title="Remove influencer" className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/60 hover:text-red-400 transition-colors">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
