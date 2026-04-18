@@ -386,7 +386,7 @@ export default function LandingPage() {
           <p className="text-white/65 text-sm">No credit card required. No time limit on free trial.</p>
           <p className="text-white/45 text-xs mt-2">Questions are not official FAA test questions — they are original practice questions designed to teach the concepts you need to pass.</p>
 
-          <div className="grid grid-cols-3 gap-6 max-w-sm mx-auto mt-14 pt-14 border-t border-white/25">
+          <div className="grid grid-cols-3 gap-4 max-w-xs mx-auto mt-14 pt-14 border-t border-white/25">
             {[
               { val: '9', label: 'ACS Knowledge Areas' },
               { val: '24/7', label: 'AI Tutor Access' },
@@ -776,7 +776,7 @@ export default function LandingPage() {
           <div className="text-center mb-14">
             <h2 className="text-3xl font-bold text-[#0A2463] mb-3">Everything you need to study effectively</h2>
           </div>
-          <div className="grid md:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {[
               { icon: <Brain className="w-6 h-6 text-[#3E92CC]" />, title: 'AI Tutor 24/7', body: 'Explains concepts differently until they click. Patient, clear, always available.' },
               { icon: <BarChart3 className="w-6 h-6 text-[#FFB627]" />, title: 'Progress Dashboard', body: 'See accuracy by category. Know exactly where to focus next.' },

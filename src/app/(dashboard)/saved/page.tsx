@@ -18,7 +18,7 @@ export default async function SavedPage() {
   const saved = (data || []) as unknown as Array<{ question_id: string; saved_at: string; questions: Question }>
 
   return (
-    <div className="p-8 max-w-3xl mx-auto animate-fade-in">
+    <div className="p-4 md:p-8 max-w-3xl mx-auto animate-fade-in">
       <div className="flex items-center gap-3 mb-8">
         <Bookmark className="w-7 h-7 text-[#FFB627]" />
         <div>

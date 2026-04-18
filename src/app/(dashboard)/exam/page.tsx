@@ -50,7 +50,7 @@ export default async function ExamHubPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(255,182,39,0.15)' }}>
@@ -64,7 +64,7 @@ export default async function ExamHubPage() {
 
       {/* Stats row */}
       {examSessions.length > 0 && (
-        <div className="grid grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
             { label: 'Exams Taken', value: examSessions.length.toString(), icon: ClipboardList, color: '#3E92CC' },
             { label: 'Avg Score', value: `${avgScore}%`, icon: TrendingUp, color: '#3E92CC' },
@@ -81,12 +81,12 @@ export default async function ExamHubPage() {
       )}
 
       {/* Start exam CTA */}
-      <div className="glass-card p-6 mb-6 flex items-center justify-between">
+      <div className="glass-card p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-white mb-1">Ready to test yourself?</h2>
           <p className="text-white/50 text-sm">60 questions · 2:30 time limit · 70% to pass</p>
         </div>
-        <a href="/exam-session" target="_blank" rel="noopener noreferrer" className="btn-gold px-6 py-3 inline-flex items-center gap-2 whitespace-nowrap">
+        <a href="/exam-session" target="_blank" rel="noopener noreferrer" className="btn-gold px-6 py-3 inline-flex items-center gap-2 whitespace-nowrap w-full sm:w-auto justify-center">
           <ClipboardList className="w-4 h-4" />
           Start New Exam
         </a>
@@ -109,26 +109,26 @@ export default async function ExamHubPage() {
               const pct = Math.round((session.score / session.total_questions) * 100)
               const passed = pct >= 70
               return (
-                <div key={session.id} className="flex items-center gap-4 px-5 py-4">
-                  <div className="flex items-center gap-1.5 text-white/40 text-xs w-40 shrink-0">
+                <div key={session.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-5 py-4">
+                  <div className="flex items-center gap-1.5 text-white/40 text-xs sm:w-40 sm:shrink-0">
                     <Calendar className="w-3.5 h-3.5" />
                     {formatExamDate(session.completed_at)}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex items-center gap-3 flex-1">
                     <span className="text-white font-semibold">
                       {session.score}/{session.total_questions}
                     </span>
-                    <span className="text-white/50 text-sm ml-2">({pct}%)</span>
+                    <span className="text-white/50 text-sm">({pct}%)</span>
+                    <span
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                      style={passed
+                        ? { background: 'rgba(34,197,94,0.15)', color: '#22c55e' }
+                        : { background: 'rgba(239,68,68,0.15)', color: '#ef4444' }
+                      }
+                    >
+                      {passed ? 'PASSED' : 'FAILED'}
+                    </span>
                   </div>
-                  <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={passed
-                      ? { background: 'rgba(34,197,94,0.15)', color: '#22c55e' }
-                      : { background: 'rgba(239,68,68,0.15)', color: '#ef4444' }
-                    }
-                  >
-                    {passed ? 'PASSED' : 'FAILED'}
-                  </span>
                   <a
                     href={`/exam/results/${session.id}`}
                     className="text-sm text-[#3E92CC] hover:text-white transition-colors whitespace-nowrap"

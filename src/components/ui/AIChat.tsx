@@ -126,8 +126,8 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
   const limitReached = !isPaid && msgsUsed >= AI_MSG_LIMIT
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
-      <div className="w-full max-w-2xl flex flex-col rounded-2xl overflow-hidden animate-fade-in" style={{ background: '#0d1f4a', border: '1px solid rgba(255,255,255,0.12)', maxHeight: '90vh' }}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
+      <div className="w-full max-w-2xl flex flex-col sm:rounded-2xl overflow-hidden animate-fade-in" style={{ background: '#0d1f4a', border: '1px solid rgba(255,255,255,0.12)', maxHeight: '92vh' }}>
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(62,146,204,0.2)' }}>

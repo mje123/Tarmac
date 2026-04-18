@@ -377,7 +377,7 @@ export default function PracticePage() {
           </div>
 
           {/* Special options */}
-          <div className="grid grid-cols-3 gap-2 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
             <button
               onClick={() => selectSpecial('all')}
               className="p-3 rounded-xl text-left transition-all"
@@ -436,7 +436,7 @@ export default function PracticePage() {
 
           {/* Category grid — multi-select checkboxes */}
           <p className="text-white/30 text-xs mb-2">Or pick specific topics to combine:</p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
             {CATEGORIES.map(({ value, icon: Icon, color }) => {
               const checked = selectedCategories.has(value)
               return (

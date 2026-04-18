@@ -187,7 +187,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const totalCommissionOwed = influencers.reduce((sum, inf) => sum + inf.commissionOwedCents, 0)
 
   return (
-    <div className="p-8 max-w-6xl mx-auto animate-fade-in">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in">
       <div className="flex items-center gap-3 mb-8">
         <Shield className="w-7 h-7 text-[#FFB627]" />
         <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>

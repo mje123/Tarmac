@@ -25,7 +25,7 @@ function CategoryBar({ category, accuracy, attempted }: { category: string; accu
   const color = accuracy >= 80 ? '#22c55e' : accuracy >= 60 ? '#FFB627' : '#ef4444'
   return (
     <div className="flex items-center gap-3">
-      <div className="w-32 text-xs text-white/60 truncate">{category}</div>
+      <div className="w-20 sm:w-32 text-xs text-white/60 truncate">{category}</div>
       <div className="flex-1 progress-bar">
         <div className="progress-fill" style={{ width: `${accuracy}%`, background: color }} />
       </div>
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
     : "Everyone starts here. The concepts will click — just stay consistent."
 
   return (
-    <div className="p-8 max-w-6xl mx-auto animate-fade-in">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in">
       <Suspense fallback={null}>
         <CheckoutSuccessBanner />
       </Suspense>

@@ -32,7 +32,7 @@ export default async function SettingsPage() {
   const hasBilling = !!user.stripe_customer_id
 
   return (
-    <div className="p-8 max-w-2xl mx-auto animate-fade-in">
+    <div className="p-4 md:p-8 max-w-2xl mx-auto animate-fade-in">
       <div className="flex items-center gap-3 mb-8">
         <Settings className="w-7 h-7 text-white/60" />
         <h1 className="text-3xl font-bold text-white">Settings</h1>
