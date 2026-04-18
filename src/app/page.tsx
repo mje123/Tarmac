@@ -331,8 +331,8 @@ export default function LandingPage() {
       {/* ── Nav ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4" style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(10,36,99,0.08)', boxShadow: '0 1px 20px rgba(10,36,99,0.07)' }}>
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="TARMAC" width={40} height={40} />
-          <span className="text-lg font-bold text-[#0A2463] tracking-tight">TARMAC</span>
+          <Image src="/logo.png" alt="TARMAC" width={28} height={28} />
+          <span className="text-xl font-bold text-[#0A2463] tracking-tight">TARMAC</span>
         </Link>
         <div className="hidden md:flex items-center gap-7 text-sm text-[#0A2463]/75">
           <a href="#method" className="hover:text-[#0A2463] transition-colors">The Method</a>
