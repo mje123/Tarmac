@@ -202,7 +202,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             <div className="glass-card p-6">
               <h3 className="font-semibold text-white mb-4">Recent Users</h3>
               <div className="space-y-3">
-                {recentUsers.slice(0, 8).map((u: Record<string, unknown>) => (
+                {users.slice(0, 8).map((u: Record<string, unknown>) => (
                   <div key={u.id as string} className="flex items-center justify-between">
                     <div>
                       <div className="text-sm font-medium text-white">{u.full_name as string || u.email as string}</div>
