@@ -58,7 +58,7 @@ function SignupForm() {
         </p>
       </div>
 
-      <div className="glass-card p-8">
+      <div className="glass-card p-6 md:p-8 overflow-hidden">
         <form onSubmit={handleSignup} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-white/80 mb-2">Full Name</label>
@@ -112,10 +112,10 @@ function SignupForm() {
               type="checkbox"
               checked={agreedToTerms}
               onChange={e => setAgreedToTerms(e.target.checked)}
-              className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
+              className="mt-1 shrink-0 w-4 h-4 accent-[#FFB627]"
               required
             />
-            <span className="text-xs text-white/60 leading-relaxed">
+            <span className="text-xs text-white/60 leading-relaxed min-w-0 break-words">
               I have read and agree to the{' '}
               <Link href="/terms" target="_blank" className="text-[#3E92CC] underline">Terms of Service</Link>
               {' '}and{' '}

@@ -50,7 +50,7 @@ export default function LoginPage() {
         <p className="text-white/60">Sign in to continue your studies</p>
       </div>
 
-      <div className="glass-card p-8">
+      <div className="glass-card p-6 md:p-8">
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-white/80 mb-2">Email</label>

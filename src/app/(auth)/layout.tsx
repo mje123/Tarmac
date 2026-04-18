@@ -10,8 +10,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <span className="text-xl font-bold text-white tracking-tight">TARMAC</span>
         </Link>
       </nav>
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md">
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md min-w-0">
           {children}
         </div>
       </div>
