@@ -333,7 +333,7 @@ export default function LandingPage() {
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Image src="/logo.png" alt="TARMAC" width={32} height={32} />
           <span className="text-lg font-bold text-[#0A2463] tracking-tight">TARMAC</span>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wider hidden sm:inline-block" style={{ background: 'rgba(255,182,39,0.15)', color: '#b87d00', border: '1px solid rgba(255,182,39,0.35)' }}>BETA</span>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wider hidden md:inline-block" style={{ background: 'rgba(255,182,39,0.15)', color: '#b87d00', border: '1px solid rgba(255,182,39,0.35)' }}>BETA</span>
         </Link>
         <div className="hidden md:flex items-center gap-7 text-sm text-[#0A2463]/75">
           <a href="#method" className="hover:text-[#0A2463] transition-colors">The Method</a>
@@ -342,7 +342,7 @@ export default function LandingPage() {
           <a href="#faq" className="hover:text-[#0A2463] transition-colors">FAQ</a>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/login" className="hidden sm:block text-[#0A2463]/75 hover:text-[#0A2463] text-sm px-3 py-2 transition-colors">Log in</Link>
+          <Link href="/login" className="hidden md:block text-[#0A2463]/75 hover:text-[#0A2463] text-sm px-3 py-2 transition-colors">Log in</Link>
           <Link href="/signup" className="btn-gold text-sm px-4 py-2">Start Free</Link>
         </div>
       </nav>
