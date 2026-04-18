@@ -165,7 +165,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'Do you offer refunds?',
-        a: 'Refund requests are handled case-by-case. Contact us at support@tarmac.app if you have an issue and we\'ll work with you.',
+        a: 'Refund requests are handled case-by-case. Contact us at mewing713@gmail.com if you have an issue and we\'ll work with you.',
       },
       {
         q: 'Can multiple students share one account?',
@@ -950,7 +950,7 @@ export default function LandingPage() {
 
           <p className="text-center text-[#0A2463]/55 text-sm mt-8">
             Still have questions?{' '}
-            <a href="mailto:support@tarmac.app" className="text-[#3E92CC] hover:underline">Email us</a> — we reply within 24 hours.
+            <a href="mailto:mewing713@gmail.com" className="text-[#3E92CC] hover:underline">Email us</a> — we reply within 24 hours.
           </p>
         </div>
       </section>
@@ -986,7 +986,7 @@ export default function LandingPage() {
             <a href="#method" className="hover:text-[#0A2463]/70 transition-colors">The Method</a>
             <a href="#pricing" className="hover:text-[#0A2463]/70 transition-colors">Pricing</a>
             <a href="#faq" className="hover:text-[#0A2463]/70 transition-colors">FAQ</a>
-            <a href="mailto:support@tarmac.app" className="hover:text-[#0A2463]/70 transition-colors">Support</a>
+            <a href="mailto:mewing713@gmail.com" className="hover:text-[#0A2463]/70 transition-colors">Support</a>
           </div>
           <p className="text-[#0A2463]/45 text-xs">Not affiliated with the FAA. Study responsibly.</p>
         </div>
