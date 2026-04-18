@@ -18,6 +18,7 @@ function SignupForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -53,7 +54,7 @@ function SignupForm() {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Create your account</h1>
         <p className="text-white/60">
-          {plan ? `Getting started with Study Pass ($34.99/mo)` : 'Start with 20 free questions'}
+          {plan ? `Getting started with Study Pass ($34.99/mo)` : 'Start with 10 free questions'}
         </p>
       </div>
 
@@ -106,21 +107,32 @@ function SignupForm() {
             </div>
           </div>
 
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={e => setAgreedToTerms(e.target.checked)}
+              className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
+              required
+            />
+            <span className="text-xs text-white/60 leading-relaxed">
+              I have read and agree to the{' '}
+              <Link href="/terms" target="_blank" className="text-[#3E92CC] underline">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" target="_blank" className="text-[#3E92CC] underline">Privacy Policy</Link>.
+              I understand that <strong className="text-white/80">all sales are final and non-refundable</strong>, and that TARMAC does not guarantee passing any FAA exam.
+            </span>
+          </label>
+
           {error && (
             <div className="px-4 py-3 rounded-lg text-sm text-red-300" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
               {error}
             </div>
           )}
 
-          <button type="submit" disabled={loading} className="btn-gold w-full justify-center py-3">
+          <button type="submit" disabled={loading || !agreedToTerms} className="btn-gold w-full justify-center py-3 disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
           </button>
-
-          <p className="text-center text-xs text-white/40">
-            By signing up, you agree to our{' '}
-            <Link href="/terms" className="text-[#3E92CC]">Terms</Link> and{' '}
-            <Link href="/privacy" className="text-[#3E92CC]">Privacy Policy</Link>
-          </p>
         </form>
       </div>
 
