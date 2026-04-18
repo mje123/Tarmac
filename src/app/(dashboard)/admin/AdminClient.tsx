@@ -542,7 +542,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="text-white/60 text-xs">{b.email as string || 'Anonymous'}</span>
-                      {b.page && <span className="text-white/30 text-xs font-mono">{b.page as string}</span>}
+                      {(b.page as string) && <span className="text-white/30 text-xs font-mono">{b.page as string}</span>}
                       <span className="text-white/25 text-xs">{formatDate(b.created_at as string)}</span>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase ${b.status === 'open' ? 'bg-red-500/15 text-red-400' : 'bg-white/5 text-white/25'}`}>
                         {b.status as string}
