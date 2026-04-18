@@ -48,7 +48,7 @@ type Phase = 'setup' | 'question' | 'correct' | 'wrong' | 'summary'
 
 interface PracticeState {
   sessionId: string
-  category: QuestionCategory | 'all' | 'weak'
+  category: QuestionCategory | 'all' | 'weak' | 'saved'
   selectedCategories?: QuestionCategory[]
   correctCount: number
   totalAnswered: number
@@ -73,7 +73,7 @@ function loadPracticeState(): PracticeState | null {
 
 export default function PracticePage() {
   const [phase, setPhase] = useState<Phase>('setup')
-  const [category, setCategory] = useState<QuestionCategory | 'all' | 'weak'>('all')
+  const [category, setCategory] = useState<QuestionCategory | 'all' | 'weak' | 'saved'>('all')
   const [selectedCategories, setSelectedCategories] = useState<Set<QuestionCategory>>(new Set())
   const [question, setQuestion] = useState<Question | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerOption | null>(null)
@@ -161,14 +161,16 @@ export default function PracticePage() {
   async function fetchQuestion(
     sid: string,
     excludeIds: string[],
-    cat: QuestionCategory | 'all' | 'weak',
+    cat: QuestionCategory | 'all' | 'weak' | 'saved',
     selCats?: Set<QuestionCategory>
   ) {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       const multi = selCats && selCats.size > 0 ? selCats : null
-      if (multi) {
+      if (cat === 'saved') {
+        params.set('saved', '1')
+      } else if (multi) {
         multi.forEach(c => params.append('categories', c))
       } else if (cat !== 'all' && cat !== 'weak') {
         params.set('category', cat)
@@ -216,22 +218,7 @@ export default function PracticePage() {
   async function nextQuestion() {
     const newIds = [...askedIds, question!.id]
     setAskedIds(newIds)
-    setLoading(true)
-    const params = new URLSearchParams()
-    if (category !== 'all' && category !== 'weak') params.set('category', category)
-    if (category === 'weak') params.set('weak', '1')
-    newIds.forEach(id => params.append('exclude', id))
-    const res = await fetch(`/api/questions/random?${params}`)
-    const data = await res.json()
-    if (!data.question) {
-      setAskedIds([])
-      await fetchQuestion(sessionId!, [], category, selectedCategories)
-    } else {
-      setQuestion(data.question)
-      setSelectedAnswer(null)
-      setPhase('question')
-      setLoading(false)
-    }
+    await fetchQuestion(sessionId!, newIds, category, selectedCategories)
   }
 
   function endSession() {
@@ -296,6 +283,7 @@ export default function PracticePage() {
     const isMulti = selectedCategories.size > 0
     const isAll = !isMulti && category === 'all'
     const isWeak = !isMulti && category === 'weak'
+    const isSaved = !isMulti && category === 'saved'
 
     function toggleCategory(val: QuestionCategory) {
       setSelectedCategories(prev => {
@@ -307,7 +295,7 @@ export default function PracticePage() {
       setCategory('all') // mode = multi when selectedCategories.size > 0
     }
 
-    function selectSpecial(mode: 'all' | 'weak') {
+    function selectSpecial(mode: 'all' | 'weak' | 'saved') {
       setSelectedCategories(new Set())
       setCategory(mode)
     }
@@ -315,6 +303,7 @@ export default function PracticePage() {
     const startLabel = isMulti
       ? `Start Practice — ${selectedCategories.size} topic${selectedCategories.size > 1 ? 's' : ''}`
       : isWeak ? 'Start Practice — Weak Areas'
+      : isSaved ? 'Start Practice — Saved Questions'
       : 'Start Practice — All Topics'
 
     return (
@@ -388,7 +377,7 @@ export default function PracticePage() {
           </div>
 
           {/* Special options */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-3 gap-2 mb-3">
             <button
               onClick={() => selectSpecial('all')}
               className="p-3 rounded-xl text-left transition-all"
@@ -422,6 +411,24 @@ export default function PracticePage() {
                 <div>
                   <div className="text-white text-sm font-semibold">Weak Areas</div>
                   <div className="text-white/40 text-xs">Focus on misses</div>
+                </div>
+              </div>
+            </button>
+            <button
+              onClick={() => selectSpecial('saved')}
+              className="p-3 rounded-xl text-left transition-all"
+              style={{
+                background: category === 'saved' && !isMulti ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${category === 'saved' && !isMulti ? 'rgba(255,182,39,0.4)' : 'rgba(255,255,255,0.08)'}`,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,182,39,0.15)' }}>
+                  <Bookmark className="w-3.5 h-3.5 text-[#FFB627]" />
+                </div>
+                <div>
+                  <div className="text-white text-sm font-semibold">Saved</div>
+                  <div className="text-white/40 text-xs">Study Later list</div>
                 </div>
               </div>
             </button>

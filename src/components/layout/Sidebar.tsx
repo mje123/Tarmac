@@ -58,7 +58,7 @@ export default function Sidebar({ user }: SidebarProps) {
     <aside className="w-64 flex flex-col h-full" style={{ background: 'rgba(255,255,255,0.04)', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <Image src="/logo.png" alt="TARMAC" width={40} height={40} className="shrink-0" />
+        <Image src="/logo-white.png" alt="TARMAC" width={40} height={40} className="shrink-0" />
         <span className="text-xl font-bold text-white tracking-tight">TARMAC</span>
       </div>
 

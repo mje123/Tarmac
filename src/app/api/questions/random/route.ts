@@ -30,11 +30,20 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const categories = searchParams.getAll('categories')
     const weak = searchParams.get('weak')
+    const savedOnly = searchParams.get('saved') === '1'
     const excludeIds = searchParams.getAll('exclude')
 
     let query = supabase.from('questions').select('*')
 
-    if (categories.length > 0) {
+    if (savedOnly) {
+      const { data: saved } = await supabase
+        .from('saved_questions')
+        .select('question_id')
+        .eq('user_id', user.id)
+      const savedIds = (saved || []).map(r => r.question_id)
+      if (savedIds.length === 0) return NextResponse.json({ question: null, empty: true })
+      query = query.in('id', savedIds)
+    } else if (categories.length > 0) {
       query = query.in('category', categories)
       categories.forEach(c => maybeRefillCategory(c))
     } else if (category) {

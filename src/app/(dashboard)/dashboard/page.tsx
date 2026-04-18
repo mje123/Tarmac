@@ -315,8 +315,8 @@ export default async function DashboardPage() {
                         </div>
                       </div>
                     )}
-                    <span className={`text-xs px-2 py-1 rounded-md ${session.status === 'completed' ? 'text-green-300 bg-green-400/10' : 'text-white/40 bg-white/5'}`}>
-                      {session.status}
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${session.status === 'completed' ? 'text-green-300 bg-green-400/15' : 'text-[#3E92CC] bg-[#3E92CC]/15'}`}>
+                      {session.status === 'completed' ? 'Completed' : 'In Progress'}
                     </span>
                   </div>
                 ))}
