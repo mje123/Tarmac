@@ -1,7 +1,5 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 interface ExamEmailPayload {
   toEmail: string
   userName: string
@@ -13,6 +11,7 @@ interface ExamEmailPayload {
 }
 
 export async function sendExamResultEmail(payload: ExamEmailPayload) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const { toEmail, userName, score, totalQuestions, pct, passed, pdfBuffer } = payload
   const firstName = userName.split(' ')[0] || 'Pilot'
 
