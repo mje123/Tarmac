@@ -94,7 +94,7 @@ export default function PracticePage() {
 
   function savePracticeProgress(
     sid: string,
-    cat: QuestionCategory | 'all' | 'weak',
+    cat: QuestionCategory | 'all' | 'weak' | 'saved',
     correct: number,
     total: number,
     asked: string[],
