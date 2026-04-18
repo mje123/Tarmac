@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
 
         if (session.subscription) {
           const sub = await stripe.subscriptions.retrieve(session.subscription as string)
-          periodEnd = new Date(sub.current_period_end * 1000).toISOString()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const periodEndTs = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
+          if (periodEndTs) periodEnd = new Date(periodEndTs * 1000).toISOString()
         }
 
         await supabase.from('users').update({
@@ -47,7 +49,9 @@ export async function POST(request: NextRequest) {
         const sub = event.data.object as Stripe.Subscription
         const customerId = sub.customer as string
         const isActive = sub.status === 'active' || sub.status === 'trialing'
-        const periodEnd = new Date(sub.current_period_end * 1000).toISOString()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const periodEndTs = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
+        const periodEnd = periodEndTs ? new Date(periodEndTs * 1000).toISOString() : null
 
         await supabase.from('users').update({
           subscription_status: isActive ? 'study_pass' : 'free',
