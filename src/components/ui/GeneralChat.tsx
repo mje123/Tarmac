@@ -26,11 +26,13 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [msgsUsed, setMsgsUsed] = useState(0)
+  const [isPaid, setIsPaid] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setMsgsUsed(getAIMsgsUsed())
+    fetch('/api/user/subscription').then(r => r.json()).then(d => setIsPaid(d.isPaid))
   }, [])
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const limitReached = msgsUsed >= AI_MSG_LIMIT
+  const limitReached = !isPaid && msgsUsed >= AI_MSG_LIMIT
 
   async function sendMessage(text?: string) {
     const userMsg = (text ?? input).trim()
@@ -185,7 +187,7 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
                   type="text"
                   value={input}
                   onChange={e => setInput(e.target.value)}
-                  placeholder={`Ask about regulations, weather, airspace… (${AI_MSG_LIMIT - msgsUsed} left)`}
+                  placeholder={isPaid ? 'Ask about regulations, weather, airspace...' : `Ask about regulations, weather, airspace… (${AI_MSG_LIMIT - msgsUsed} left)`}
                   disabled={loading}
                   className="flex-1 text-sm"
                   style={{ borderRadius: '12px', padding: '10px 14px' }}

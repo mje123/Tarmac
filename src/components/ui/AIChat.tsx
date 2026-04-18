@@ -19,11 +19,13 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [msgsUsed, setMsgsUsed] = useState(0)
+  const [isPaid, setIsPaid] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [convId, setConvId] = useState(conversationId)
 
   useEffect(() => {
     setMsgsUsed(getAIMsgsUsed())
+    fetch('/api/user/subscription').then(r => r.json()).then(d => setIsPaid(d.isPaid))
     initConversation()
   }, [])
 
@@ -121,7 +123,7 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
     ...(question.option_d ? { D: question.option_d } : {}),
   }
 
-  const limitReached = msgsUsed >= AI_MSG_LIMIT
+  const limitReached = !isPaid && msgsUsed >= AI_MSG_LIMIT
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
@@ -210,7 +212,7 @@ export default function AIChat({ question, userAnswer, correctAnswer, onClose, o
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder={`Ask a follow-up… (${AI_MSG_LIMIT - msgsUsed} free messages left)`}
+                placeholder={isPaid ? 'Ask a follow-up question...' : `Ask a follow-up… (${AI_MSG_LIMIT - msgsUsed} free messages left)`}
                 disabled={loading && messages.length === 0}
                 className="flex-1"
               />
