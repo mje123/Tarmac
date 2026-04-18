@@ -119,10 +119,12 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newInf),
       })
+      const data = await res.json()
       if (res.ok) {
-        const data = await res.json()
         setInfluencers(prev => [{ ...data, referralCount: 0, totalRevenueCents: 0, commissionOwedCents: 0, unpaidReferrals: 0 }, ...prev])
         setNewInf({ name: '', email: '', promo_code: '', commission_pct: 20 })
+      } else {
+        alert(`Error: ${data.error || res.status}`)
       }
     } finally { setAddingInf(false) }
   }

@@ -1,25 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { supabase, user: null, error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  if (!user) return { user: null, error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   const { data: profile } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
-  if (!profile?.is_admin) return { supabase, user: null, error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
-  return { supabase, user, error: null }
+  if (!profile?.is_admin) return { user: null, error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
+  return { user, error: null }
 }
 
 export async function GET() {
-  const { supabase, error } = await requireAdmin()
+  const { error } = await requireAdmin()
   if (error) return error
 
-  const { data: influencers } = await supabase
+  const admin = createAdminClient()
+
+  const { data: influencers } = await admin
     .from('influencers')
     .select('*')
     .order('created_at', { ascending: false })
 
-  const { data: referrals } = await supabase
+  const { data: referrals } = await admin
     .from('influencer_referrals')
     .select('*')
 
@@ -42,9 +45,10 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const { supabase, error } = await requireAdmin()
+  const { error } = await requireAdmin()
   if (error) return error
 
+  const admin = createAdminClient()
   const body = await request.json()
   const { name, email, promo_code, commission_pct } = body
 
@@ -52,7 +56,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Name and promo code required' }, { status: 400 })
   }
 
-  const { data, error: dbError } = await supabase
+  const { data, error: dbError } = await admin
     .from('influencers')
     .insert({ name, email, promo_code: promo_code.toUpperCase(), commission_pct: commission_pct || 20 })
     .select().single()
