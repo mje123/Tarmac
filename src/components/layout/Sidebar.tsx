@@ -120,10 +120,11 @@ export default function Sidebar({ user }: SidebarProps) {
         {user.subscription_status === 'free' && (
           <Link
             href="/upgrade"
-            className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
-            style={{ background: 'linear-gradient(135deg, #FFB627, #e5a020)', color: '#0A2463' }}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{ background: 'rgba(255,182,39,0.1)', border: '1px solid rgba(255,182,39,0.3)', color: '#FFB627' }}
           >
-            ⚡ Upgrade to Study Pass
+            <span className="text-base leading-none">⚡</span>
+            Upgrade to Study Pass
           </Link>
         )}
 
