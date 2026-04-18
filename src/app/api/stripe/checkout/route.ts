@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       line_items: [{ price: process.env.STRIPE_STUDY_PASS_PRICE_ID!, quantity: 1 }],
       metadata: { userId: user.id },
       success_url: `${appUrl}/dashboard?checkout=success`,
-      cancel_url: `${appUrl}/#pricing`,
+      cancel_url: `${appUrl}/`,
       customer_email: user.email,
     })
 
