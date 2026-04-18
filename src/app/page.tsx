@@ -582,7 +582,7 @@ export default function LandingPage() {
       <section id="method" className="py-20 px-6 relative overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)' }}>
         {/* Aerial photo background strip */}
         <div className="absolute inset-0 pointer-events-none">
-          <Image src="/aerial-view.jpeg" alt="" fill className="object-cover object-center opacity-90" />
+          <Image src="/formation.png" alt="" fill className="object-cover object-center opacity-90" />
           <div className="absolute inset-0" style={{ background: 'rgba(10,36,99,0.72)' }} />
         </div>
         <div className="max-w-4xl mx-auto relative">
