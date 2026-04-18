@@ -6,7 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-[#0A2463] flex flex-col">
       <nav className="px-6 py-4">
         <Link href="/" className="inline-flex items-center gap-2">
-          <Image src="/logo.png" alt="TARMAC" width={40} height={40} />
+          <Image src="/logo-white.png" alt="TARMAC" width={40} height={40} />
           <span className="text-xl font-bold text-white tracking-tight">TARMAC</span>
         </Link>
       </nav>
