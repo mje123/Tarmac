@@ -376,7 +376,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-5">
             <Link href="/signup" className="btn-gold text-lg px-8 py-4 rounded-xl">
-              Start Practicing Free — 20 Questions
+              Start Practicing Free — 10 Questions
               <ArrowRight className="w-5 h-5" />
             </Link>
             <a href="#demo" className="text-lg px-8 py-4 rounded-xl font-semibold transition-all hover:bg-white/15" style={{ color: 'white', border: '2px solid rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.08)' }}>
