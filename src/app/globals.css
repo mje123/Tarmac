@@ -1,26 +1,198 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --navy: #0A2463;
+  --sky: #3E92CC;
+  --gold: #FFB627;
+  --white: #FFFFFF;
+  --background: #0A2463;
+  --foreground: #FFFFFF;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(62, 146, 204, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(62, 146, 204, 0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3E92CC, #2a7ab5);
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(62, 146, 204, 0.4);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #FFB627, #e6a020);
+  color: #0A2463;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-gold:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(255, 182, 39, 0.4);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+input, select, textarea {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: white;
+  padding: 12px 16px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  font-size: 16px;
+}
+
+input::placeholder, textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #3E92CC;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+select option {
+  background: #0A2463;
+  color: white;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Light landing page theme ── */
+.light-page {
+  background: #EDF4FC;
+  color: #0A2463;
+}
+
+.light-page .glass-card {
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(10, 36, 99, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 2px 20px rgba(10, 36, 99, 0.07);
+  backdrop-filter: blur(12px);
+}
+
+.light-page .glass {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(10, 36, 99, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.light-page .btn-ghost {
+  background: transparent;
+  color: #0A2463;
+  border: 1.5px solid rgba(10, 36, 99, 0.3);
+}
+
+.light-page .btn-ghost:hover {
+  background: rgba(10, 36, 99, 0.06);
+  border-color: rgba(10, 36, 99, 0.5);
+}
+
+.light-page .progress-bar {
+  background: rgba(10, 36, 99, 0.1);
 }
