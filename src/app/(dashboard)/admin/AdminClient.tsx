@@ -5,7 +5,7 @@ import { formatDate } from '@/lib/utils'
 import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
-  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare,
+  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug,
 } from 'lucide-react'
 
 interface Influencer {
@@ -41,7 +41,7 @@ const SUB_COLORS: Record<string, string> = {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs'>('overview')
   const [users, setUsers] = useState(initialUsers)
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [influencersLoaded, setInfluencersLoaded] = useState(false)
@@ -55,6 +55,9 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [infLoading, setInfLoading] = useState<string | null>(null)
   const [addingInf, setAddingInf] = useState(false)
+  const [bugs, setBugs] = useState<Record<string, unknown>[]>([])
+  const [bugsLoaded, setBugsLoaded] = useState(false)
+  const [bugLoading, setBugLoading] = useState<string | null>(null)
 
   const totalPaid = Object.values(stats.subCounts).reduce((a, b) => a + b, 0)
   const freeUsers = stats.totalUsers - totalPaid
@@ -67,9 +70,37 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     setInfluencersLoaded(true)
   }
 
+  async function loadBugs() {
+    if (bugsLoaded) return
+    const res = await fetch('/api/admin/bug-reports')
+    const data = await res.json()
+    setBugs(data)
+    setBugsLoaded(true)
+  }
+
+  async function updateBugStatus(id: string, status: string) {
+    setBugLoading(id)
+    try {
+      await fetch(`/api/admin/bug-reports/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      setBugs(prev => prev.map(b => b.id === id ? { ...b, status } : b))
+    } finally { setBugLoading(null) }
+  }
+
+  async function deleteBug(id: string) {
+    setBugLoading(id)
+    try {
+      await fetch(`/api/admin/bug-reports/${id}`, { method: 'DELETE' })
+      setBugs(prev => prev.filter(b => b.id !== id))
+    } finally { setBugLoading(null) }
+  }
+
   function handleTabChange(t: typeof tab) {
     setTab(t)
     if (t === 'influencers') loadInfluencers()
+    if (t === 'bugs') loadBugs()
   }
 
   async function saveQuestion(e: React.FormEvent) {
@@ -164,10 +195,16 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
+            {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
             {t}
+            {t === 'bugs' && bugs.filter(b => b.status === 'open').length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white">
+                {bugs.filter(b => b.status === 'open').length}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -485,6 +522,58 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
             )}
           </div>
+        </div>
+      )}
+      {tab === 'bugs' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-white">Bug Reports</h2>
+            <span className="text-xs text-white/40">{bugs.filter(b => b.status === 'open').length} open · {bugs.length} total</span>
+          </div>
+          {!bugsLoaded ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-white/30 animate-spin" /></div>
+          ) : bugs.length === 0 ? (
+            <div className="glass-card p-10 text-center text-white/30">No bug reports yet.</div>
+          ) : (
+            <div className="space-y-3">
+              {bugs.map(b => (
+                <div key={b.id as string} className="glass-card p-5 flex gap-4 items-start">
+                  <Bug className={`w-5 h-5 shrink-0 mt-0.5 ${b.status === 'open' ? 'text-red-400' : 'text-white/20'}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-white/60 text-xs">{b.email as string || 'Anonymous'}</span>
+                      {b.page && <span className="text-white/30 text-xs font-mono">{b.page as string}</span>}
+                      <span className="text-white/25 text-xs">{formatDate(b.created_at as string)}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase ${b.status === 'open' ? 'bg-red-500/15 text-red-400' : 'bg-white/5 text-white/25'}`}>
+                        {b.status as string}
+                      </span>
+                    </div>
+                    <p className="text-white/80 text-sm leading-relaxed">{b.message as string}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    {bugLoading === (b.id as string) ? (
+                      <Loader2 className="w-4 h-4 text-white/30 animate-spin" />
+                    ) : (
+                      <>
+                        {b.status === 'open' ? (
+                          <button onClick={() => updateBugStatus(b.id as string, 'resolved')} title="Mark resolved" className="p-1.5 rounded-lg hover:bg-green-400/10 text-green-400 transition-colors">
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button onClick={() => updateBugStatus(b.id as string, 'open')} title="Reopen" className="p-1.5 rounded-lg hover:bg-white/10 text-white/30 hover:text-white/60 transition-colors">
+                            <Bug className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button onClick={() => deleteBug(b.id as string)} title="Delete" className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/50 hover:text-red-400 transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

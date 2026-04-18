@@ -16,6 +16,7 @@ import {
   Shield,
   Bot,
 } from 'lucide-react'
+import BugReportButton from '@/components/ui/BugReportButton'
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', newTab: false },
@@ -123,6 +124,8 @@ export default function Sidebar({ user }: SidebarProps) {
           <Settings className="w-5 h-5" />
           Settings
         </Link>
+
+        <BugReportButton />
 
         <button
           onClick={handleSignOut}
