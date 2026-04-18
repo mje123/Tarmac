@@ -41,7 +41,7 @@ function SignupForm() {
     }
 
     if (data.session) {
-      router.push('/dashboard')
+      router.push(plan === 'study_pass' ? '/upgrade' : '/dashboard')
     } else {
       setSuccess(true)
       setLoading(false)

@@ -219,7 +219,7 @@ export default async function DashboardPage() {
             <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
           </a>
 
-          <a href="/supplement.pdf" target="_blank" rel="noopener noreferrer" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block">
+          <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(34,197,94,0.15)' }}>
               <FileText className="w-6 h-6 text-green-400" />
             </div>
