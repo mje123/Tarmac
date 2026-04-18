@@ -117,6 +117,16 @@ export default function Sidebar({ user }: SidebarProps) {
           </div>
         </div>
 
+        {user.subscription_status === 'free' && (
+          <Link
+            href="/upgrade"
+            className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
+            style={{ background: 'linear-gradient(135deg, #FFB627, #e5a020)', color: '#0A2463' }}
+          >
+            ⚡ Upgrade to Study Pass
+          </Link>
+        )}
+
         <Link
           href="/settings"
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
