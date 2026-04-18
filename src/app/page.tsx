@@ -329,11 +329,11 @@ export default function LandingPage() {
     <div className="light-page min-h-screen">
 
       {/* ── Nav ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4" style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(10,36,99,0.08)', boxShadow: '0 1px 20px rgba(10,36,99,0.07)' }}>
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="TARMAC" width={36} height={36} />
-          <span className="text-xl font-bold text-[#0A2463] tracking-tight">TARMAC</span>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full tracking-wider" style={{ background: 'rgba(255,182,39,0.15)', color: '#b87d00', border: '1px solid rgba(255,182,39,0.35)' }}>BETA</span>
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-6 py-3 md:py-4" style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(10,36,99,0.08)', boxShadow: '0 1px 20px rgba(10,36,99,0.07)' }}>
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Image src="/logo.png" alt="TARMAC" width={32} height={32} />
+          <span className="text-lg font-bold text-[#0A2463] tracking-tight">TARMAC</span>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wider hidden sm:inline-block" style={{ background: 'rgba(255,182,39,0.15)', color: '#b87d00', border: '1px solid rgba(255,182,39,0.35)' }}>BETA</span>
         </Link>
         <div className="hidden md:flex items-center gap-7 text-sm text-[#0A2463]/75">
           <a href="#method" className="hover:text-[#0A2463] transition-colors">The Method</a>
@@ -341,9 +341,9 @@ export default function LandingPage() {
           <a href="#pricing" className="hover:text-[#0A2463] transition-colors">Pricing</a>
           <a href="#faq" className="hover:text-[#0A2463] transition-colors">FAQ</a>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="text-[#0A2463]/75 hover:text-[#0A2463] text-sm px-4 py-2 transition-colors">Log in</Link>
-          <Link href="/signup" className="btn-gold text-sm px-5 py-2.5">Start Free</Link>
+        <div className="flex items-center gap-2">
+          <Link href="/login" className="hidden sm:block text-[#0A2463]/75 hover:text-[#0A2463] text-sm px-3 py-2 transition-colors">Log in</Link>
+          <Link href="/signup" className="btn-gold text-sm px-4 py-2">Start Free</Link>
         </div>
       </nav>
 
