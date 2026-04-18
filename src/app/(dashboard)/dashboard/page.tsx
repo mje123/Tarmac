@@ -18,6 +18,8 @@ import {
   Trophy,
 } from 'lucide-react'
 import StudyLaterWidget from '@/components/ui/StudyLaterWidget'
+import { Suspense } from 'react'
+import CheckoutSuccessBanner from '@/components/ui/CheckoutSuccessBanner'
 
 function CategoryBar({ category, accuracy, attempted }: { category: string; accuracy: number; attempted: number }) {
   const color = accuracy >= 80 ? '#22c55e' : accuracy >= 60 ? '#FFB627' : '#ef4444'
@@ -106,6 +108,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto animate-fade-in">
+      <Suspense fallback={null}>
+        <CheckoutSuccessBanner />
+      </Suspense>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">

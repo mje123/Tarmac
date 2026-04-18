@@ -244,7 +244,7 @@ export default function ExamSessionPage() {
 
         {/* Right actions */}
         <div className="flex items-center gap-3">
-          <a href="/supplement.pdf" target="_blank" rel="noopener noreferrer"
+          <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
             className="text-xs font-medium transition-colors hover:text-white"
             style={{ color: '#4ade80' }}>
             FAA Supplement ↗

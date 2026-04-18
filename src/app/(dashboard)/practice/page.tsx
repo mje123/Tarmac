@@ -575,7 +575,7 @@ export default function PracticePage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <a href="/supplement.pdf" target="_blank" rel="noopener noreferrer"
+          <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
             className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
             Supplement ↗
           </a>

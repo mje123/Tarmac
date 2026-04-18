@@ -268,7 +268,7 @@ export default function ExamTakePage() {
         )}
         {!allAnswered && (
           <div className="flex items-center gap-3">
-            <a href="/supplement.pdf" target="_blank" rel="noopener noreferrer" className="text-xs text-green-400/80 hover:text-green-400 transition-colors">FAA Supplement ↗</a>
+            <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer" className="text-xs text-green-400/80 hover:text-green-400 transition-colors">FAA Supplement ↗</a>
             <span className="text-white/30 text-sm">Answer all to submit</span>
           </div>
         )}
