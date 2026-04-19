@@ -422,7 +422,7 @@ export default function LandingPage() {
               Instagram
             </a>
           </div>
-          <p className="text-[#0A2463]/35 text-xs text-center">Not affiliated with the FAA.</p>
+          <p className="text-[#0A2463]/35 text-xs text-center">© {new Date().getFullYear()} Legion Systems LLC · Not affiliated with the FAA.</p>
         </div>
       </footer>
     </div>

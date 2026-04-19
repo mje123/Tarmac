@@ -37,7 +37,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing or using TARMAC (the "Service," "we," "us," "our"), creating an account, or completing a purchase, you acknowledge that you have read, understood, and agree to be legally bound by these Terms of Service ("Terms"). If you do not agree to every provision of these Terms, you must immediately stop using the Service. These Terms apply to all users, including free-tier users and paying subscribers.</p>
+            <p>TARMAC is a product of <strong>Legion Systems LLC</strong>. By accessing or using TARMAC (the "Service," "we," "us," "our"), creating an account, or completing a purchase, you acknowledge that you have read, understood, and agree to be legally bound by these Terms of Service ("Terms"). If you do not agree to every provision of these Terms, you must immediately stop using the Service. These Terms apply to all users, including free-tier users and paying subscribers.</p>
           </section>
 
           <section>
@@ -179,7 +179,7 @@ export default function TermsPage() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-[#0A2463]/10 flex flex-col md:flex-row gap-4 justify-between items-center text-sm text-[#0A2463]/50">
-          <span>© {new Date().getFullYear()} TARMAC. Not affiliated with the FAA.</span>
+          <span>© {new Date().getFullYear()} Legion Systems LLC. TARMAC is not affiliated with the FAA.</span>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-[#0A2463] transition-colors">Privacy Policy</Link>
             <Link href="/" className="hover:text-[#0A2463] transition-colors">← Back to Home</Link>

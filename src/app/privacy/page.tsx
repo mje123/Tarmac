@@ -25,6 +25,8 @@ export default function PrivacyPage() {
 
         <div className="space-y-10 text-[#1e3a6e] leading-relaxed">
 
+          <p className="text-sm text-[#0A2463]/60 mb-8">TARMAC is operated by <strong>Legion Systems LLC</strong>. This policy describes how we handle your data.</p>
+
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">1. Information We Collect</h2>
             <p>We collect the following information when you use TARMAC:</p>
@@ -111,7 +113,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-[#0A2463]/10 flex flex-col md:flex-row gap-4 justify-between items-center text-sm text-[#0A2463]/50">
-          <span>© {new Date().getFullYear()} TARMAC. Not affiliated with the FAA.</span>
+          <span>© {new Date().getFullYear()} Legion Systems LLC. TARMAC is not affiliated with the FAA.</span>
           <div className="flex gap-4">
             <Link href="/terms" className="hover:text-[#0A2463] transition-colors">Terms of Service</Link>
             <Link href="/" className="hover:text-[#0A2463] transition-colors">← Back to Home</Link>

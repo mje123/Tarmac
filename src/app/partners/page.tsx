@@ -59,7 +59,7 @@ export default function PartnersPage() {
           <h1 className="text-4xl font-extrabold text-white mb-3">Partner with TARMAC</h1>
           <p className="text-white/60 text-base leading-relaxed">
             Share TARMAC with your audience — they get <strong className="text-white">30% off</strong> their first month,
-            you earn <strong className="text-white">30% commission</strong> (~$10.50 per referral). Commission-only, no guarantees.
+            you earn <strong className="text-white">30% commission</strong> (~$7.35 per referral). Commission-only, no guarantees.
           </p>
         </div>
 
@@ -125,11 +125,11 @@ export default function PartnersPage() {
 
               {/* Legal */}
               <div className="rounded-xl p-4 text-xs text-white/50 leading-relaxed space-y-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className="text-white/70 font-semibold text-sm">Partnership Terms</p>
+                <p className="text-white/70 font-semibold text-sm">Partnership Terms — Legion Systems LLC (operating as TARMAC)</p>
                 <p>By submitting this application, you acknowledge and agree to all of the following:</p>
                 <ul className="list-disc list-inside space-y-1 ml-1">
                   <li>This application does <strong className="text-white/70">not</strong> guarantee acceptance or promo code approval.</li>
-                  <li>If accepted, you earn a <strong className="text-white/70">30% commission on the first month's payment only</strong> (~$10.50/referral). No minimums, no ongoing commissions.</li>
+                  <li>If accepted, you earn a <strong className="text-white/70">30% commission on the first month's payment only</strong> (~$7.35/referral). No minimums, no ongoing commissions.</li>
                   <li>Commissions are paid via <strong className="text-white/70">Venmo or a mutually agreed platform</strong>. You must contact TARMAC to confirm payment details — TARMAC does not initiate payment automatically.</li>
                   <li>TARMAC may <strong className="text-white/70">modify, pause, or terminate the program at any time</strong> without notice.</li>
                   <li>You are an <strong className="text-white/70">independent creator</strong>, not an employee or agent of TARMAC.</li>
@@ -140,7 +140,7 @@ export default function PartnersPage() {
                 </ul>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 items-start">
                 <input
                   id="inf-terms"
                   type="checkbox"
@@ -149,8 +149,8 @@ export default function PartnersPage() {
                   className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
                   required
                 />
-                <label htmlFor="inf-terms" className="text-xs text-white/60 leading-relaxed cursor-pointer">
-                  I have read and agree to the partnership terms above. I understand this is commission-only with no guaranteed earnings, and TARMAC may modify or terminate the program at any time.
+                <label htmlFor="inf-terms" className="flex-1 min-w-0 text-xs text-white/60 leading-relaxed cursor-pointer">
+                  I have read and agree to the partnership terms above. I understand this is a commission-only arrangement with no guaranteed earnings, and that Legion Systems LLC (operating as TARMAC) may modify or terminate the program at any time.
                 </label>
               </div>
 
