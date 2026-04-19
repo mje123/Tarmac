@@ -49,6 +49,19 @@ function SignupForm() {
     }
   }
 
+  if (success) {
+    return (
+      <div className="animate-fade-in text-center">
+        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
+          <span className="text-3xl">✉️</span>
+        </div>
+        <h1 className="text-3xl font-bold text-white mb-3">Check your email</h1>
+        <p className="text-white/60 mb-6">We sent a confirmation link to <strong className="text-white">{email}</strong>. Click it to activate your account.</p>
+        <Link href="/login" className="text-[#3E92CC] hover:text-[#5aabdf] text-sm font-medium">Back to login →</Link>
+      </div>
+    )
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="text-center mb-8">
@@ -58,7 +71,7 @@ function SignupForm() {
         </p>
       </div>
 
-      <div className="glass-card p-6 md:p-8 overflow-hidden">
+      <div className="glass-card p-6 md:p-8">
         <form onSubmit={handleSignup} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-white/80 mb-2">Full Name</label>
@@ -107,22 +120,23 @@ function SignupForm() {
             </div>
           </div>
 
-          <label className="flex items-start gap-3 cursor-pointer w-full overflow-hidden">
+          <div className="flex gap-3">
             <input
+              id="terms"
               type="checkbox"
               checked={agreedToTerms}
               onChange={e => setAgreedToTerms(e.target.checked)}
-              className="mt-1 shrink-0 w-4 h-4 accent-[#FFB627]"
+              className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
               required
             />
-            <span className="text-xs text-white/60 leading-relaxed flex-1 min-w-0 break-words">
+            <label htmlFor="terms" className="text-xs text-white/60 leading-relaxed cursor-pointer">
               I have read and agree to the{' '}
               <Link href="/terms" target="_blank" className="text-[#3E92CC] underline">Terms of Service</Link>
               {' '}and{' '}
               <Link href="/privacy" target="_blank" className="text-[#3E92CC] underline">Privacy Policy</Link>.
               I understand that <strong className="text-white/80">all sales are final and non-refundable</strong>, and that TARMAC does not guarantee passing any FAA exam.
-            </span>
-          </label>
+            </label>
+          </div>
 
           {error && (
             <div className="px-4 py-3 rounded-lg text-sm text-red-300" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
