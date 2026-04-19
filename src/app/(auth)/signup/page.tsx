@@ -125,16 +125,16 @@ function SignupForm() {
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '12px', alignItems: 'start' }}>
             <input
               id="terms"
               type="checkbox"
               checked={agreedToTerms}
               onChange={e => setAgreedToTerms(e.target.checked)}
-              className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
+              style={{ marginTop: '2px', width: '16px', height: '16px', accentColor: '#FFB627', flexShrink: 0 }}
               required
             />
-            <label htmlFor="terms" className="text-xs text-white/60 leading-relaxed cursor-pointer">
+            <label htmlFor="terms" className="text-xs text-white/60 leading-relaxed cursor-pointer" style={{ wordBreak: 'break-word', minWidth: 0 }}>
               I have read and agree to the{' '}
               <Link href="/terms" target="_blank" className="text-[#3E92CC] underline">Terms of Service</Link>
               {' '}and{' '}
@@ -143,15 +143,15 @@ function SignupForm() {
             </label>
           </div>
 
-          <div className="flex gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '12px', alignItems: 'start' }}>
             <input
               id="marketing"
               type="checkbox"
               checked={marketingEmails}
               onChange={e => setMarketingEmails(e.target.checked)}
-              className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
+              style={{ marginTop: '2px', width: '16px', height: '16px', accentColor: '#FFB627', flexShrink: 0 }}
             />
-            <label htmlFor="marketing" className="text-xs text-white/60 leading-relaxed cursor-pointer">
+            <label htmlFor="marketing" className="text-xs text-white/60 leading-relaxed cursor-pointer" style={{ wordBreak: 'break-word', minWidth: 0 }}>
               Send me weekly progress updates and study tips. Unsubscribe anytime.
             </label>
           </div>

@@ -5,7 +5,7 @@ import { formatDate } from '@/lib/utils'
 import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
-  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send,
+  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb,
 } from 'lucide-react'
 
 interface Influencer {
@@ -43,7 +43,7 @@ const SUB_COLORS: Record<string, string> = {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions'>('overview')
   const [users, setUsers] = useState(initialUsers)
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [influencersLoaded, setInfluencersLoaded] = useState(false)
@@ -64,6 +64,9 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [applicationsLoaded, setApplicationsLoaded] = useState(false)
   const [emailHistory, setEmailHistory] = useState<Record<string, unknown>[]>([])
   const [emailHistoryLoaded, setEmailHistoryLoaded] = useState(false)
+  const [suggestions, setSuggestions] = useState<Record<string, unknown>[]>([])
+  const [suggestionsLoaded, setSuggestionsLoaded] = useState(false)
+  const [suggestionLoading, setSuggestionLoading] = useState<string | null>(null)
   const [emailForm, setEmailForm] = useState({ subject: '', body: '', recipient_group: 'all', specific_email: '' })
   const [emailSending, setEmailSending] = useState(false)
   const [emailResult, setEmailResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
@@ -101,6 +104,33 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     const data = await res.json()
     setEmailHistory(data)
     setEmailHistoryLoaded(true)
+  }
+
+  async function loadSuggestions() {
+    if (suggestionsLoaded) return
+    const res = await fetch('/api/admin/suggestions')
+    const data = await res.json()
+    setSuggestions(data)
+    setSuggestionsLoaded(true)
+  }
+
+  async function deleteSuggestion(id: string) {
+    setSuggestionLoading(id)
+    try {
+      await fetch(`/api/admin/suggestions/${id}`, { method: 'DELETE' })
+      setSuggestions(prev => prev.filter(s => s.id !== id))
+    } finally { setSuggestionLoading(null) }
+  }
+
+  async function archiveSuggestion(id: string) {
+    setSuggestionLoading(id)
+    try {
+      await fetch(`/api/admin/suggestions/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'archived' }),
+      })
+      setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status: 'archived' } : s))
+    } finally { setSuggestionLoading(null) }
   }
 
   async function sendEmail(e: React.FormEvent) {
@@ -161,6 +191,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     if (t === 'bugs') loadBugs()
     if (t === 'applications') loadApplications()
     if (t === 'email') loadEmailHistory()
+    if (t === 'suggestions') loadSuggestions()
   }
 
   async function saveQuestion(e: React.FormEvent) {
@@ -255,12 +286,13 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
             {t === 'email' && <Mail className="w-3.5 h-3.5" />}
-            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t}
+            {t === 'suggestions' && <Lightbulb className="w-3.5 h-3.5" />}
+            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t}
             {t === 'bugs' && bugs.filter(b => b.status === 'open').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white">
                 {bugs.filter(b => b.status === 'open').length}
@@ -269,6 +301,11 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             {t === 'applications' && applicationsLoaded && applications.length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FFB627] text-black">
                 {applications.length}
+              </span>
+            )}
+            {t === 'suggestions' && suggestionsLoaded && suggestions.filter(s => s.status !== 'archived').length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FFB627] text-black">
+                {suggestions.filter(s => s.status !== 'archived').length}
               </span>
             )}
           </button>
@@ -796,6 +833,55 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {tab === 'suggestions' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-white">Feature Suggestions</h2>
+            <span className="text-xs text-white/40">{suggestions.filter(s => s.status !== 'archived').length} open · {suggestions.length} total</span>
+          </div>
+          {!suggestionsLoaded ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-white/30 animate-spin" /></div>
+          ) : suggestions.length === 0 ? (
+            <div className="glass-card p-10 text-center text-white/30">No suggestions yet.</div>
+          ) : (
+            <div className="space-y-3">
+              {suggestions.map(s => (
+                <div key={s.id as string} className="glass-card p-5 flex gap-4 items-start">
+                  <Lightbulb className={`w-5 h-5 shrink-0 mt-0.5 ${s.status === 'archived' ? 'text-white/20' : 'text-[#FFB627]'}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-white/60 text-xs">{s.email as string || 'Anonymous'}</span>
+                      {(s.page as string) && <span className="text-white/30 text-xs font-mono">{s.page as string}</span>}
+                      <span className="text-white/25 text-xs">{formatDate(s.created_at as string)}</span>
+                      {s.status === 'archived' && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase bg-white/5 text-white/25">archived</span>
+                      )}
+                    </div>
+                    <p className="text-white/80 text-sm leading-relaxed">{s.message as string}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    {suggestionLoading === (s.id as string) ? (
+                      <Loader2 className="w-4 h-4 text-white/30 animate-spin" />
+                    ) : (
+                      <>
+                        {s.status !== 'archived' && (
+                          <button onClick={() => archiveSuggestion(s.id as string)} title="Archive" className="p-1.5 rounded-lg hover:bg-white/10 text-white/30 hover:text-white/60 transition-colors">
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button onClick={() => deleteSuggestion(s.id as string)} title="Delete" className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/50 hover:text-red-400 transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

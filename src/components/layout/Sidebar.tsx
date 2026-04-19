@@ -12,6 +12,7 @@ import {
   Settings, LogOut, Shield, Bot, Menu, X,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
+import SuggestionButton from '@/components/ui/SuggestionButton'
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -115,6 +116,7 @@ export default function Sidebar({ user }: SidebarProps) {
           Settings
         </Link>
 
+        <SuggestionButton />
         <BugReportButton />
 
         <button onClick={handleSignOut}

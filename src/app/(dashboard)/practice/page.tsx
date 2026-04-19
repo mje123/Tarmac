@@ -211,11 +211,18 @@ export default function PracticePage() {
       body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect }),
     })
     savePracticeProgress(sessionId, category, newCorrect, newTotal, askedIds, [...selectedCategories])
+    if (freeQuestionsLeft !== null) {
+      setFreeQuestionsLeft(prev => (prev !== null ? prev - 1 : null))
+    }
     if (isCorrect) setPhase('correct')
     else setPhase('wrong')
   }
 
   async function nextQuestion() {
+    if (freeQuestionsLeft !== null && freeQuestionsLeft <= 0) {
+      setFreeQuestionsLeft(0)
+      return
+    }
     const newIds = [...askedIds, question!.id]
     setAskedIds(newIds)
     await fetchQuestion(sessionId!, newIds, category, selectedCategories)
