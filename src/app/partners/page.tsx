@@ -125,7 +125,7 @@ export default function PartnersPage() {
 
               {/* Legal */}
               <div className="rounded-xl p-4 text-xs text-white/50 leading-relaxed space-y-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className="text-white/70 font-semibold text-sm">Partnership Terms — TARMAC by Legion Systems LLC</p>
+                <p className="text-white/70 font-semibold text-sm">Partnership Terms — TARMAC, operated by Legion Systems LLC</p>
                 <p>By submitting this application, you acknowledge and agree to all of the following:</p>
                 <ul className="list-disc list-inside space-y-1 ml-1">
                   <li>This application does <strong className="text-white/70">not</strong> guarantee acceptance or promo code approval.</li>
