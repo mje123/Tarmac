@@ -8,12 +8,15 @@ import {
   Brain,
   BarChart3,
   Smartphone,
-  MessageSquare,
+  Target,
   ChevronDown,
   ChevronUp,
   ArrowRight,
   Plane,
-  Target,
+  MessageSquare,
+  Zap,
+  TrendingUp,
+  AlertTriangle,
 } from 'lucide-react'
 
 // ─── DEMO ────────────────────────────────────────────────────────────────────
@@ -38,19 +41,19 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How is this different from other test prep tools?',
-    a: 'Traditional test prep gives you a question, tells you the answer, and moves on. TARMAC gives you an AI that explains exactly WHY the answer is correct, what makes the other choices wrong, and lets you ask follow-up questions until you actually understand. It\'s the difference between memorizing and learning.',
+    a: 'Other tools show you a question, tell you the right answer, and move on. TARMAC gives you an AI that explains exactly WHY the answer is correct, what makes the other choices wrong, and lets you ask follow-up questions until you genuinely understand. It\'s a conversation — not a flashcard.',
   },
   {
     q: 'How long until I\'m test-ready?',
-    a: 'Most students are test-ready in 3–6 weeks with 20–30 questions per day. The best signal: when you\'re consistently 80%+ across all categories on your progress dashboard, and you can explain WHY each answer is correct — not just which letter it is.',
+    a: 'Most students are test-ready in 3–6 weeks with 20–30 questions per day. The best signal: when you\'re consistently 80%+ across all categories and you can explain WHY each answer is correct — not just which letter it is.\n\nNote: TARMAC is designed to work alongside your flight training, not replace it. You still need a CFI endorsement to take the FAA written.',
   },
   {
     q: 'Do you offer refunds?',
-    a: 'All purchases are final and non-refundable. We\'re confident TARMAC works — that\'s why we offer 10 free questions with full AI explanations before you ever pay. Try it first.',
+    a: 'All purchases are final and non-refundable. We\'re confident TARMAC works — that\'s why we offer 10 free questions with full AI explanations before you ever pay. Try it first, then decide.',
   },
   {
     q: 'Can I cancel anytime?',
-    a: 'Yes. Cancel from Settings at any time. You keep access through the end of your billing period. No hoops, no fees, no guilt trip.',
+    a: 'Yes. Cancel from Settings at any time. You keep access through the end of your billing period. No hoops, no fees.',
   },
 ]
 
@@ -81,9 +84,7 @@ function DemoWidget() {
         <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>medium</span>
         <span className="ml-auto text-xs text-[#0A2463]/50">Live demo — no signup needed</span>
       </div>
-
       <p className="text-[#0A2463] text-base font-medium leading-relaxed mb-5">{DEMO_QUESTION.text}</p>
-
       <div className="space-y-2.5 mb-4">
         {DEMO_QUESTION.options.map(opt => {
           let bg = 'rgba(10,36,99,0.04)'
@@ -93,13 +94,9 @@ function DemoWidget() {
             else if (opt.key === picked) { bg = 'rgba(239,68,68,0.1)'; border = '1px solid rgba(239,68,68,0.4)' }
           }
           return (
-            <button
-              key={opt.key}
-              disabled={!!picked}
-              onClick={() => setPicked(opt.key)}
+            <button key={opt.key} disabled={!!picked} onClick={() => setPicked(opt.key)}
               className="w-full text-left p-3.5 rounded-xl flex items-start gap-3 transition-all hover:opacity-80 disabled:cursor-default"
-              style={{ background: bg, border }}
-            >
+              style={{ background: bg, border }}>
               <span className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ background: 'rgba(10,36,99,0.1)', color: '#0A2463' }}>{opt.key}</span>
               <span className="text-[#0A2463]/85 text-sm leading-relaxed">{opt.text}</span>
               {picked && opt.key === DEMO_QUESTION.correct && <CheckCircle className="w-4 h-4 text-green-500 ml-auto shrink-0 mt-0.5" />}
@@ -107,13 +104,12 @@ function DemoWidget() {
           )
         })}
       </div>
-
       {picked && (
-        <div className="mt-4 p-4 rounded-xl animate-fade-in text-sm leading-relaxed whitespace-pre-line" style={{ background: isCorrect ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', border: isCorrect ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(239,68,68,0.3)', color: '#0A2463' }}>
+        <div className="mt-4 p-4 rounded-xl animate-fade-in text-sm leading-relaxed whitespace-pre-line"
+          style={{ background: isCorrect ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', border: isCorrect ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(239,68,68,0.3)', color: '#0A2463' }}>
           {isCorrect ? DEMO_QUESTION.explanation : DEMO_QUESTION.wrongExplanation(picked)}
         </div>
       )}
-
       {picked && (
         <div className="mt-5 text-center">
           <Link href="/signup" className="btn-gold inline-flex px-6 py-2.5 text-sm">
@@ -131,13 +127,14 @@ export default function LandingPage() {
     <div className="light-page min-h-screen">
 
       {/* ── Nav ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 py-3 md:py-4" style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(10,36,99,0.08)', boxShadow: '0 1px 20px rgba(10,36,99,0.07)' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 py-3 md:py-4"
+        style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(10,36,99,0.08)', boxShadow: '0 1px 20px rgba(10,36,99,0.07)' }}>
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <Image src="/logo.png" alt="TARMAC" width={32} height={32} />
           <span className="text-lg font-bold text-[#0A2463] tracking-tight">TARMAC</span>
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm text-[#0A2463]/70">
-          <a href="#how" className="hover:text-[#0A2463] transition-colors">How it works</a>
+          <a href="#why" className="hover:text-[#0A2463] transition-colors">Why TARMAC</a>
           <a href="#demo" className="hover:text-[#0A2463] transition-colors">Try demo</a>
           <a href="#pricing" className="hover:text-[#0A2463] transition-colors">Pricing</a>
         </div>
@@ -153,112 +150,136 @@ export default function LandingPage() {
           <Image src="/hero.png" alt="" fill className="object-cover object-center" priority />
           <div className="absolute inset-0" style={{ background: 'rgba(5,18,55,0.72)' }} />
         </div>
-
         <div className="relative max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 text-sm font-medium" style={{ background: 'rgba(255,182,39,0.15)', border: '1px solid rgba(255,182,39,0.3)', color: '#FFB627' }}>
             <Plane className="w-4 h-4" />
-            FAA Private Pilot Written Test Prep
+            FAA Private Pilot Written Test Prep · AI-Powered
           </div>
-
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-5" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
             Stop guessing.<br />
             <span style={{ color: '#5ab8f5' }}>Start understanding.</span>
           </h1>
-
-          <p className="text-lg sm:text-xl text-white/85 max-w-xl mx-auto mb-8 leading-relaxed">
-            Most student pilots memorize answers and pray. TARMAC teaches you the <em>why</em> — so you walk into that test room knowing aviation, not just answer letters.
+          <p className="text-lg sm:text-xl text-white/85 max-w-2xl mx-auto mb-8 leading-relaxed">
+            Most student pilots practice questions and memorize answer letters. Then test day comes and the wording changes. TARMAC's AI explains every answer in plain English — and keeps explaining until you genuinely get it.
           </p>
-
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5 w-full">
             <Link href="/signup" className="btn-gold text-lg px-8 py-4 rounded-xl w-full sm:w-auto text-center justify-center">
               Start Free — 10 Questions
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <a href="#demo" className="text-base px-8 py-4 rounded-xl font-semibold w-full sm:w-auto text-center transition-all hover:bg-white/15" style={{ color: 'white', border: '2px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)' }}>
+            <a href="#demo" className="text-base px-8 py-4 rounded-xl font-semibold w-full sm:w-auto text-center transition-all hover:bg-white/15"
+              style={{ color: 'white', border: '2px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)' }}>
               Try the demo first
             </a>
           </div>
-          <p className="text-white/50 text-sm">No credit card. No time limit. No fluff.</p>
+          <p className="text-white/50 text-sm">No credit card. No time limit. Try it free right now.</p>
         </div>
       </section>
 
-      {/* ── Stats bar ── */}
-      <section className="py-8 px-6" style={{ background: '#ffffff', borderBottom: '1px solid rgba(10,36,99,0.08)' }}>
-        <div className="max-w-2xl mx-auto grid grid-cols-3 gap-4 text-center">
-          {[
-            { val: '1,400+', label: 'Practice Questions' },
-            { val: '9', label: 'ACS Knowledge Areas' },
-            { val: '24/7', label: 'AI Tutor Access' },
-          ].map(s => (
-            <div key={s.label}>
-              <div className="text-2xl sm:text-3xl font-extrabold text-[#0A2463]">{s.val}</div>
-              <div className="text-xs sm:text-sm text-[#0A2463]/60 mt-0.5">{s.label}</div>
-            </div>
-          ))}
+      {/* ── The one thing that makes TARMAC different ── */}
+      <section style={{ background: '#0A2463' }} className="py-14 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="text-2xl sm:text-3xl font-extrabold text-white leading-snug mb-4">
+            Every other practice test tells you what's right.<br />
+            <span style={{ color: '#FFB627' }}>TARMAC tells you WHY — and won't stop until you get it.</span>
+          </div>
+          <p className="text-white/60 text-base max-w-xl mx-auto">
+            That one difference is why students who use TARMAC walk into the exam room with genuine confidence — not crossed fingers.
+          </p>
         </div>
       </section>
 
-      {/* ── Ground school disclaimer ── */}
-      <section className="py-4 px-6 text-center" style={{ background: '#fffbea', borderBottom: '1px solid rgba(255,182,39,0.25)' }}>
-        <p className="text-sm text-[#0A2463]/70 max-w-2xl mx-auto">
-          <strong className="text-[#0A2463]">TARMAC supplements ground school — it doesn't replace it.</strong>{' '}
-          You still need a CFI and an endorsement to take the FAA written. Use TARMAC alongside your training, not instead of it.
-        </p>
-      </section>
-
-      {/* ── How it works ── */}
-      <section id="how" className="py-20 px-6" style={{ background: '#EDF4FC' }}>
+      {/* ── Why students fail the written ── */}
+      <section id="why" className="py-20 px-6" style={{ background: '#ffffff' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#0A2463] mb-3">Two things traditional test prep gets wrong</h2>
-            <p className="text-[#0A2463]/70 max-w-lg mx-auto">Most tools make you memorize answers. Memorization breaks the moment the FAA rephrases a question. TARMAC makes you understand.</p>
+            <h2 className="text-3xl font-bold text-[#0A2463] mb-3">The written test has a 20% failure rate.<br className="hidden sm:block" /> Here's the real reason why.</h2>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                num: '01',
-                color: '#3E92CC',
-                title: 'Answer realistic questions',
-                body: 'Work through FAA-style questions across all 9 ACS knowledge areas. Same topics, different angles — just like the real test. Repetition builds pattern recognition.',
-              },
-              {
-                num: '02',
-                color: '#FFB627',
-                title: 'AI explains the why',
-                body: 'Every answer — right or wrong — triggers a full explanation. Ask follow-ups. "Why 30 and not 45?" Keep going until it clicks. Like a CFI who never gets tired.',
-              },
-              {
-                num: '03',
-                color: '#22c55e',
-                title: 'Track and drill weak spots',
-                body: 'Your dashboard shows accuracy by category. When you see Airspace at 58%, you know exactly where to focus. No guessing. No wasted time.',
-              },
-            ].map(s => (
-              <div key={s.num} className="glass-card p-6">
-                <div className="text-3xl font-black mb-3" style={{ color: s.color }}>{s.num}</div>
-                <h3 className="font-bold text-[#0A2463] mb-2">{s.title}</h3>
-                <p className="text-[#0A2463]/70 text-sm leading-relaxed">{s.body}</p>
+          <div className="grid md:grid-cols-2 gap-8 items-start">
+            {/* Problem */}
+            <div className="rounded-2xl p-6" style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.15)' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+                <span className="font-bold text-[#0A2463]">How most students study</span>
               </div>
-            ))}
+              <ul className="space-y-3">
+                {[
+                  'See a question → pick an answer → move on',
+                  'Get it wrong → see "Correct answer: B" → move on',
+                  'Practice 200 questions, understand maybe 60 of them',
+                  'Test day: question is worded differently → panic',
+                  'Fail. Pay $175 to retake. Repeat.',
+                ].map(t => (
+                  <li key={t} className="flex items-start gap-3 text-sm text-[#0A2463]/75">
+                    <span className="text-red-400 font-bold shrink-0 mt-0.5">✗</span>{t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Solution */}
+            <div className="rounded-2xl p-6" style={{ background: 'rgba(62,146,204,0.05)', border: '1px solid rgba(62,146,204,0.2)' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Brain className="w-5 h-5 text-[#3E92CC]" />
+                <span className="font-bold text-[#0A2463]">How TARMAC students study</span>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  'Answer a question → AI explains the full concept',
+                  'Ask "why 30 minutes and not 45?" → get a real answer',
+                  'Practice 200 questions, understand all 200 of them',
+                  'Test day: question is worded differently → no problem',
+                  'Pass. Done. On to the ramp.',
+                ].map(t => (
+                  <li key={t} className="flex items-start gap-3 text-sm text-[#0A2463]/75">
+                    <CheckCircle className="w-4 h-4 text-[#3E92CC] shrink-0 mt-0.5" />{t}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Features ── */}
-      <section className="py-16 px-6" style={{ background: '#ffffff' }}>
+      {/* ── What you actually get ── */}
+      <section className="py-20 px-6" style={{ background: '#EDF4FC' }}>
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-[#0A2463] mb-3">What you get with TARMAC</h2>
+            <p className="text-[#0A2463]/65">Everything built around one goal: you walk out of that test with a passing score.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-5">
             {[
-              { icon: <Brain className="w-6 h-6 text-[#3E92CC]" />, title: 'AI Tutor on Every Question', body: 'Explains WHY — not just what. Ask follow-ups anytime.' },
-              { icon: <BarChart3 className="w-6 h-6 text-[#FFB627]" />, title: 'Progress by Category', body: 'Know exactly which of the 9 ACS areas need work.' },
-              { icon: <Target className="w-6 h-6 text-[#3E92CC]" />, title: 'Practice Exams', body: '60 questions, timed — mirrors the real FAA experience.' },
-              { icon: <Smartphone className="w-6 h-6 text-[#FFB627]" />, title: 'Any Device', body: 'Phone, tablet, laptop. Progress syncs everywhere.' },
+              {
+                icon: <MessageSquare className="w-6 h-6 text-[#3E92CC]" />,
+                title: 'An AI you can actually talk to',
+                body: 'Not a tooltip. Not a paragraph. A real back-and-forth conversation about every question. Ask follow-ups. Challenge the answer. Keep going until the concept clicks. Like a patient tutor who never gets frustrated.',
+                color: '#3E92CC',
+              },
+              {
+                icon: <TrendingUp className="w-6 h-6 text-[#FFB627]" />,
+                title: 'Knows exactly where you\'re weak',
+                body: 'TARMAC tracks your accuracy across all 9 ACS knowledge areas in real time. When Weather Theory is at 54%, you see it. Your next session routes you back there automatically. No more studying what you already know.',
+                color: '#FFB627',
+              },
+              {
+                icon: <Target className="w-6 h-6 text-[#3E92CC]" />,
+                title: '1,400+ questions — never run dry',
+                body: 'A massive bank of FAA-style questions across every topic the test can throw at you. Regulations, airspace, weather, weight & balance, navigation — all of it. You\'ll never run out of material before test day.',
+                color: '#3E92CC',
+              },
+              {
+                icon: <Zap className="w-6 h-6 text-[#FFB627]" />,
+                title: 'Full exam simulation',
+                body: '60 questions. 2.5-hour timer. No AI assist during the exam — just like the real thing. Then review every answer with the AI afterward. By test day, you\'ve already sat through the experience a dozen times.',
+                color: '#FFB627',
+              },
             ].map(f => (
-              <div key={f.title} className="glass-card p-4">
-                <div className="mb-3">{f.icon}</div>
-                <h3 className="font-semibold text-[#0A2463] text-sm mb-1">{f.title}</h3>
-                <p className="text-[#0A2463]/65 text-xs leading-relaxed">{f.body}</p>
+              <div key={f.title} className="glass-card p-6">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ background: f.color + '15' }}>
+                  {f.icon}
+                </div>
+                <h3 className="font-bold text-[#0A2463] mb-2">{f.title}</h3>
+                <p className="text-[#0A2463]/65 text-sm leading-relaxed">{f.body}</p>
               </div>
             ))}
           </div>
@@ -274,7 +295,7 @@ export default function LandingPage() {
         <div className="max-w-2xl mx-auto relative">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-white mb-2">Try it right now</h2>
-            <p className="text-white/70">Answer a real question. See how the AI explains it.</p>
+            <p className="text-white/70">Answer a real question. See exactly how the AI explains it. No signup.</p>
           </div>
           <DemoWidget />
         </div>
@@ -284,23 +305,22 @@ export default function LandingPage() {
       <section id="pricing" className="py-20 px-6" style={{ background: '#ffffff' }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#0A2463] mb-3">Simple pricing</h2>
-            <p className="text-[#0A2463]/65">Most students only need 1–2 months. Start free.</p>
+            <h2 className="text-3xl font-bold text-[#0A2463] mb-3">Less than one failed test retake.</h2>
+            <p className="text-[#0A2463]/65">The FAA charges $175 to retake the written. One month of TARMAC is $34.99.<br className="hidden sm:block" />Do the math.</p>
           </div>
-
           <div className="grid md:grid-cols-2 gap-6">
             {/* Free */}
             <div className="glass-card p-7 flex flex-col">
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-[#0A2463] mb-1">Free Trial</h3>
-                <p className="text-[#0A2463]/65 text-sm mb-4">No credit card required</p>
+                <p className="text-[#0A2463]/65 text-sm mb-4">Try before you commit</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-[#0A2463]">$0</span>
                   <span className="text-[#0A2463]/50">forever</span>
                 </div>
               </div>
               <ul className="space-y-2.5 flex-1 mb-7">
-                {['10 practice questions', 'Full AI explanations on every answer', 'No time limit', 'No credit card'].map(f => (
+                {['10 practice questions', 'Full AI explanations', 'No credit card', 'No time limit'].map(f => (
                   <li key={f} className="flex items-center gap-2 text-sm text-[#0A2463]/70">
                     <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />{f}
                   </li>
@@ -308,13 +328,12 @@ export default function LandingPage() {
               </ul>
               <Link href="/signup" className="btn-ghost text-center py-3 rounded-xl font-semibold">Start Free Trial</Link>
             </div>
-
             {/* Paid */}
             <div className="flex flex-col p-7 rounded-2xl" style={{ background: 'linear-gradient(135deg, #0A2463, #1a4f96)', border: '2px solid rgba(62,146,204,0.3)' }}>
               <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-[#0A2463] mb-4 self-start" style={{ background: '#FFB627' }}>STUDY PASS</div>
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-white mb-1">Study Pass</h3>
-                <p className="text-white/55 text-sm mb-4">Everything you need to pass</p>
+                <p className="text-white/55 text-sm mb-4">Everything until you pass</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-white">$34.99</span>
                   <span className="text-white/45">/month</span>
@@ -324,9 +343,9 @@ export default function LandingPage() {
                 {[
                   'Unlimited practice questions',
                   'All 9 ACS knowledge areas',
-                  'AI tutor on every question',
-                  'Progress tracking by category',
-                  'Category drill mode',
+                  'AI tutor — ask follow-ups on every question',
+                  'Real-time progress by category',
+                  'Focused drill mode by topic',
                   '60-question timed practice exams',
                   'FAA supplement figures included',
                   'Cancel anytime',
@@ -337,11 +356,14 @@ export default function LandingPage() {
                 ))}
               </ul>
               <Link href="/signup?plan=study_pass" className="btn-gold text-center py-3 rounded-xl font-semibold">
-                Get Study Pass
+                Get Study Pass — $34.99/mo
               </Link>
+              <p className="text-white/35 text-xs text-center mt-3">Most students only need 1–2 months.</p>
             </div>
           </div>
-          <p className="text-center text-[#0A2463]/40 text-xs mt-4">All sales final. Not affiliated with the FAA. Results not guaranteed. See <Link href="/terms" className="underline">Terms</Link>.</p>
+          <p className="text-center text-[#0A2463]/40 text-xs mt-4">
+            All sales final. Not affiliated with the FAA. Results not guaranteed. See <Link href="/terms" className="underline">Terms</Link>.
+          </p>
         </div>
       </section>
 
@@ -367,13 +389,16 @@ export default function LandingPage() {
         </div>
         <div className="max-w-lg mx-auto text-center relative">
           <Plane className="w-10 h-10 text-[#5ab8f5] mx-auto mb-5" />
-          <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4 leading-tight">Your written test<br />is waiting.</h2>
-          <p className="text-white/75 text-lg mb-8">Start with 10 free questions — no credit card, no commitment. You'll know within 5 minutes if TARMAC is right for you.</p>
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4 leading-tight">
+            The ramp is waiting.<br />
+            <span style={{ color: '#FFB627' }}>The test is next.</span>
+          </h2>
+          <p className="text-white/75 text-lg mb-8">Start with 10 free questions. You'll know in 5 minutes if TARMAC is different from anything you've tried.</p>
           <Link href="/signup" className="btn-gold text-lg px-10 py-4 rounded-xl inline-flex items-center gap-2">
             Start Practicing Free
             <ArrowRight className="w-5 h-5" />
           </Link>
-          <p className="mt-4 text-white/50 text-sm">10 free questions. Upgrade anytime. Cancel anytime.</p>
+          <p className="mt-4 text-white/50 text-sm">No credit card. Cancel anytime.</p>
         </div>
       </section>
 
@@ -386,7 +411,7 @@ export default function LandingPage() {
             <span className="text-[#0A2463]/40 text-xs ml-2">© 2025</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[#0A2463]/55 text-sm">
-            <a href="#how" className="hover:text-[#0A2463]/70 transition-colors">How it works</a>
+            <a href="#why" className="hover:text-[#0A2463]/70 transition-colors">Why TARMAC</a>
             <a href="#pricing" className="hover:text-[#0A2463]/70 transition-colors">Pricing</a>
             <a href="mailto:mewing713@gmail.com" className="hover:text-[#0A2463]/70 transition-colors">Support</a>
             <Link href="/terms" className="hover:text-[#0A2463]/70 transition-colors">Terms</Link>
