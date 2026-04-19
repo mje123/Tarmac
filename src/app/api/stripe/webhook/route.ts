@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
                 influencer_id: influencer.id,
                 user_id: userId,
                 promo_code: code,
-                amount_cents: 3499,
+                amount_cents: session.amount_total ?? 3499,
               })
               if (refError) {
                 console.error('influencer_referrals insert failed:', refError.message, { influencer_id: influencer.id, userId, code })
