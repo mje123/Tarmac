@@ -125,7 +125,7 @@ export default function PartnersPage() {
 
               {/* Legal */}
               <div className="rounded-xl p-4 text-xs text-white/50 leading-relaxed space-y-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className="text-white/70 font-semibold text-sm">Partnership Terms — Legion Systems LLC (operating as TARMAC)</p>
+                <p className="text-white/70 font-semibold text-sm">Partnership Terms — TARMAC by Legion Systems LLC</p>
                 <p>By submitting this application, you acknowledge and agree to all of the following:</p>
                 <ul className="list-disc list-inside space-y-1 ml-1">
                   <li>This application does <strong className="text-white/70">not</strong> guarantee acceptance or promo code approval.</li>
@@ -140,17 +140,17 @@ export default function PartnersPage() {
                 </ul>
               </div>
 
-              <div className="flex gap-3 items-start">
+              <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '12px', alignItems: 'start' }}>
                 <input
                   id="inf-terms"
                   type="checkbox"
                   checked={agreed}
                   onChange={e => setAgreed(e.target.checked)}
-                  className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
+                  style={{ width: '16px', height: '16px', marginTop: '2px', accentColor: '#FFB627', flexShrink: 0 }}
                   required
                 />
-                <label htmlFor="inf-terms" className="flex-1 min-w-0 text-xs text-white/60 leading-relaxed cursor-pointer">
-                  I have read and agree to the partnership terms above. I understand this is a commission-only arrangement with no guaranteed earnings, and that Legion Systems LLC (operating as TARMAC) may modify or terminate the program at any time.
+                <label htmlFor="inf-terms" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', cursor: 'pointer', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                  I have read and agree to the partnership terms above. I understand this is a commission-only arrangement with no guaranteed earnings, and that Legion Systems LLC may modify or terminate the program at any time.
                 </label>
               </div>
 

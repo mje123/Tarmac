@@ -37,7 +37,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">1. Acceptance of Terms</h2>
-            <p>TARMAC is a product of <strong>Legion Systems LLC</strong>. By accessing or using TARMAC (the "Service," "we," "us," "our"), creating an account, or completing a purchase, you acknowledge that you have read, understood, and agree to be legally bound by these Terms of Service ("Terms"). If you do not agree to every provision of these Terms, you must immediately stop using the Service. These Terms apply to all users, including free-tier users and paying subscribers.</p>
+            <p>TARMAC is a product of <strong>Legion Systems LLC</strong>, an LLC in good standing. By accessing or using TARMAC (the "Service," "we," "us," "our"), creating an account, or completing a purchase, you acknowledge that you have read, understood, and agree to be legally bound by these Terms of Service ("Terms"). If you do not agree to every provision of these Terms, you must immediately stop using the Service. These Terms apply to all users, including free-tier users and paying subscribers.</p>
           </section>
 
           <section>
