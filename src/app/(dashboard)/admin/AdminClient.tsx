@@ -26,6 +26,7 @@ interface AdminClientProps {
     totalUsers: number
     totalQuestions: number
     totalSessions: number
+    totalAnswered: number
     avgScore: number
     passRate: number
     subCounts: Record<string, number>
@@ -232,7 +233,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               { label: 'Total Users', value: stats.totalUsers, icon: <Users className="w-5 h-5 text-[#3E92CC]" /> },
               { label: 'Total Questions', value: stats.totalQuestions, icon: <BookOpen className="w-5 h-5 text-[#FFB627]" /> },
               { label: 'Paid Subscribers', value: totalPaid, icon: <CreditCard className="w-5 h-5 text-green-400" /> },
-              { label: 'Study Pass', value: stats.subCounts['study_pass'] || 0, icon: <TrendingUp className="w-5 h-5 text-purple-400" /> },
+              { label: 'Questions Answered', value: stats.totalAnswered.toLocaleString(), icon: <Target className="w-5 h-5 text-purple-400" /> },
             ].map(s => (
               <div key={s.label} className="glass-card p-5">
                 <div className="flex items-center gap-2 mb-2">{s.icon}<span className="text-white/50 text-xs">{s.label}</span></div>
