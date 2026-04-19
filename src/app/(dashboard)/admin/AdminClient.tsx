@@ -5,7 +5,7 @@ import { formatDate } from '@/lib/utils'
 import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
-  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb,
+  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift,
 } from 'lucide-react'
 
 interface Influencer {
@@ -237,6 +237,12 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
         alert(data.error || 'Delete failed')
       }
     } finally { setActionLoading(null) }
+  }
+
+  function grantFreeMonth(id: string, currentExpiry: string | null) {
+    const base = currentExpiry && new Date(currentExpiry) > new Date() ? new Date(currentExpiry) : new Date()
+    base.setMonth(base.getMonth() + 1)
+    updateUser(id, { subscription_status: 'study_pass', subscription_expires_at: base.toISOString() })
   }
 
   function grantStudyPass(id: string) {
@@ -511,6 +517,9 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                         <div className="flex gap-1.5">
                           {isLoading ? <Loader2 className="w-4 h-4 text-white/40 animate-spin" /> : (
                             <>
+                              <button onClick={() => grantFreeMonth(u.id as string, u.subscription_expires_at as string | null)} title="Give 1 free month" className="p-1.5 rounded-lg hover:bg-[#FFB627]/10 text-[#FFB627]/50 hover:text-[#FFB627] transition-colors">
+                                <Gift className="w-4 h-4" />
+                              </button>
                               {isFree ? (
                                 <button onClick={() => grantStudyPass(u.id as string)} title="Grant Study Pass (1 year)" className="p-1.5 rounded-lg hover:bg-green-400/10 text-green-400 transition-colors">
                                   <UserCheck className="w-4 h-4" />
