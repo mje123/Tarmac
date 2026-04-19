@@ -17,7 +17,6 @@ import {
   Zap,
   TrendingUp,
   AlertTriangle,
-  Loader2,
 } from 'lucide-react'
 
 // ─── DEMO ────────────────────────────────────────────────────────────────────
@@ -70,148 +69,6 @@ function FAQItem({ q, a }: { q: string; a: string }) {
           : <ChevronDown className="w-4 h-4 text-[#3E92CC] shrink-0 mt-0.5" />}
       </div>
       {open && <p className="mt-3 text-[#0A2463]/80 text-sm leading-relaxed whitespace-pre-line">{a}</p>}
-    </div>
-  )
-}
-
-function InfluencerApplicationForm() {
-  const [form, setForm] = useState({
-    name: '', email: '', instagram_handle: '', tiktok_handle: '', youtube_handle: '',
-    other_platforms: '', requested_code: '', audience_size: '', why_tarmac: '',
-  })
-  const [agreed, setAgreed] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!agreed) return
-    setLoading(true)
-    setError('')
-    try {
-      const res = await fetch('/api/influencer-application', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-      if (res.ok) {
-        setSuccess(true)
-      } else {
-        const d = await res.json()
-        setError(d.error || 'Something went wrong. Try again.')
-      }
-    } catch {
-      setError('Network error. Try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (success) {
-    return (
-      <div className="glass-card p-8 text-center">
-        <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
-          <CheckCircle className="w-7 h-7 text-green-400" />
-        </div>
-        <h3 className="text-xl font-bold text-white mb-2">Application received!</h3>
-        <p className="text-white/60 text-sm">We'll review your application and reach out if it's a fit. Thanks for your interest in partnering with TARMAC.</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="glass-card p-6 md:p-8">
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">Full Name *</label>
-            <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Jane Smith" required />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">Email *</label>
-            <input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="you@example.com" required />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">Instagram Handle</label>
-            <input type="text" value={form.instagram_handle} onChange={e => setForm(p => ({ ...p, instagram_handle: e.target.value }))} placeholder="@yourhandle" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">TikTok Handle</label>
-            <input type="text" value={form.tiktok_handle} onChange={e => setForm(p => ({ ...p, tiktok_handle: e.target.value }))} placeholder="@yourhandle" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">YouTube Channel</label>
-            <input type="text" value={form.youtube_handle} onChange={e => setForm(p => ({ ...p, youtube_handle: e.target.value }))} placeholder="Channel name or URL" />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">Other Platforms</label>
-            <input type="text" value={form.other_platforms} onChange={e => setForm(p => ({ ...p, other_platforms: e.target.value }))} placeholder="Twitter, podcast, blog, etc." />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">Estimated Audience Size</label>
-            <input type="text" value={form.audience_size} onChange={e => setForm(p => ({ ...p, audience_size: e.target.value }))} placeholder="e.g. 5,000 followers" />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-white/70 mb-2">Requested Promo Code *</label>
-          <input type="text" value={form.requested_code} onChange={e => setForm(p => ({ ...p, requested_code: e.target.value.toUpperCase() }))} placeholder="e.g. YOURNAME30" required style={{ fontFamily: 'monospace', letterSpacing: '0.05em' }} />
-          <p className="text-white/35 text-xs mt-1">Your audience gets 30% off their first month with this code.</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-white/70 mb-2">Why do you want to partner with TARMAC?</label>
-          <textarea value={form.why_tarmac} onChange={e => setForm(p => ({ ...p, why_tarmac: e.target.value }))} placeholder="Tell us about your audience, your content, and why you think TARMAC would resonate..." rows={3} />
-        </div>
-
-        {/* Legal Agreement */}
-        <div className="rounded-xl p-4 space-y-2 text-xs text-white/50 leading-relaxed" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <p className="text-white/70 text-sm font-semibold mb-2">Partnership Terms</p>
-          <p>By submitting this application, you acknowledge and agree to all of the following:</p>
-          <ul className="list-disc list-inside space-y-1 ml-1">
-            <li>This application does <strong className="text-white/70">not</strong> guarantee acceptance into the TARMAC Creator Program or approval of your requested promo code.</li>
-            <li>If accepted, you will earn a <strong className="text-white/70">30% commission on the first month's payment only</strong> (~$10.50 per referral). There are no guaranteed earnings, minimums, or ongoing commissions beyond the first month.</li>
-            <li>Commissions are paid via <strong className="text-white/70">Venmo or another mutually agreed platform</strong>. You must contact TARMAC to confirm payment details before any payout is made. TARMAC does not initiate payment automatically.</li>
-            <li>TARMAC reserves the right to <strong className="text-white/70">modify, pause, or terminate the program at any time</strong>, with or without notice, for any reason.</li>
-            <li>You are an <strong className="text-white/70">independent creator</strong>, not an employee, agent, or partner of TARMAC. No employment relationship is created by this program.</li>
-            <li>You agree to <strong className="text-white/70">clearly disclose your partnership with TARMAC</strong> to your audience in every post, video, or story that includes your promo code, in accordance with FTC guidelines.</li>
-            <li>You will not make any claims about TARMAC beyond what is stated on the TARMAC website, and will not guarantee exam results to your audience.</li>
-            <li>All commission disputes are subject to TARMAC's sole discretion. TARMAC's records are the authoritative source for referral counts and payout amounts.</li>
-            <li>TARMAC may deactivate your promo code at any time without liability.</li>
-          </ul>
-        </div>
-
-        <div className="flex gap-3">
-          <input
-            id="inf-terms"
-            type="checkbox"
-            checked={agreed}
-            onChange={e => setAgreed(e.target.checked)}
-            className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
-            required
-          />
-          <label htmlFor="inf-terms" className="text-xs text-white/60 leading-relaxed cursor-pointer">
-            I have read and agree to the partnership terms above. I understand this is a commission-only arrangement with no guaranteed earnings, and that TARMAC may modify or terminate the program at any time.
-          </label>
-        </div>
-
-        {error && (
-          <div className="px-4 py-3 rounded-lg text-sm text-red-300" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
-            {error}
-          </div>
-        )}
-
-        <button type="submit" disabled={loading || !agreed} className="btn-gold w-full justify-center py-3 disabled:opacity-50 disabled:cursor-not-allowed">
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Application'}
-        </button>
-      </form>
     </div>
   )
 }
@@ -545,19 +402,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Influencer Program ── */}
-      <section id="partners" className="py-20 px-6" style={{ background: '#0A2463' }}>
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-10">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#FFB627] mb-3 block">Creator Program</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Partner with TARMAC</h2>
-            <p className="text-white/60 text-base">You share TARMAC with your audience — they get 30% off, you earn 30% commission on their first month. That's roughly $10.50 per referral. No guarantees, just real commission on real signups.</p>
-          </div>
-
-          <InfluencerApplicationForm />
-        </div>
-      </section>
-
       {/* ── Footer ── */}
       <footer className="py-8 px-6" style={{ background: '#ffffff', borderTop: '1px solid rgba(10,36,99,0.08)' }}>
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -572,6 +416,7 @@ export default function LandingPage() {
             <a href="mailto:mewing713@gmail.com" className="hover:text-[#0A2463]/70 transition-colors">Support</a>
             <Link href="/terms" className="hover:text-[#0A2463]/70 transition-colors">Terms</Link>
             <Link href="/privacy" className="hover:text-[#0A2463]/70 transition-colors">Privacy</Link>
+            <Link href="/partners" className="hover:text-[#0A2463]/70 transition-colors">Creator Program</Link>
             <a href="https://www.instagram.com/tarmac_writtentestprep/" target="_blank" rel="noopener noreferrer" className="hover:text-[#E1306C] transition-colors flex items-center gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
               Instagram
