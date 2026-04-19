@@ -107,7 +107,7 @@ function SignupForm() {
             </div>
           </div>
 
-          <label className="flex items-start gap-3 cursor-pointer">
+          <label className="flex items-start gap-3 cursor-pointer w-full overflow-hidden">
             <input
               type="checkbox"
               checked={agreedToTerms}
@@ -115,7 +115,7 @@ function SignupForm() {
               className="mt-1 shrink-0 w-4 h-4 accent-[#FFB627]"
               required
             />
-            <span className="text-xs text-white/60 leading-relaxed min-w-0 break-words">
+            <span className="text-xs text-white/60 leading-relaxed flex-1 min-w-0 break-words">
               I have read and agree to the{' '}
               <Link href="/terms" target="_blank" className="text-[#3E92CC] underline">Terms of Service</Link>
               {' '}and{' '}
