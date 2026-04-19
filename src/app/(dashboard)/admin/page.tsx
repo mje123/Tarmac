@@ -29,10 +29,15 @@ export default async function AdminPage() {
     supabase.from('users').select('*').order('created_at', { ascending: false }).limit(20),
     supabase.from('test_sessions').select('*, users(email, full_name)').order('started_at', { ascending: false }).limit(10),
     supabase.from('test_sessions').select('score, total_questions').eq('session_type', 'real_exam').not('score', 'is', null).limit(500),
-    supabase.from('test_sessions').select('total_questions').not('total_questions', 'is', null),
+    supabase.from('test_sessions').select('user_id, total_questions').not('total_questions', 'is', null),
   ])
 
   const totalAnswered = (allSessionTotals || []).reduce((sum, s) => sum + (s.total_questions || 0), 0)
+
+  const answeredPerUser = (allSessionTotals || []).reduce((acc: Record<string, number>, s) => {
+    if (s.user_id) acc[s.user_id] = (acc[s.user_id] || 0) + (s.total_questions || 0)
+    return acc
+  }, {})
 
   const subCounts = (subscriptions || []).reduce((acc: Record<string, number>, u) => {
     acc[u.subscription_status] = (acc[u.subscription_status] || 0) + 1
@@ -64,6 +69,7 @@ export default async function AdminPage() {
       }}
       recentUsers={recentUsers || []}
       recentSessions={recentSessions || []}
+      answeredPerUser={answeredPerUser}
     />
   )
 }

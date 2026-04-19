@@ -34,6 +34,7 @@ interface AdminClientProps {
   }
   recentUsers: Record<string, unknown>[]
   recentSessions: Record<string, unknown>[]
+  answeredPerUser: Record<string, number>
 }
 
 const SUB_COLORS: Record<string, string> = {
@@ -41,7 +42,7 @@ const SUB_COLORS: Record<string, string> = {
   free: 'text-white/40 bg-white/5',
 }
 
-export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions }: AdminClientProps) {
+export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
   const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications'>('overview')
   const [users, setUsers] = useState(initialUsers)
   const [influencers, setInfluencers] = useState<Influencer[]>([])
@@ -259,14 +260,17 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               <h3 className="font-semibold text-white mb-4">Recent Users</h3>
               <div className="space-y-3">
                 {users.slice(0, 8).map((u: Record<string, unknown>) => (
-                  <div key={u.id as string} className="flex items-center justify-between">
-                    <div>
+                  <div key={u.id as string} className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <div className="text-sm font-medium text-white">{u.full_name as string || u.email as string}</div>
                       <div className="text-xs text-white/40">{formatDate(u.created_at as string)}</div>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || 'text-white/40 bg-white/5'}`}>
-                      {u.subscription_status as string}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-white/40">{(answeredPerUser[u.id as string] || 0).toLocaleString()} Qs</span>
+                      <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || 'text-white/40 bg-white/5'}`}>
+                        {u.subscription_status as string}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -376,6 +380,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                 <tr className="text-white/40 text-left">
                   <th className="pb-3 font-medium">Name / Email</th>
                   <th className="pb-3 font-medium">Plan</th>
+                  <th className="pb-3 font-medium">Qs Answered</th>
                   <th className="pb-3 font-medium">Joined</th>
                   <th className="pb-3 font-medium">Expires</th>
                   <th className="pb-3 font-medium">Actions</th>
@@ -400,6 +405,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                           {u.subscription_status as string}
                         </span>
                       </td>
+                      <td className="py-3 text-white/60">{(answeredPerUser[u.id as string] || 0).toLocaleString()}</td>
                       <td className="py-3 text-white/60">{formatDate(u.created_at as string)}</td>
                       <td className="py-3 text-white/40">{u.subscription_expires_at ? formatDate(u.subscription_expires_at as string) : '—'}</td>
                       <td className="py-3">
