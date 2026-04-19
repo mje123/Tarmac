@@ -64,7 +64,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [applicationsLoaded, setApplicationsLoaded] = useState(false)
   const [emailHistory, setEmailHistory] = useState<Record<string, unknown>[]>([])
   const [emailHistoryLoaded, setEmailHistoryLoaded] = useState(false)
-  const [emailForm, setEmailForm] = useState({ subject: '', body: '', recipient_group: 'all' })
+  const [emailForm, setEmailForm] = useState({ subject: '', body: '', recipient_group: 'all', specific_email: '' })
   const [emailSending, setEmailSending] = useState(false)
   const [emailResult, setEmailResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
 
@@ -111,7 +111,12 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
       const res = await fetch('/api/admin/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailForm),
+        body: JSON.stringify({
+          subject: emailForm.subject,
+          body: emailForm.body,
+          recipient_group: emailForm.recipient_group,
+          specific_email: emailForm.specific_email,
+        }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -716,10 +721,11 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs text-white/50 mb-1">Send To</label>
-                  <select value={emailForm.recipient_group} onChange={e => setEmailForm(p => ({ ...p, recipient_group: e.target.value }))}>
+                  <select value={emailForm.recipient_group} onChange={e => setEmailForm(p => ({ ...p, recipient_group: e.target.value, specific_email: '' }))}>
                     <option value="all">All Users</option>
                     <option value="paid">Paid Subscribers Only</option>
                     <option value="free">Free Users Only</option>
+                    <option value="specific">Specific User</option>
                   </select>
                 </div>
                 <div>
@@ -727,6 +733,18 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                   <input type="text" value={emailForm.subject} onChange={e => setEmailForm(p => ({ ...p, subject: e.target.value }))} placeholder="Your weekly TARMAC update" required />
                 </div>
               </div>
+              {emailForm.recipient_group === 'specific' && (
+                <div>
+                  <label className="block text-xs text-white/50 mb-1">Recipient Email *</label>
+                  <input
+                    type="email"
+                    value={emailForm.specific_email}
+                    onChange={e => setEmailForm(p => ({ ...p, specific_email: e.target.value }))}
+                    placeholder="user@example.com"
+                    required={emailForm.recipient_group === 'specific'}
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-xs text-white/50 mb-1">Body *</label>
                 <textarea

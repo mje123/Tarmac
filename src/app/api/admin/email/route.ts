@@ -31,19 +31,24 @@ export async function POST(request: NextRequest) {
   const { error } = await requireAdmin()
   if (error) return error
 
-  const { subject, body, recipient_group } = await request.json()
+  const { subject, body, recipient_group, specific_email } = await request.json()
   if (!subject || !body || !recipient_group) {
     return NextResponse.json({ error: 'subject, body, and recipient_group required' }, { status: 400 })
   }
 
   const admin = createAdminClient()
 
-  let query = admin.from('users').select('email')
-  if (recipient_group === 'paid') query = query.neq('subscription_status', 'free')
-  if (recipient_group === 'free') query = query.eq('subscription_status', 'free')
-
-  const { data: users } = await query
-  const emails = (users || []).map(u => u.email).filter(Boolean) as string[]
+  let emails: string[] = []
+  if (recipient_group === 'specific') {
+    if (!specific_email) return NextResponse.json({ error: 'specific_email required' }, { status: 400 })
+    emails = [specific_email]
+  } else {
+    let query = admin.from('users').select('email')
+    if (recipient_group === 'paid') query = query.neq('subscription_status', 'free')
+    if (recipient_group === 'free') query = query.eq('subscription_status', 'free')
+    const { data: users } = await query
+    emails = (users || []).map(u => u.email).filter(Boolean) as string[]
+  }
 
   if (emails.length === 0) {
     return NextResponse.json({ error: 'No recipients found' }, { status: 400 })
