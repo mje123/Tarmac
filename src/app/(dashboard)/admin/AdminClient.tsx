@@ -591,6 +591,11 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                       <p className="text-white/80 text-sm leading-relaxed">{app.why_tarmac as string}</p>
                     </div>
                   )}
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                    <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
+                    <span className="text-xs text-green-400 font-medium">Agreed to partnership terms & legal agreement at time of submission</span>
+                  </div>
                 </div>
               ))}
             </div>
