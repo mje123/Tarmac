@@ -15,9 +15,11 @@ export function formatTime(seconds: number): string {
 }
 
 export function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric'
-  })
+  return new Date(dateString).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+    timeZone: 'America/Chicago',
+  }) + ' CT'
 }
 
 export function getSubscriptionLabel(status: SubscriptionStatus): string {
