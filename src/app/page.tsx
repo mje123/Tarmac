@@ -161,12 +161,12 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-[1.1] mb-5" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
-            Pass your FAA written.<br />
-            <span style={{ color: '#5ab8f5' }}>First try.</span>
+            Stop guessing.<br />
+            <span style={{ color: '#5ab8f5' }}>Start understanding.</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-white/85 max-w-xl mx-auto mb-8 leading-relaxed">
-            Practice questions + AI that explains exactly <em>why</em> every answer is right or wrong — like having a patient CFI available 24/7.
+            Most student pilots memorize answers and pray. TARMAC teaches you the <em>why</em> — so you walk into that test room knowing aviation, not just answer letters.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5 w-full">
@@ -260,7 +260,7 @@ export default function LandingPage() {
       {/* ── Live Demo ── */}
       <section id="demo" className="py-20 px-6 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <Image src="/cockpit.jpeg" alt="" fill className="object-cover object-top opacity-90" />
+          <Image src="/aerial-view.jpeg" alt="" fill className="object-cover object-center opacity-90" />
           <div className="absolute inset-0" style={{ background: 'rgba(10,36,99,0.75)' }} />
         </div>
         <div className="max-w-2xl mx-auto relative">
