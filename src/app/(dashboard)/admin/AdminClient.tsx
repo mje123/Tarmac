@@ -5,7 +5,7 @@ import { formatDate } from '@/lib/utils'
 import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
-  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug,
+  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send,
 } from 'lucide-react'
 
 interface Influencer {
@@ -43,7 +43,7 @@ const SUB_COLORS: Record<string, string> = {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email'>('overview')
   const [users, setUsers] = useState(initialUsers)
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [influencersLoaded, setInfluencersLoaded] = useState(false)
@@ -62,6 +62,11 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [bugLoading, setBugLoading] = useState<string | null>(null)
   const [applications, setApplications] = useState<Record<string, unknown>[]>([])
   const [applicationsLoaded, setApplicationsLoaded] = useState(false)
+  const [emailHistory, setEmailHistory] = useState<Record<string, unknown>[]>([])
+  const [emailHistoryLoaded, setEmailHistoryLoaded] = useState(false)
+  const [emailForm, setEmailForm] = useState({ subject: '', body: '', recipient_group: 'all' })
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailResult, setEmailResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
 
   const totalPaid = Object.values(stats.subCounts).reduce((a, b) => a + b, 0)
   const freeUsers = stats.totalUsers - totalPaid
@@ -90,6 +95,42 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     setApplicationsLoaded(true)
   }
 
+  async function loadEmailHistory() {
+    if (emailHistoryLoaded) return
+    const res = await fetch('/api/admin/email')
+    const data = await res.json()
+    setEmailHistory(data)
+    setEmailHistoryLoaded(true)
+  }
+
+  async function sendEmail(e: React.FormEvent) {
+    e.preventDefault()
+    setEmailSending(true)
+    setEmailResult(null)
+    try {
+      const res = await fetch('/api/admin/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailForm),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setEmailResult(data)
+        setEmailForm(p => ({ ...p, subject: '', body: '' }))
+        setEmailHistory(prev => [{
+          subject: emailForm.subject, body: emailForm.body,
+          recipient_group: emailForm.recipient_group,
+          sent_count: data.sent, failed_count: data.failed,
+          recipient_count: data.total, sent_at: new Date().toISOString(),
+        }, ...prev])
+      } else {
+        alert(data.error || 'Send failed')
+      }
+    } finally {
+      setEmailSending(false)
+    }
+  }
+
   async function updateBugStatus(id: string, status: string) {
     setBugLoading(id)
     try {
@@ -114,6 +155,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     if (t === 'influencers') loadInfluencers()
     if (t === 'bugs') loadBugs()
     if (t === 'applications') loadApplications()
+    if (t === 'email') loadEmailHistory()
   }
 
   async function saveQuestion(e: React.FormEvent) {
@@ -208,11 +250,12 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
-            {t === 'applications' ? 'Applications' : t}
+            {t === 'email' && <Mail className="w-3.5 h-3.5" />}
+            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t}
             {t === 'bugs' && bugs.filter(b => b.status === 'open').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white">
                 {bugs.filter(b => b.status === 'open').length}
@@ -660,6 +703,81 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               ))}
             </div>
           )}
+        </div>
+      )}
+      {tab === 'email' && (
+        <div className="space-y-6">
+          {/* Compose */}
+          <div className="glass-card p-6">
+            <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+              <Send className="w-4 h-4 text-[#3E92CC]" /> Compose Email
+            </h3>
+            <form onSubmit={sendEmail} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-white/50 mb-1">Send To</label>
+                  <select value={emailForm.recipient_group} onChange={e => setEmailForm(p => ({ ...p, recipient_group: e.target.value }))}>
+                    <option value="all">All Users</option>
+                    <option value="paid">Paid Subscribers Only</option>
+                    <option value="free">Free Users Only</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-white/50 mb-1">Subject *</label>
+                  <input type="text" value={emailForm.subject} onChange={e => setEmailForm(p => ({ ...p, subject: e.target.value }))} placeholder="Your weekly TARMAC update" required />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-white/50 mb-1">Body *</label>
+                <textarea
+                  value={emailForm.body}
+                  onChange={e => setEmailForm(p => ({ ...p, body: e.target.value }))}
+                  placeholder={'Write your message here.\n\nSeparate paragraphs with a blank line.\n\nKeep it focused — one clear topic per email performs best.'}
+                  rows={10}
+                  required
+                />
+                <p className="text-white/25 text-xs mt-1">Plain text — separate paragraphs with a blank line. Automatically wrapped in TARMAC branded template.</p>
+              </div>
+              {emailResult && (
+                <div className="px-4 py-3 rounded-lg text-sm" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                  <span className="text-green-400 font-semibold">Sent!</span>
+                  <span className="text-white/60 ml-2">{emailResult.sent} delivered · {emailResult.failed} failed · {emailResult.total} total recipients</span>
+                </div>
+              )}
+              <button type="submit" disabled={emailSending} className="btn-primary py-2.5 px-6 text-sm">
+                {emailSending ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</> : <><Send className="w-4 h-4" /> Send Email</>}
+              </button>
+            </form>
+          </div>
+
+          {/* History */}
+          <div className="glass-card p-6">
+            <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+              <Mail className="w-4 h-4 text-white/40" /> Sent History
+            </h3>
+            {!emailHistoryLoaded ? (
+              <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 text-white/30 animate-spin" /></div>
+            ) : emailHistory.length === 0 ? (
+              <p className="text-white/30 text-sm">No emails sent yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {emailHistory.map((e, i) => (
+                  <div key={i} className="flex items-start justify-between gap-4 py-3 border-b border-white/5 last:border-0">
+                    <div className="min-w-0">
+                      <div className="font-medium text-white text-sm">{e.subject as string}</div>
+                      <div className="text-xs text-white/40 mt-0.5">
+                        To: <span className="capitalize">{e.recipient_group as string}</span> · {formatDate(e.sent_at as string)}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <span className="text-xs text-green-400 font-semibold">{e.sent_count as number} sent</span>
+                      {(e.failed_count as number) > 0 && <span className="text-xs text-red-400 ml-2">{e.failed_count as number} failed</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
