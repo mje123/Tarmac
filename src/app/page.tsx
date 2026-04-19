@@ -37,7 +37,7 @@ const FAQ_ITEMS = [
     a: 'No — and that\'s intentional. The FAA changes question wording. If you memorize exact questions, you\'re gambling. TARMAC teaches you the underlying concepts across all 9 ACS knowledge areas so you can answer any version of a question, even one you\'ve never seen.',
   },
   {
-    q: 'How is this different from King Schools or Sporty\'s?',
+    q: 'How is this different from other test prep tools?',
     a: 'Traditional test prep gives you a question, tells you the answer, and moves on. TARMAC gives you an AI that explains exactly WHY the answer is correct, what makes the other choices wrong, and lets you ask follow-up questions until you actually understand. It\'s the difference between memorizing and learning.',
   },
   {
@@ -196,6 +196,14 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ── Ground school disclaimer ── */}
+      <section className="py-4 px-6 text-center" style={{ background: '#fffbea', borderBottom: '1px solid rgba(255,182,39,0.25)' }}>
+        <p className="text-sm text-[#0A2463]/70 max-w-2xl mx-auto">
+          <strong className="text-[#0A2463]">TARMAC supplements ground school — it doesn't replace it.</strong>{' '}
+          You still need a CFI and an endorsement to take the FAA written. Use TARMAC alongside your training, not instead of it.
+        </p>
       </section>
 
       {/* ── How it works ── */}
