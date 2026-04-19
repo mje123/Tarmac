@@ -225,6 +225,20 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     } finally { setActionLoading(null) }
   }
 
+  async function deleteUser(id: string, name: string) {
+    if (!confirm(`Delete ${name || 'this user'}? This is permanent and cannot be undone.`)) return
+    setActionLoading(id)
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== id))
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Delete failed')
+      }
+    } finally { setActionLoading(null) }
+  }
+
   function grantStudyPass(id: string) {
     const expires = new Date()
     expires.setFullYear(expires.getFullYear() + 1)
@@ -508,6 +522,9 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                               )}
                               <button onClick={() => toggleAdmin(u.id as string, isAdmin)} title={isAdmin ? 'Remove admin' : 'Make admin'} className={`p-1.5 rounded-lg transition-colors ${isAdmin ? 'text-[#FFB627] hover:bg-[#FFB627]/10' : 'text-white/30 hover:text-[#FFB627] hover:bg-[#FFB627]/10'}`}>
                                 <ShieldCheck className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => deleteUser(u.id as string, u.full_name as string)} title="Delete user" className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-500/40 hover:text-red-500 transition-colors">
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </>
                           )}
