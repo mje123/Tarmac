@@ -40,7 +40,7 @@ export default function EmailPreferencesToggle({ userId, marketingEmails }: { us
       >
         {loading
           ? <Loader2 className="w-3 h-3 text-white animate-spin absolute top-1.5 left-1.5" />
-          : <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />}
+          : <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200" style={{ left: enabled ? 'calc(100% - 22px)' : '2px' }} />}
       </button>
     </div>
   )
