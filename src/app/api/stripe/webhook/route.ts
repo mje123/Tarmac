@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-03-25.dahlia' })
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   try {
     switch (event.type) {
@@ -57,12 +57,19 @@ export async function POST(request: NextRequest) {
               .eq('promo_code', code)
               .single()
             if (influencer) {
-              await supabase.from('influencer_referrals').insert({
+              const { error: refError } = await supabase.from('influencer_referrals').insert({
                 influencer_id: influencer.id,
                 user_id: userId,
                 promo_code: code,
                 amount_cents: 3499,
               })
+              if (refError) {
+                console.error('influencer_referrals insert failed:', refError.message, { influencer_id: influencer.id, userId, code })
+              } else {
+                console.log('Influencer referral recorded:', { code, influencer_id: influencer.id, userId })
+              }
+            } else {
+              console.log('Promo code used but no matching influencer found:', code)
             }
           }
         }
