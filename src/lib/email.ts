@@ -23,15 +23,15 @@ function wrapHtml(subject: string, body: string): string {
         <!-- Hero banner -->
         <tr>
           <td style="border-radius:16px 16px 0 0;overflow:hidden;padding:0;">
-            <div style="position:relative;background:linear-gradient(135deg,#051237 0%,#0A2463 55%,#0d3080 100%);padding:0;">
-              <img src="https://tarmac.study/aerial-view.jpeg" alt="" width="600"
-                style="width:100%;max-width:600px;height:200px;object-fit:cover;display:block;opacity:0.35;border-radius:16px 16px 0 0;" />
-              <div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">
-                <img src="https://tarmac.study/logo.png" alt="TARMAC" width="48" height="48"
-                  style="width:48px;height:48px;margin-bottom:12px;" />
-                <div style="font-size:28px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;line-height:1;">TARMAC</div>
-                <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.55);letter-spacing:3px;text-transform:uppercase;margin-top:6px;">FAA Written Test Prep</div>
-              </div>
+            <!-- Formation photo full bleed -->
+            <img src="https://tarmac.study/formation.png" alt="Formation flight" width="600"
+              style="width:100%;max-width:600px;height:240px;object-fit:cover;object-position:center;display:block;border-radius:16px 16px 0 0;" />
+            <!-- Logo bar over photo -->
+            <div style="background:linear-gradient(180deg,rgba(5,18,55,0.0) 0%,rgba(5,18,55,0.92) 100%);margin-top:-80px;padding:20px 36px 28px;text-align:center;">
+              <img src="https://tarmac.study/logo-white.png" alt="TARMAC" width="44" height="44"
+                style="width:44px;height:44px;display:inline-block;vertical-align:middle;margin-right:10px;" />
+              <span style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;vertical-align:middle;">TARMAC</span>
+              <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;margin-top:4px;">FAA Written Test Prep</div>
             </div>
           </td>
         </tr>
