@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/weekly-stats",
+      "schedule": "0 18 * * 5"
+    },
+    {
+      "path": "/api/cron/upgrade-reminder",
+      "schedule": "0 18 * * 1"
+    }
+  ]
+}

@@ -19,6 +19,7 @@ function SignupForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [marketingEmails, setMarketingEmails] = useState(true)
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -31,7 +32,7 @@ function SignupForm() {
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, marketing_emails: marketingEmails },
       },
     })
 
@@ -39,6 +40,10 @@ function SignupForm() {
       setError(error.message)
       setLoading(false)
       return
+    }
+
+    if (!marketingEmails && data.user) {
+      await supabase.from('users').update({ marketing_emails: false }).eq('id', data.user.id)
     }
 
     if (data.session) {
@@ -135,6 +140,19 @@ function SignupForm() {
               {' '}and{' '}
               <Link href="/privacy" target="_blank" className="text-[#3E92CC] underline">Privacy Policy</Link>.
               I understand that <strong className="text-white/80">all sales are final and non-refundable</strong>, and that TARMAC does not guarantee passing any FAA exam.
+            </label>
+          </div>
+
+          <div className="flex gap-3">
+            <input
+              id="marketing"
+              type="checkbox"
+              checked={marketingEmails}
+              onChange={e => setMarketingEmails(e.target.checked)}
+              className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627]"
+            />
+            <label htmlFor="marketing" className="text-xs text-white/60 leading-relaxed cursor-pointer">
+              Send me weekly progress updates and study tips. Unsubscribe anytime.
             </label>
           </div>
 

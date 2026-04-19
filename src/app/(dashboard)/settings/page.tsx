@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { formatDate, getSubscriptionLabel } from '@/lib/utils'
 import { User } from '@/types'
 import SettingsClient from '@/components/ui/SettingsClient'
+import EmailPreferencesToggle from '@/components/ui/EmailPreferencesToggle'
 import { Settings, CreditCard, User as UserIcon, Shield } from 'lucide-react'
 
 export default async function SettingsPage() {
@@ -88,6 +89,14 @@ export default async function SettingsPage() {
             <SettingsClient hasBilling={hasBilling} />
           )}
         </div>
+      </div>
+
+      {/* Email preferences */}
+      <div className="glass-card p-6 mb-4">
+        <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Settings className="w-4 h-4 text-white/40" /> Email Preferences
+        </h2>
+        <EmailPreferencesToggle userId={user.id} marketingEmails={(userProfile as Record<string, unknown>)?.marketing_emails !== false} />
       </div>
 
       {/* Admin badge */}

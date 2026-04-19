@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 const FROM = 'TARMAC <noreply@tarmac.study>'
 
-function wrapHtml(subject: string, body: string): string {
+function wrapHtml(subject: string, body: string, userId?: string): string {
   const year = new Date().getFullYear()
   return `<!DOCTYPE html>
 <html lang="en">
@@ -73,13 +73,16 @@ function wrapHtml(subject: string, body: string): string {
             <p style="margin:0 0 8px;font-size:12px;color:rgba(255,255,255,0.5);">
               © ${year} Legion Systems LLC &nbsp;·&nbsp; Not affiliated with the FAA
             </p>
-            <p style="margin:0;font-size:12px;">
+            <p style="margin:0 0 10px;font-size:12px;">
               <a href="https://tarmac.study" style="color:#FFB627;text-decoration:none;font-weight:600;">tarmac.study</a>
               &nbsp;&nbsp;·&nbsp;&nbsp;
               <a href="mailto:mewing713@gmail.com" style="color:rgba(255,255,255,0.45);text-decoration:none;">Support</a>
               &nbsp;&nbsp;·&nbsp;&nbsp;
               <a href="https://www.instagram.com/tarmac_writtentestprep/" style="color:rgba(255,255,255,0.45);text-decoration:none;">Instagram</a>
             </p>
+            ${userId ? `<p style="margin:0;font-size:10px;color:rgba(255,255,255,0.25);">
+              <a href="https://tarmac.study/api/unsubscribe?uid=${userId}" style="color:rgba(255,255,255,0.3);text-decoration:underline;">Unsubscribe from emails</a>
+            </p>` : ''}
           </td>
         </tr>
 
@@ -97,7 +100,7 @@ export async function sendBroadcast({
   subject,
   bodyHtml,
 }: {
-  to: string[]
+  to: { email: string; userId?: string }[]
   subject: string
   bodyHtml: string
 }): Promise<{ sent: number; failed: number }> {
@@ -108,12 +111,12 @@ export async function sendBroadcast({
   for (let i = 0; i < to.length; i += BATCH) {
     const batch = to.slice(i, i + BATCH)
     const results = await Promise.allSettled(
-      batch.map(email =>
+      batch.map(({ email, userId }) =>
         resend.emails.send({
           from: FROM,
           to: email,
           subject,
-          html: wrapHtml(subject, bodyHtml),
+          html: wrapHtml(subject, bodyHtml, userId),
         })
       )
     )
@@ -125,10 +128,12 @@ export async function sendBroadcast({
 
 export async function sendTransactional({
   to,
+  userId,
   subject,
   bodyHtml,
 }: {
   to: string
+  userId?: string
   subject: string
   bodyHtml: string
 }) {
@@ -136,6 +141,6 @@ export async function sendTransactional({
     from: FROM,
     to,
     subject,
-    html: wrapHtml(subject, bodyHtml),
+    html: wrapHtml(subject, bodyHtml, userId),
   })
 }

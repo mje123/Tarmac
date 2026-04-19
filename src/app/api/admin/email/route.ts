@@ -38,19 +38,19 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient()
 
-  let emails: string[] = []
+  let recipients: { email: string; userId?: string }[] = []
   if (recipient_group === 'specific') {
     if (!specific_email) return NextResponse.json({ error: 'specific_email required' }, { status: 400 })
-    emails = [specific_email]
+    recipients = [{ email: specific_email }]
   } else {
-    let query = admin.from('users').select('email')
+    let query = admin.from('users').select('id, email').eq('marketing_emails', true)
     if (recipient_group === 'paid') query = query.neq('subscription_status', 'free')
     if (recipient_group === 'free') query = query.eq('subscription_status', 'free')
     const { data: users } = await query
-    emails = (users || []).map(u => u.email).filter(Boolean) as string[]
+    recipients = (users || []).filter(u => u.email).map(u => ({ email: u.email, userId: u.id }))
   }
 
-  if (emails.length === 0) {
+  if (recipients.length === 0) {
     return NextResponse.json({ error: 'No recipients found' }, { status: 400 })
   }
 
@@ -59,16 +59,16 @@ export async function POST(request: NextRequest) {
     .map((p: string) => `<p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#1e3a6e;">${p.replace(/\n/g, '<br/>')}</p>`)
     .join('')
 
-  const { sent, failed } = await sendBroadcast({ to: emails, subject, bodyHtml })
+  const { sent, failed } = await sendBroadcast({ to: recipients, subject, bodyHtml })
 
   await admin.from('email_broadcasts').insert({
     subject,
     body,
     recipient_group,
-    recipient_count: emails.length,
+    recipient_count: recipients.length,
     sent_count: sent,
     failed_count: failed,
   })
 
-  return NextResponse.json({ sent, failed, total: emails.length })
+  return NextResponse.json({ sent, failed, total: recipients.length })
 }
