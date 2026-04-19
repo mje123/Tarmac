@@ -271,7 +271,7 @@ export default function PracticePage() {
         <div className="glass-card p-10 max-w-md text-center animate-fade-in">
           <Plane className="w-16 h-16 text-[#FFB627] mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">Free trial complete</h2>
-          <p className="text-white/60 mb-6">You've used your 20 free questions. Upgrade to keep learning.</p>
+          <p className="text-white/60 mb-6">You've used your 10 free questions. Upgrade to keep learning.</p>
           <a href="/#pricing" className="btn-gold inline-flex justify-center px-8 py-3">View Plans</a>
         </div>
       </div>
