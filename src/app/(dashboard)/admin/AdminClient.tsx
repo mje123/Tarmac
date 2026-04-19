@@ -41,7 +41,7 @@ const SUB_COLORS: Record<string, string> = {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications'>('overview')
   const [users, setUsers] = useState(initialUsers)
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [influencersLoaded, setInfluencersLoaded] = useState(false)
@@ -58,6 +58,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [bugs, setBugs] = useState<Record<string, unknown>[]>([])
   const [bugsLoaded, setBugsLoaded] = useState(false)
   const [bugLoading, setBugLoading] = useState<string | null>(null)
+  const [applications, setApplications] = useState<Record<string, unknown>[]>([])
+  const [applicationsLoaded, setApplicationsLoaded] = useState(false)
 
   const totalPaid = Object.values(stats.subCounts).reduce((a, b) => a + b, 0)
   const freeUsers = stats.totalUsers - totalPaid
@@ -76,6 +78,14 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     const data = await res.json()
     setBugs(data)
     setBugsLoaded(true)
+  }
+
+  async function loadApplications() {
+    if (applicationsLoaded) return
+    const res = await fetch('/api/admin/influencer-applications')
+    const data = await res.json()
+    setApplications(data)
+    setApplicationsLoaded(true)
   }
 
   async function updateBugStatus(id: string, status: string) {
@@ -101,6 +111,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     setTab(t)
     if (t === 'influencers') loadInfluencers()
     if (t === 'bugs') loadBugs()
+    if (t === 'applications') loadApplications()
   }
 
   async function saveQuestion(e: React.FormEvent) {
@@ -195,14 +206,19 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
-            {t}
+            {t === 'applications' ? 'Applications' : t}
             {t === 'bugs' && bugs.filter(b => b.status === 'open').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white">
                 {bugs.filter(b => b.status === 'open').length}
+              </span>
+            )}
+            {t === 'applications' && applicationsLoaded && applications.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FFB627] text-black">
+                {applications.length}
               </span>
             )}
           </button>
@@ -524,6 +540,64 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
           </div>
         </div>
       )}
+      {tab === 'applications' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-white">Influencer Applications</h2>
+            <span className="text-xs text-white/40">{applications.length} total</span>
+          </div>
+          {!applicationsLoaded ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-white/30 animate-spin" /></div>
+          ) : applications.length === 0 ? (
+            <div className="glass-card p-10 text-center text-white/30">No applications yet.</div>
+          ) : (
+            <div className="space-y-4">
+              {applications.map(app => (
+                <div key={app.id as string} className="glass-card p-5 space-y-3">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                      <div className="font-semibold text-white text-base">{app.name as string}</div>
+                      <a href={`mailto:${app.email as string}`} className="text-[#3E92CC] text-sm hover:underline">{app.email as string}</a>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs px-2.5 py-1 rounded-md font-mono font-bold text-[#FFB627] bg-[#FFB627]/10">
+                        Requested: {app.requested_code as string}
+                      </span>
+                      <span className="text-xs text-white/30">{formatDate(app.created_at as string)}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    {(app.instagram_handle as string) && (
+                      <div><span className="text-white/40 text-xs block">Instagram</span><span className="text-white">@{app.instagram_handle as string}</span></div>
+                    )}
+                    {(app.tiktok_handle as string) && (
+                      <div><span className="text-white/40 text-xs block">TikTok</span><span className="text-white">@{app.tiktok_handle as string}</span></div>
+                    )}
+                    {(app.youtube_handle as string) && (
+                      <div><span className="text-white/40 text-xs block">YouTube</span><span className="text-white">{app.youtube_handle as string}</span></div>
+                    )}
+                    {(app.audience_size as string) && (
+                      <div><span className="text-white/40 text-xs block">Audience Size</span><span className="text-white">{app.audience_size as string}</span></div>
+                    )}
+                    {(app.other_platforms as string) && (
+                      <div className="md:col-span-2"><span className="text-white/40 text-xs block">Other Platforms</span><span className="text-white">{app.other_platforms as string}</span></div>
+                    )}
+                  </div>
+
+                  {(app.why_tarmac as string) && (
+                    <div>
+                      <span className="text-white/40 text-xs block mb-1">Why TARMAC?</span>
+                      <p className="text-white/80 text-sm leading-relaxed">{app.why_tarmac as string}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {tab === 'bugs' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-2">
