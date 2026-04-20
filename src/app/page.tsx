@@ -291,16 +291,23 @@ export default function LandingPage() {
       </section>
 
       {/* ── The one difference ── */}
-      <section style={{ background: '#060e1f' }} className="py-20 px-6">
+      <section style={{ background: '#060e1f' }} className="py-24 px-6">
         <FadeUp>
           <div className="max-w-3xl mx-auto text-center">
-            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#FFB627' }}>The TARMAC difference</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-snug mb-5">
-              Every other practice test tells you what's right.<br />
-              <span style={{ color: '#5ab8f5' }}>TARMAC tells you WHY — and won't stop until you get it.</span>
+            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: '#FFB627' }}>The TARMAC difference</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-snug mb-6">
+              Most practice tools expose you to questions.
+              <br />
+              <span style={{ color: '#5ab8f5' }}>TARMAC makes sure you&apos;re ready for all of them.</span>
             </h2>
-            <p className="text-base leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              That one difference is why students who use TARMAC walk into the exam room with genuine confidence — not crossed fingers.
+            <p className="text-base leading-relaxed max-w-2xl mx-auto mb-5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              Random question banks don&apos;t know what you don&apos;t know. TARMAC does. It tracks your accuracy across every ACS knowledge area, finds exactly where your gaps are, and routes you back to those concepts — repeatedly — until they stop being gaps.
+            </p>
+            <p className="text-base leading-relaxed max-w-2xl mx-auto mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              By the time you sit for the FAA written, you&apos;ve already encountered every concept that can appear on it — multiple times, from multiple angles, in the areas where you were weakest. The exam doesn&apos;t feel new. It feels familiar. That&apos;s not luck. That&apos;s what a structured training system produces.
+            </p>
+            <p className="text-sm font-semibold tracking-wide" style={{ color: '#FFB627' }}>
+              Walk in knowing you&apos;ve already beaten the hard parts.
             </p>
           </div>
         </FadeUp>
