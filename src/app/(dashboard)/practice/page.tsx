@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
@@ -84,6 +84,7 @@ export default function PracticePage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [askedIds, setAskedIds] = useState<string[]>([])
   const [freeQuestionsLeft, setFreeQuestionsLeft] = useState<number | null>(null)
+  const freeQuestionsLeftRef = useRef<number | null>(null)
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [resumeState, setResumeState] = useState<PracticeState | null>(null)
   const [streak, setStreak] = useState(0)
@@ -126,6 +127,7 @@ export default function PracticePage() {
       const savedData = await savedRes.json()
       setSavedIds(new Set(savedData.savedIds || []))
       setSessionId(data.sessionId)
+      freeQuestionsLeftRef.current = data.freeQuestionsLeft ?? null
       setFreeQuestionsLeft(data.freeQuestionsLeft ?? null)
       setCorrectCount(0)
       setTotalAnswered(0)
@@ -141,9 +143,19 @@ export default function PracticePage() {
   async function resumeSession(state: PracticeState) {
     setLoading(true)
     try {
-      const savedRes = await fetch('/api/questions/save')
+      const [savedRes, freeRes] = await Promise.all([
+        fetch('/api/questions/save'),
+        fetch('/api/sessions/free-remaining'),
+      ])
       const savedData = await savedRes.json()
+      const freeData = await freeRes.json()
       setSavedIds(new Set(savedData.savedIds || []))
+      freeQuestionsLeftRef.current = freeData.freeQuestionsLeft ?? null
+      setFreeQuestionsLeft(freeData.freeQuestionsLeft ?? null)
+      if (freeData.freeQuestionsLeft === 0) {
+        setLoading(false)
+        return
+      }
       const restoredCats = new Set<QuestionCategory>(state.selectedCategories ?? [])
       setSessionId(state.sessionId)
       setCategory(state.category)
@@ -211,15 +223,17 @@ export default function PracticePage() {
       body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect }),
     })
     savePracticeProgress(sessionId, category, newCorrect, newTotal, askedIds, [...selectedCategories])
-    if (freeQuestionsLeft !== null) {
-      setFreeQuestionsLeft(prev => (prev !== null ? prev - 1 : null))
+    if (freeQuestionsLeftRef.current !== null) {
+      const next = freeQuestionsLeftRef.current - 1
+      freeQuestionsLeftRef.current = next
+      setFreeQuestionsLeft(next)
     }
     if (isCorrect) setPhase('correct')
     else setPhase('wrong')
   }
 
   async function nextQuestion() {
-    if (freeQuestionsLeft !== null && freeQuestionsLeft <= 0) {
+    if (freeQuestionsLeftRef.current !== null && freeQuestionsLeftRef.current <= 0) {
       setFreeQuestionsLeft(0)
       return
     }
