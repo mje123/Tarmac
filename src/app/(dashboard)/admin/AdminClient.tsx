@@ -5,7 +5,7 @@ import { formatDate } from '@/lib/utils'
 import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
-  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift,
+  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift, RefreshCw,
 } from 'lucide-react'
 
 interface Influencer {
@@ -57,6 +57,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [infLoading, setInfLoading] = useState<string | null>(null)
   const [addingInf, setAddingInf] = useState(false)
+  const [usersRefreshing, setUsersRefreshing] = useState(false)
+
   const [bugs, setBugs] = useState<Record<string, unknown>[]>([])
   const [bugsLoaded, setBugsLoaded] = useState(false)
   const [bugLoading, setBugLoading] = useState<string | null>(null)
@@ -183,6 +185,15 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
       await fetch(`/api/admin/bug-reports/${id}`, { method: 'DELETE' })
       setBugs(prev => prev.filter(b => b.id !== id))
     } finally { setBugLoading(null) }
+  }
+
+  async function refreshUsers() {
+    setUsersRefreshing(true)
+    try {
+      const res = await fetch('/api/admin/users')
+      const data = await res.json()
+      if (res.ok) setUsers(data.users)
+    } finally { setUsersRefreshing(false) }
   }
 
   function handleTabChange(t: typeof tab) {
@@ -478,7 +489,13 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {tab === 'users' && (
         <div className="glass-card p-6">
-          <h3 className="font-semibold text-white mb-4">All Users ({users.length})</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-white">All Users ({users.length})</h3>
+            <button onClick={refreshUsers} disabled={usersRefreshing} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
+              <RefreshCw className={`w-3.5 h-3.5 ${usersRefreshing ? 'animate-spin' : ''}`} />
+              {usersRefreshing ? 'Refreshing…' : 'Refresh'}
+            </button>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
