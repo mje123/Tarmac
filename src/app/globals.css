@@ -61,41 +61,39 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #3E92CC, #2a7ab5);
+  background: #3E92CC;
   color: white;
   font-weight: 600;
   padding: 12px 24px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(62, 146, 204, 0.4);
+  background: #2a7ab5;
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, #FFB627, #e6a020);
-  color: #0A2463;
+  background: #FFB627;
+  color: #0A1830;
   font-weight: 700;
   padding: 12px 24px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
 .btn-gold:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(255, 182, 39, 0.4);
+  background: #E8A420;
 }
 
 .btn-ghost {
