@@ -208,7 +208,6 @@ export default function LandingPage() {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-xs font-semibold uppercase tracking-widest" style={{ background: 'rgba(255,182,39,0.12)', border: '1px solid rgba(255,182,39,0.25)', color: '#FFB627' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FFB627] animate-pulse" />
               FAA Private Pilot Written Test Prep
             </div>
           </motion.div>
@@ -219,10 +218,9 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight"
           >
-            Stop guessing.<br />
-            <span style={{ background: 'linear-gradient(135deg, #5ab8f5, #3E92CC)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Start understanding.
-            </span>
+            Pass the FAA Written<br />
+            Because You Actually<br />
+            <span style={{ color: '#5ab8f5' }}>Know the Material.</span>
           </motion.h1>
 
           <motion.p
@@ -232,7 +230,7 @@ export default function LandingPage() {
             className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
             style={{ color: 'rgba(255,255,255,0.65)' }}
           >
-            Most student pilots memorize answer letters. Then test day comes and the wording changes. TARMAC's AI explains every answer in plain English — and keeps explaining until you genuinely get it.
+            Most pilots prep with a question bank, memorize the answer letters, and hope the wording matches on test day. It usually doesn&apos;t. TARMAC breaks down every question until the concept sticks — so nothing on the real exam catches you off guard.
           </motion.p>
 
           <motion.div
@@ -242,7 +240,7 @@ export default function LandingPage() {
             className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6"
           >
             <Link href="/signup" className="btn-gold text-base px-8 py-4 rounded-xl w-full sm:w-auto text-center justify-center font-bold">
-              Start Free — 10 Questions
+              Try 10 Questions Free
               <ArrowRight className="w-5 h-5" />
             </Link>
             <a href="#demo"
@@ -258,7 +256,7 @@ export default function LandingPage() {
             style={{ color: 'rgba(255,255,255,0.3)' }}
             className="text-xs tracking-wide"
           >
-            No credit card · No time limit · Try free right now
+            No credit card · No time limit · Cancel anytime
           </motion.p>
         </div>
 
