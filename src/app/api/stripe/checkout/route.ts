@@ -9,7 +9,11 @@ const PLAN_PRICE_MAP: Record<string, string | undefined> = {
   founding_member:  process.env.STRIPE_FOUNDING_MEMBER_PRICE_ID,
 }
 
-const SUBSCRIPTION_PRICE_IDS = new Set([process.env.STRIPE_MONTHLY_PRICE_ID])
+// Both the new monthly and the legacy $34.99/mo recurring price use subscription mode
+const SUBSCRIPTION_PRICE_IDS = new Set([
+  process.env.STRIPE_MONTHLY_PRICE_ID,
+  process.env.STRIPE_STUDY_PASS_LEGACY_PRICE_ID,
+])
 
 export async function POST(request: NextRequest) {
   try {
