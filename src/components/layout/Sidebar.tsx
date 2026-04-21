@@ -106,7 +106,7 @@ export default function Sidebar({ user }: SidebarProps) {
             className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium transition-all"
             style={{ background: 'rgba(255,182,39,0.1)', border: '1px solid rgba(255,182,39,0.3)', color: '#FFB627' }}>
             <span className="text-base leading-none">⚡</span>
-            Upgrade to Study Pass
+            Upgrade
           </Link>
         )}
 
