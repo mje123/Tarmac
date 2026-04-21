@@ -226,14 +226,6 @@ function StartPageInner() {
   const [signupError, setSignupError] = useState('')
   const [signupSuccess, setSignupSuccess] = useState(false)
 
-  // Redirect already-logged-in users to dashboard
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) router.replace('/dashboard')
-    })
-  }, [router])
-
   // Restore from localStorage (skip if coming fresh from landing with plan)
   useEffect(() => {
     if (urlPlan) {
