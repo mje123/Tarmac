@@ -222,6 +222,7 @@ function StartPageInner() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [marketingEmails, setMarketingEmails] = useState(true)
   const [loading, setLoading] = useState(false)
   const [signupError, setSignupError] = useState('')
   const [signupSuccess, setSignupSuccess] = useState(false)
@@ -312,7 +313,7 @@ function StartPageInner() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { data: { full_name: fullName, marketing_emails: marketingEmails } },
     })
 
     if (error) { setSignupError(error.message); setLoading(false); return }
@@ -672,6 +673,19 @@ function StartPageInner() {
                             {' '}and{' '}
                             <Link href="/privacy" target="_blank" className="text-[#FDB022] underline">Privacy Policy</Link>.
                             I understand all sales are final.
+                          </label>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '10px', alignItems: 'start' }}>
+                          <input
+                            id="marketing"
+                            type="checkbox"
+                            checked={marketingEmails}
+                            onChange={e => setMarketingEmails(e.target.checked)}
+                            style={{ marginTop: '2px', width: '16px', height: '16px', accentColor: '#FDB022' }}
+                          />
+                          <label htmlFor="marketing" className="text-xs text-white/50 leading-relaxed cursor-pointer">
+                            Send me weekly progress updates and study tips. Unsubscribe anytime.
                           </label>
                         </div>
 
