@@ -46,20 +46,20 @@ export default async function DashboardPage() {
     supabase.from('users').select('*').eq('id', authUser.id).single(),
     supabase.from('user_progress').select('*').eq('user_id', authUser.id).order('accuracy_percentage', { ascending: true }),
     supabase.from('test_sessions').select('*').eq('user_id', authUser.id).order('started_at', { ascending: false }).limit(5),
-    supabase.from('test_sessions').select('id').eq('user_id', authUser.id).eq('session_type', 'practice_mode'),
+    supabase.from('test_sessions').select('id').eq('user_id', authUser.id),
     supabase.from('saved_questions').select('question_id, saved_at, questions(*)').eq('user_id', authUser.id).order('saved_at', { ascending: false }).limit(5),
   ])
 
-  const practiceSessionIds = (practiceSessions || []).map(s => s.id)
-  const { count: practiceAnswerCount } = practiceSessionIds.length > 0
+  const allSessionIds = (practiceSessions || []).map(s => s.id)
+  const { count: totalAnswerCount } = allSessionIds.length > 0
     ? await supabase
         .from('test_answers')
         .select('id', { count: 'exact', head: true })
-        .in('session_id', practiceSessionIds)
+        .in('session_id', allSessionIds)
         .not('user_answer', 'is', null)
     : { count: 0 }
 
-  const freeQuestionsUsed = practiceAnswerCount ?? 0
+  const freeQuestionsUsed = totalAnswerCount ?? 0
 
   const user: User = userProfile ?? {
     id: authUser.id,
