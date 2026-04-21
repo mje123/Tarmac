@@ -47,7 +47,7 @@ function SignupForm() {
     }
 
     if (data.session) {
-      router.push(plan === 'study_pass' ? '/upgrade' : '/dashboard')
+      router.push(plan ? `/upgrade?plan=${plan}` : '/dashboard')
     } else {
       setSuccess(true)
       setLoading(false)
@@ -72,7 +72,11 @@ function SignupForm() {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Create your account</h1>
         <p className="text-white/60">
-          {plan ? `Getting started with Study Pass ($34.99/mo)` : 'Start with 10 free questions'}
+          {plan === 'monthly' ? 'Getting started with Monthly ($44.99/mo)' :
+           plan === 'quick_prep' ? 'Getting started with Quick Prep ($69)' :
+           plan === 'study_pass' ? 'Getting started with Study Pass ($89)' :
+           plan === 'founding_member' ? 'Getting started with Founding Member ($199)' :
+           'Start with 10 free questions'}
         </p>
       </div>
 

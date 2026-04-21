@@ -446,80 +446,148 @@ export default function LandingPage() {
 
       {/* ── Pricing ── */}
       <section id="pricing" className="py-24 px-6" style={{ background: '#060e1f' }}>
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <FadeUp>
             <div className="text-center mb-14">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Pricing</p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Less than one failed test retake.</h2>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Less than one failed retake.</h2>
               <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                The FAA charges $175 to retake the written. One month of TARMAC is $34.99. Do the math.
+                The FAA charges $175 every time you retake the written. Pick a plan once.
               </p>
             </div>
           </FadeUp>
 
-          <div className="grid md:grid-cols-2 gap-5">
-            <FadeUp delay={0.1}>
-              <div className="rounded-2xl p-7 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="mb-7">
-                  <div className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>Free Trial</div>
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-4xl font-extrabold text-white">$0</span>
-                    <span className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>forever</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+
+            {/* Free Trial */}
+            <FadeUp delay={0.05}>
+              <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="mb-6">
+                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Free Trial</div>
+                  <div className="flex items-baseline gap-1 mb-1">
+                    <span className="text-3xl font-extrabold text-white">$0</span>
+                    <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>forever</span>
                   </div>
-                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>Try before you commit</p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>No card needed</p>
                 </div>
-                <ul className="space-y-3 flex-1 mb-7">
-                  {['10 practice questions', 'Full AI explanations', 'No credit card', 'No time limit'].map(f => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                      <CheckCircle className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }} />{f}
+                <ul className="space-y-2.5 flex-1 mb-6">
+                  {['10 practice questions', 'Full AI explanations', 'No time limit'].map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.18)' }} />{f}
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup" className="block text-center py-3 rounded-xl text-sm font-semibold transition-all" style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>
-                  Start Free Trial
+                <Link href="/signup" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
+                  Start Free
                 </Link>
               </div>
             </FadeUp>
 
-            <FadeUp delay={0.2}>
-              <div className="rounded-2xl p-7 flex flex-col h-full relative overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a3a7a, #0e2560)', border: '1px solid rgba(90,184,245,0.25)' }}>
-                {/* Subtle glow */}
-                <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: '#3E92CC' }} />
-
-                <div className="mb-7 relative">
-                  <div className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4" style={{ background: '#FFB627', color: '#0A2463' }}>Study Pass</div>
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-4xl font-extrabold text-white">$34.99</span>
-                    <span className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>/month</span>
+            {/* Quick Prep */}
+            <FadeUp delay={0.1}>
+              <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div className="mb-6">
+                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Quick Prep</div>
+                  <div className="flex items-baseline gap-1 mb-1">
+                    <span className="text-3xl font-extrabold text-white">$69</span>
+                    <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>one-time</span>
                   </div>
-                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>Everything until you pass</p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>60-day access</p>
                 </div>
-                <ul className="space-y-3 flex-1 mb-7 relative">
-                  {[
-                    'Unlimited practice questions',
-                    'All 9 ACS knowledge areas',
-                    'AI tutor — ask follow-ups on every question',
-                    'Real-time progress by category',
-                    'Focused drill mode by topic',
-                    '60-question timed practice exams',
-                    'FAA supplement figures included',
-                    'Cancel anytime',
-                  ].map(f => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-white/80">
-                      <CheckCircle className="w-4 h-4 text-[#FFB627] shrink-0" />{f}
+                <ul className="space-y-2.5 flex-1 mb-6">
+                  {['All 1,400+ questions', 'AI tutor on every question', 'Progress by knowledge area', 'Timed practice exams'].map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }} />{f}
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup?plan=study_pass" className="btn-gold text-center py-3 rounded-xl font-semibold relative">
-                  Get Study Pass — $34.99/mo
+                <Link href="/signup?plan=quick_prep" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
+                  Get Quick Prep
                 </Link>
-                <p className="text-xs text-center mt-3" style={{ color: 'rgba(255,255,255,0.25)' }}>Most students only need 1–2 months.</p>
+              </div>
+            </FadeUp>
+
+            {/* Study Pass — HERO */}
+            <FadeUp delay={0.15}>
+              <div className="rounded-2xl p-6 flex flex-col h-full relative" style={{ background: '#0c1f4a', border: '2px solid #FFB627' }}>
+                <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
+                  <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: '#FFB627', color: '#0A1628' }}>
+                    Most Popular
+                  </span>
+                </div>
+                <div className="mb-6 mt-3">
+                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Study Pass</div>
+                  <div className="flex items-baseline gap-1 mb-1">
+                    <span className="text-3xl font-extrabold text-white">$89</span>
+                    <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.35)' }}>one-time</span>
+                  </div>
+                  <p className="text-xs mt-1 font-medium" style={{ color: '#FFB627' }}>90 days · Half the cost of failing</p>
+                </div>
+                <ul className="space-y-2.5 flex-1 mb-6">
+                  {[
+                    'All 1,400+ questions',
+                    'AI tutor — unlimited follow-ups',
+                    'Progress by knowledge area',
+                    'Unlimited timed exams',
+                    'FAA supplement figures',
+                    '90-day access',
+                  ].map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.82)' }}>
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0 text-[#FFB627]" />{f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/signup?plan=study_pass" className="btn-gold block text-center py-3 rounded-xl font-bold text-sm">
+                  Get Study Pass — $89
+                </Link>
+              </div>
+            </FadeUp>
+
+            {/* Founding Member */}
+            <FadeUp delay={0.2}>
+              <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(90,184,245,0.22)' }}>
+                <div className="mb-6">
+                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#5ab8f5' }}>Founding Member</div>
+                  <div className="flex items-baseline gap-1 mb-1">
+                    <span className="text-3xl font-extrabold text-white">$199</span>
+                    <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>one-time</span>
+                  </div>
+                  <p className="text-xs mt-1 font-medium" style={{ color: '#5ab8f5' }}>Lifetime access</p>
+                </div>
+                <ul className="space-y-2.5 flex-1 mb-2">
+                  {[
+                    'Everything in Study Pass',
+                    'Lifetime access',
+                    'Future ratings included†',
+                    'Price locks in now',
+                  ].map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#5ab8f5' }} />{f}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                  Price increases to $299 at Instrument launch.
+                </p>
+                <Link href="/signup?plan=founding_member" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'rgba(90,184,245,0.1)', border: '1px solid rgba(90,184,245,0.25)', color: '#5ab8f5' }}>
+                  Get Founding Member
+                </Link>
               </div>
             </FadeUp>
           </div>
-          <p className="text-center text-xs mt-5" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            All sales final. Not affiliated with the FAA. Results not guaranteed. See <Link href="/terms" className="underline">Terms</Link>.
-          </p>
+
+          <FadeUp delay={0.25}>
+            <p className="text-center mt-6 text-sm" style={{ color: 'rgba(255,255,255,0.22)' }}>
+              Need flexibility?{' '}
+              <Link href="/signup?plan=monthly" className="underline hover:text-white/40 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                $44.99/mo — cancel anytime
+              </Link>
+            </p>
+            <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.15)' }}>
+              †Instrument, Commercial &amp; CFI prep coming. Founding members get access at no extra cost.
+              {' '}All one-time sales final. Not affiliated with the FAA. See <Link href="/terms" className="underline">Terms</Link>.
+            </p>
+          </FadeUp>
         </div>
       </section>
 

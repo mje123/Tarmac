@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+function expiryForPriceId(priceId: string): string | null {
+  const now = Date.now()
+  if (priceId === process.env.STRIPE_QUICK_PREP_PRICE_ID)      return new Date(now + 60 * MS_PER_DAY).toISOString()
+  if (priceId === process.env.STRIPE_STUDY_PASS_PRICE_ID)       return new Date(now + 90 * MS_PER_DAY).toISOString()
+  if (priceId === process.env.STRIPE_FOUNDING_MEMBER_PRICE_ID)  return null // lifetime
+  return new Date(now + 90 * MS_PER_DAY).toISOString() // safe fallback
+}
+
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-03-25.dahlia' })
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -24,16 +34,19 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         const userId = session.metadata?.userId
+        const priceId = session.metadata?.priceId
         if (!userId) break
 
         const customerId = session.customer as string
         let periodEnd: string | null = null
 
-        if (session.subscription) {
+        if (session.mode === 'subscription' && session.subscription) {
           const sub = await stripe.subscriptions.retrieve(session.subscription as string)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const periodEndTs = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
           if (periodEndTs) periodEnd = new Date(periodEndTs * 1000).toISOString()
+        } else if (session.mode === 'payment' && priceId) {
+          periodEnd = expiryForPriceId(priceId)
         }
 
         await supabase.from('users').update({
@@ -61,15 +74,13 @@ export async function POST(request: NextRequest) {
                 influencer_id: influencer.id,
                 user_id: userId,
                 promo_code: code,
-                amount_cents: session.amount_total ?? 3499,
+                amount_cents: session.amount_total ?? 8900,
               })
               if (refError) {
                 console.error('influencer_referrals insert failed:', refError.message, { influencer_id: influencer.id, userId, code })
               } else {
                 console.log('Influencer referral recorded:', { code, influencer_id: influencer.id, userId })
               }
-            } else {
-              console.log('Promo code used but no matching influencer found:', code)
             }
           }
         }

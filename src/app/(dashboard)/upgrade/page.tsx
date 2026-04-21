@@ -1,13 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
-export default function UpgradePage() {
+function UpgradeContent() {
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan') || 'study_pass'
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('/api/stripe/checkout', { method: 'POST' })
+    fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan }),
+    })
       .then(r => r.json())
       .then(d => {
         if (d.url) {
@@ -17,7 +24,7 @@ export default function UpgradePage() {
         }
       })
       .catch(() => setError('Network error. Please try again from Settings.'))
-  }, [])
+  }, [plan])
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -33,5 +40,17 @@ export default function UpgradePage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function UpgradePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#FFB627]" />
+      </div>
+    }>
+      <UpgradeContent />
+    </Suspense>
   )
 }
