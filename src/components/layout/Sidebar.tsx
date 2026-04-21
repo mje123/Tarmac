@@ -1,30 +1,49 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@/types'
 import { cn } from '@/lib/utils'
-import { Settings, LogOut, Shield, Menu, X } from 'lucide-react'
+import {
+  LayoutDashboard, BookOpen, ClipboardList, Bookmark,
+  Settings, LogOut, Shield, Bot, Menu, X,
+} from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/practice', label: 'Practice' },
-  { href: '/exam', label: 'Practice Exam' },
-  { href: '/saved', label: 'Saved Questions' },
-  { href: '/chat', label: 'AI Tutor' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/practice', icon: BookOpen, label: 'Practice Mode' },
+  { href: '/exam', icon: ClipboardList, label: 'Practice Exam' },
+  { href: '/saved', icon: Bookmark, label: 'Saved Questions' },
+  { href: '/chat', icon: Bot, label: 'AI Tutor' },
 ]
 
 interface SidebarProps { user: User }
+
+const subscriptionLabels: Record<string, string> = {
+  free: 'Free Trial',
+  study_pass: 'Study Pass',
+  checkride_prep: 'Checkride Prep',
+  annual: 'Annual Pass',
+}
+
+const subscriptionColors: Record<string, string> = {
+  free: 'text-white/50',
+  study_pass: 'text-[#3E92CC]',
+  checkride_prep: 'text-[#FFB627]',
+  annual: 'text-green-400',
+}
 
 export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
 
+  // Close drawer on route change
   useEffect(() => { setOpen(false) }, [pathname])
 
   async function handleSignOut() {
@@ -34,134 +53,109 @@ export default function Sidebar({ user }: SidebarProps) {
     router.refresh()
   }
 
-  const isFree = user.subscription_status === 'free'
-  const firstName = user.full_name?.split(' ')[0] || 'Pilot'
-  const lastName = user.full_name?.split(' ').slice(1).join(' ') || ''
-  const initials = (firstName[0] || '') + (lastName[0] || '')
-
   const navContent = (
-    <div className="flex flex-col h-full" style={{ background: '#080E1C' }}>
-      {/* Wordmark */}
-      <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #141F35' }}>
-        <span className="text-[15px] font-bold text-white tracking-[0.12em]">TARMAC</span>
-        <button onClick={() => setOpen(false)} className="md:hidden text-white/30 hover:text-white">
+    <>
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <Image src="/logo-white.png" alt="TARMAC" width={40} height={40} className="shrink-0" />
+        <span className="text-xl font-bold text-white tracking-tight">TARMAC</span>
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full tracking-wider" style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>BETA</span>
+        {/* Close button — mobile only */}
+        <button onClick={() => setOpen(false)} className="ml-auto md:hidden text-white/40 hover:text-white">
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-3 overflow-y-auto">
-        {navItems.map(({ href, label }) => {
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'flex items-center h-9 pl-5 pr-4 text-sm font-medium transition-colors border-l-2',
-                active
-                  ? 'border-[#FDB022] text-white'
-                  : 'border-transparent text-[#6B7FA3] hover:text-white hover:border-white/20'
-              )}
-              style={active ? { background: 'rgba(253,176,34,0.06)' } : undefined}
-            >
+            <Link key={href} href={href}
+              className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
+                active ? 'bg-[#3E92CC]/20 text-white' : 'text-white/60 hover:text-white hover:bg-white/5'
+              )}>
+              <Icon className={cn('w-5 h-5 shrink-0', active ? 'text-[#3E92CC]' : '')} />
               {label}
             </Link>
           )
         })}
 
         {user.is_admin && (
-          <Link
-            href="/admin"
-            className={cn(
-              'flex items-center gap-2.5 h-9 pl-5 pr-4 text-sm font-medium transition-colors border-l-2 mt-2',
-              pathname.startsWith('/admin')
-                ? 'border-[#FDB022] text-white'
-                : 'border-transparent text-[#6B7FA3] hover:text-white hover:border-white/20'
-            )}
-            style={pathname.startsWith('/admin') ? { background: 'rgba(253,176,34,0.06)' } : undefined}
-          >
-            <Shield className="w-3.5 h-3.5 text-[#FDB022]" />
+          <Link href="/admin"
+            className={cn('flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all mt-4',
+              pathname.startsWith('/admin') ? 'bg-[#FFB627]/20 text-white' : 'text-white/60 hover:text-white hover:bg-white/5'
+            )}>
+            <Shield className="w-5 h-5 shrink-0 text-[#FFB627]" />
             Admin
           </Link>
         )}
       </nav>
 
-      {/* Upgrade block for free users */}
-      {isFree && (
-        <div className="mx-3 mb-3 p-3 rounded" style={{ background: '#0D1525', border: '1px solid #1E2D45' }}>
-          <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#4A5568] mb-1">Free Trial</div>
-          <div className="text-xs font-bold text-[#EF4444] mb-2.5">Questions limited — upgrade to unlock all 1,400+</div>
-          <Link
-            href="/upgrade"
-            className="block w-full text-center py-2 text-xs font-bold tracking-wide rounded-sm transition-opacity hover:opacity-90"
-            style={{ background: '#FDB022', color: '#080E1C' }}
-          >
-            UNLOCK FULL ACCESS
+      {/* User footer */}
+      <div className="px-3 pb-4 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
+        <div className="px-3 py-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <div className="font-medium text-white text-sm truncate">{user.full_name || 'Pilot'}</div>
+          <div className={cn('text-xs mt-0.5', subscriptionColors[user.subscription_status])}>
+            {subscriptionLabels[user.subscription_status]}
+          </div>
+        </div>
+
+        {user.subscription_status === 'free' && (
+          <Link href="/upgrade"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{ background: 'rgba(255,182,39,0.1)', border: '1px solid rgba(255,182,39,0.3)', color: '#FFB627' }}>
+            <span className="text-base leading-none">⚡</span>
+            Upgrade
           </Link>
-        </div>
-      )}
+        )}
 
-      {/* Footer */}
-      <div className="px-3 pb-3 space-y-0.5" style={{ borderTop: '1px solid #141F35', paddingTop: '12px' }}>
-        {/* User row */}
-        <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
-          <div className="w-7 h-7 rounded-sm flex items-center justify-center text-[11px] font-bold shrink-0" style={{ background: '#1A2540', color: '#94A3B8' }}>
-            {initials.toUpperCase() || 'P'}
-          </div>
-          <div className="min-w-0">
-            <div className="text-xs font-semibold text-white truncate">{user.full_name || 'Pilot'}</div>
-            {!isFree && (
-              <div className="text-[10px] text-[#4A5568] capitalize">{user.subscription_status.replace('_', ' ')}</div>
-            )}
-          </div>
-        </div>
-
-        <Link href="/settings" className="flex items-center gap-2.5 h-8 px-3 text-sm text-[#6B7FA3] hover:text-white transition-colors rounded-sm hover:bg-white/[0.03]">
-          <Settings className="w-3.5 h-3.5" />
+        <Link href="/settings"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all">
+          <Settings className="w-5 h-5" />
           Settings
         </Link>
 
         <SuggestionButton />
         <BugReportButton />
 
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-2.5 h-8 px-3 text-sm text-[#6B7FA3] hover:text-[#EF4444] transition-colors rounded-sm hover:bg-red-500/[0.04]"
-        >
-          <LogOut className="w-3.5 h-3.5" />
+        <button onClick={handleSignOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-red-400 hover:bg-red-400/5 transition-all">
+          <LogOut className="w-5 h-5" />
           Sign Out
         </button>
       </div>
-    </div>
+    </>
   )
 
   return (
     <>
       {/* Mobile top bar */}
-      <div
-        className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3"
-        style={{ background: '#080E1C', borderBottom: '1px solid #141F35' }}
-      >
-        <button onClick={() => setOpen(true)} className="text-white/50 hover:text-white p-1">
-          <Menu className="w-5 h-5" />
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3"
+        style={{ background: '#0A2463', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <button onClick={() => setOpen(true)} className="text-white/70 hover:text-white p-1">
+          <Menu className="w-6 h-6" />
         </button>
-        <span className="text-sm font-bold text-white tracking-[0.12em]">TARMAC</span>
-        <div className="w-7" />
+        <div className="flex items-center gap-2">
+          <Image src="/logo-white.png" alt="TARMAC" width={28} height={28} />
+          <span className="text-base font-bold text-white tracking-tight">TARMAC</span>
+          <span className="text-[9px] font-bold px-1 py-0.5 rounded-full" style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>BETA</span>
+        </div>
+        <div className="w-8" />
       </div>
 
       {/* Mobile overlay */}
       {open && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="w-64 h-full shrink-0">
+          <div className="w-64 flex flex-col h-full" style={{ background: '#0d1f4a', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
             {navContent}
           </div>
-          <div className="flex-1 bg-black/70" onClick={() => setOpen(false)} />
+          <div className="flex-1 bg-black/60" onClick={() => setOpen(false)} />
         </div>
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-56 flex-col h-full shrink-0" style={{ background: '#080E1C', borderRight: '1px solid #141F35' }}>
+      <aside className="hidden md:flex w-64 flex-col h-full shrink-0" style={{ background: 'rgba(255,255,255,0.04)', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
         {navContent}
       </aside>
     </>
