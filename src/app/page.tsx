@@ -218,19 +218,18 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight"
           >
-            Pass the FAA Written<br />
-            Because You Actually<br />
-            <span style={{ color: '#5ab8f5' }}>Know the Material.</span>
+            Know It.<br />
+            <span style={{ color: '#5ab8f5' }}>Don&apos;t Memorize It.</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-lg sm:text-xl max-w-xl mx-auto mb-10 leading-relaxed"
             style={{ color: 'rgba(255,255,255,0.65)' }}
           >
-            Most pilots prep with a question bank, memorize the answer letters, and hope the wording matches on test day. It usually doesn&apos;t. TARMAC breaks down every question until the concept sticks — so nothing on the real exam catches you off guard.
+            The FAA changes how questions are worded. TARMAC makes sure that doesn&apos;t matter.
           </motion.p>
 
           <motion.div
