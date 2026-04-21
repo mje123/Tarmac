@@ -40,15 +40,26 @@ export default async function DashboardPage() {
     { data: userProfile },
     { data: progressData },
     { data: recentSessions },
-    { data: totalAnswers },
+    { data: practiceSessions },
     { data: savedData },
   ] = await Promise.all([
     supabase.from('users').select('*').eq('id', authUser.id).single(),
     supabase.from('user_progress').select('*').eq('user_id', authUser.id).order('accuracy_percentage', { ascending: true }),
     supabase.from('test_sessions').select('*').eq('user_id', authUser.id).order('started_at', { ascending: false }).limit(5),
-    supabase.from('test_answers').select('id', { count: 'exact' }).eq('user_id', authUser.id),
+    supabase.from('test_sessions').select('id').eq('user_id', authUser.id).eq('session_type', 'practice_mode'),
     supabase.from('saved_questions').select('question_id, saved_at, questions(*)').eq('user_id', authUser.id).order('saved_at', { ascending: false }).limit(5),
   ])
+
+  const practiceSessionIds = (practiceSessions || []).map(s => s.id)
+  const { count: practiceAnswerCount } = practiceSessionIds.length > 0
+    ? await supabase
+        .from('test_answers')
+        .select('id', { count: 'exact', head: true })
+        .in('session_id', practiceSessionIds)
+        .not('user_answer', 'is', null)
+    : { count: 0 }
+
+  const freeQuestionsUsed = practiceAnswerCount ?? 0
 
   const user: User = userProfile ?? {
     id: authUser.id,
@@ -66,6 +77,7 @@ export default async function DashboardPage() {
   const savedQuestions = (savedData || []) as unknown as Array<{ question_id: string; saved_at: string; questions: Question }>
 
   const totalAttempted = progress.reduce((s, p) => s + p.questions_attempted, 0)
+
   const totalCorrect = progress.reduce((s, p) => s + p.questions_correct, 0)
   const overallAccuracy = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0
   const examSessions = sessions.filter(s => s.session_type === 'real_exam')
@@ -74,7 +86,6 @@ export default async function DashboardPage() {
   const isExpired = user.subscription_expires_at && new Date(user.subscription_expires_at) < new Date()
   const isFree = user.subscription_status === 'free'
 
-  const freeQuestionsUsed = (totalAnswers || []).length
   const freeQuestionsRemaining = Math.max(0, FREE_QUESTION_LIMIT - freeQuestionsUsed)
   const freeUsedPct = Math.min(100, (freeQuestionsUsed / FREE_QUESTION_LIMIT) * 100)
 
@@ -368,61 +379,32 @@ export default async function DashboardPage() {
               style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '3px solid #ef4444' }}
             >
               <div className="text-xs font-bold uppercase tracking-wider text-red-400 mb-2.5">
-                Critical Gaps — These WILL appear on your exam
+                Focus Areas
               </div>
               <div className="space-y-1.5 mb-3">
                 {criticalCategories.slice(0, 4).map(p => (
                   <div key={p.category} className="flex items-center justify-between">
                     <span className="text-xs text-white/70 truncate">{p.category}</span>
                     <span className="text-xs font-bold tabular-nums text-red-400 ml-2 shrink-0">
-                      {Math.round(p.accuracy_percentage)}% · {p.questions_attempted}Q practiced
+                      {Math.round(p.accuracy_percentage)}% · {p.questions_attempted}Q
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div
-                className="text-xs space-y-1 mb-3 pt-2.5"
-                style={{ borderTop: '1px solid rgba(239,68,68,0.15)' }}
-              >
-                <div className="font-semibold text-white/60 mb-1">If you ignore these:</div>
-                {['68% of students who skip critical gaps fail', 'You waste $175 on a retake fee', 'You delay your training by 2–4 weeks'].map(c => (
-                  <div key={c} className="flex items-start gap-1.5">
-                    <span className="text-red-400 shrink-0">•</span>
-                    <span className="text-white/50">{c}</span>
-                  </div>
-                ))}
-                <div className="font-semibold text-white/60 mt-2 mb-1">If you drill them now:</div>
-                {['91% of students who hit 70%+ accuracy pass first try', 'You save the $175 retake fee', 'You pass in ~' + daysToReady + ' days of focused practice'].map(c => (
-                  <div key={c} className="flex items-start gap-1.5">
-                    <span className="text-green-400 shrink-0">•</span>
-                    <span className="text-white/50">{c}</span>
-                  </div>
-                ))}
-              </div>
-
-              <p className="text-xs font-semibold text-white/50 mb-2.5 text-center">
-                Full access is $89. A retake costs $175. Do the math.
-              </p>
-
               <UpgradeModal
                 readiness={readiness}
                 questionsNeeded={questionsToReady}
-              questionsAttempted={totalAttempted}
+                questionsAttempted={totalAttempted}
                 trigger={
                   <button
                     className="w-full py-2.5 rounded-lg text-xs font-bold transition-opacity hover:opacity-90"
                     style={{ background: '#FFB627', color: '#0A1628' }}
                   >
-                    UNLOCK FULL ACCESS — $89
+                    Unlock Full Access — $89
                   </button>
                 }
               />
-              <button
-                className="w-full mt-2 py-2 rounded-lg text-xs text-white/25 hover:text-white/50 transition-colors"
-              >
-                I&apos;ll risk the $175 retake fee
-              </button>
             </div>
           )}
 
@@ -702,102 +684,12 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* Progress vs Top Students (free users with data) OR Recent Activity (paid) */}
-          {isFree && totalAttempted > 0 ? (
-            <div>
-              <h2 className="text-lg font-semibold text-white mb-4">Your Progress vs. Top Students</h2>
-              <div className="glass-card p-5">
-                <div className="grid sm:grid-cols-2 gap-4 mb-5">
-                  {/* You */}
-                  <div className="rounded-xl p-4" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                    <div className="text-xs font-bold uppercase tracking-wider text-red-400 mb-3">You (right now)</div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Questions practiced</span>
-                        <span className="font-bold text-white">{totalAttempted}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Accuracy</span>
-                        <span className="font-bold" style={{ color: overallAccuracy >= 70 ? '#22c55e' : '#ef4444' }}>
-                          {totalAttempted > 0 ? `${overallAccuracy}%` : '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Study sessions</span>
-                        <span className="font-bold text-white">{practiceSessionCount}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Pass prediction</span>
-                        <span className="font-bold text-red-400">{readiness}% ✗</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Top students */}
-                  <div className="rounded-xl p-4" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
-                    <div className="text-xs font-bold uppercase tracking-wider text-green-400 mb-3">Students Who Passed (1st try)</div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Questions practiced</span>
-                        <span className="font-bold text-white">200+</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Accuracy</span>
-                        <span className="font-bold text-green-400">70–90%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Study sessions</span>
-                        <span className="font-bold text-white">12+</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Pass rate</span>
-                        <span className="font-bold text-green-400">91% ✓</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="rounded-lg p-3.5 mb-4 text-sm"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-white/50 text-xs">At current pace</span>
-                    <span className="font-bold text-red-400">Not test-ready</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/50 text-xs">With full access + daily practice</span>
-                    <span className="font-bold text-green-400">~{daysToReady} days to ready</span>
-                  </div>
-                </div>
-
-                <UpgradeModal
-                  readiness={readiness}
-                  questionsNeeded={questionsToReady}
-              questionsAttempted={totalAttempted}
-                  trigger={
-                    <button
-                      className="w-full py-3 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
-                      style={{ background: '#FFB627', color: '#0A1628' }}
-                    >
-                      Join Students Who Pass — $89
-                    </button>
-                  }
-                />
-
-                {/* Social proof */}
-                <div className="mt-3 pt-3 flex items-center justify-center gap-4 text-[10px] text-white/25" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span>247 students upgraded this week</span>
-                  <span>·</span>
-                  <span>91% pass rate on first attempt</span>
-                </div>
-              </div>
-            </div>
-          ) : isFree && totalAttempted === 0 ? (
+          {/* Recent sessions or zero state */}
+          {isFree && totalAttempted === 0 ? (
             // Zero state for new free users — motivational, not scary
             <div className="glass-card p-6 text-center">
               <div className="text-4xl mb-3">✈️</div>
-              <h3 className="text-lg font-bold text-white mb-2">You're ready for takeoff</h3>
+              <h3 className="text-lg font-bold text-white mb-2">You&apos;re ready for takeoff</h3>
               <p className="text-sm text-white/60 mb-4 max-w-sm mx-auto">
                 Start your 10 free questions to see exactly how TARMAC works. No credit card, no commitment — just real FAA prep.
               </p>
