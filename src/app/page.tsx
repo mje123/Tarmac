@@ -153,7 +153,7 @@ function DemoWidget() {
             transition={{ delay: 0.3 }}
             className="mt-5 text-center"
           >
-            <Link href="/signup" className="btn-gold inline-flex px-6 py-2.5 text-sm">
+            <Link href="/start" className="btn-gold inline-flex px-6 py-2.5 text-sm">
               Get more questions free <ArrowRight className="w-4 h-4" />
             </Link>
           </motion.div>
@@ -183,7 +183,7 @@ export default function LandingPage() {
         </div>
         <div className="flex items-center gap-2">
           <Link href="/login" className="text-sm px-4 py-2 transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Log in</Link>
-          <Link href="/signup" className="btn-gold text-sm px-4 py-2">Start Free</Link>
+          <Link href="/start" className="btn-gold text-sm px-4 py-2">Start Free</Link>
         </div>
       </nav>
 
@@ -238,7 +238,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6"
           >
-            <Link href="/signup" className="btn-gold text-base px-8 py-4 rounded-xl w-full sm:w-auto text-center justify-center font-bold">
+            <Link href="/start" className="btn-gold text-base px-8 py-4 rounded-xl w-full sm:w-auto text-center justify-center font-bold">
               Try 10 Questions Free
               <ArrowRight className="w-5 h-5" />
             </Link>
@@ -630,7 +630,7 @@ export default function LandingPage() {
             <p className="text-lg mb-9 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
               Start with 10 free questions. You'll know in 5 minutes if TARMAC is different from anything you've tried.
             </p>
-            <Link href="/signup" className="btn-gold text-base px-10 py-4 rounded-xl inline-flex items-center gap-2">
+            <Link href="/start" className="btn-gold text-base px-10 py-4 rounded-xl inline-flex items-center gap-2">
               Start Practicing Free
               <ArrowRight className="w-5 h-5" />
             </Link>

@@ -168,6 +168,7 @@ export default async function DashboardPage() {
             <UpgradeModal
               readiness={readiness}
               questionsNeeded={questionsToReady}
+              questionsAttempted={totalAttempted}
               trigger={
                 <button
                   className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
@@ -307,6 +308,7 @@ export default async function DashboardPage() {
           <UpgradeModal
             readiness={readiness}
             questionsNeeded={questionsToReady}
+              questionsAttempted={totalAttempted}
             trigger={
               <button className="shrink-0 text-xs font-semibold text-[#FFB627] hover:text-white/80 transition-colors whitespace-nowrap">
                 Fix this →
@@ -406,6 +408,7 @@ export default async function DashboardPage() {
               <UpgradeModal
                 readiness={readiness}
                 questionsNeeded={questionsToReady}
+              questionsAttempted={totalAttempted}
                 trigger={
                   <button
                     className="w-full py-2.5 rounded-lg text-xs font-bold transition-opacity hover:opacity-90"
@@ -532,6 +535,7 @@ export default async function DashboardPage() {
                   key={action.num}
                   readiness={readiness}
                   questionsNeeded={questionsToReady}
+              questionsAttempted={totalAttempted}
                   trigger={
                     <div
                       className="glass-card p-4 flex items-start gap-3 cursor-pointer hover:bg-white/10 transition-all group"
@@ -561,6 +565,7 @@ export default async function DashboardPage() {
               <UpgradeModal
                 readiness={readiness}
                 questionsNeeded={questionsToReady}
+              questionsAttempted={totalAttempted}
                 trigger={
                   <button
                     className="w-full py-3 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
@@ -686,6 +691,7 @@ export default async function DashboardPage() {
                 <UpgradeModal
                   readiness={readiness}
                   questionsNeeded={questionsToReady}
+              questionsAttempted={totalAttempted}
                   trigger={
                     <button className="shrink-0 text-xs font-bold text-[#FFB627] hover:text-white transition-colors whitespace-nowrap">
                       Fix this →
@@ -768,6 +774,7 @@ export default async function DashboardPage() {
                 <UpgradeModal
                   readiness={readiness}
                   questionsNeeded={questionsToReady}
+              questionsAttempted={totalAttempted}
                   trigger={
                     <button
                       className="w-full py-3 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"

@@ -16,6 +16,16 @@ export type AnswerOption = 'A' | 'B' | 'C' | 'D'
 export type SessionType = 'real_exam' | 'practice_mode'
 export type SessionStatus = 'in_progress' | 'completed' | 'abandoned'
 
+export interface OnboardingData {
+  training_stage?: 'not_started' | 'in_training' | 'checkride_scheduled' | 'retaking'
+  test_timeline?: '2_weeks' | '3_6_weeks' | '2_3_months' | 'not_sure'
+  confidence_level?: 'nervous' | 'unsure' | 'somewhat_confident' | 'very_confident'
+  biggest_worry?: 'retake_cost' | 'not_understanding' | 'no_time' | 'what_to_focus' | 'test_anxiety'
+  previous_tools?: 'first_time' | 'didnt_like' | 'failed_with_them' | 'exploring'
+  learning_style?: 'detailed_explanations' | 'learning_by_doing' | 'need_structure' | 'mixed' | 'skipped'
+  recommended_plan?: string
+}
+
 export interface User {
   id: string
   email: string
@@ -24,6 +34,7 @@ export interface User {
   subscription_expires_at: string | null
   stripe_customer_id: string | null
   is_admin: boolean
+  onboarding_data?: OnboardingData | null
   created_at: string
   updated_at: string
 }
