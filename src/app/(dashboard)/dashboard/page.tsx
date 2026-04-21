@@ -158,8 +158,10 @@ export default async function DashboardPage() {
 
               <p className="text-xs text-white/50">
                 {freeQuestionsRemaining === 0
-                  ? `You've used all ${FREE_QUESTION_LIMIT} free questions. The FAA exam has 60 — you've barely scratched the surface. Unlock everything to actually prepare.`
-                  : `You've answered ${freeQuestionsUsed} question${freeQuestionsUsed !== 1 ? 's' : ''}. The FAA exam has 60. Students who pass practice 200+.`}
+                  ? `You've used all ${FREE_QUESTION_LIMIT} free questions. Unlock everything to keep building toward your checkride.`
+                  : freeQuestionsUsed === 0
+                    ? `Start with your 10 free questions — no credit card needed. See exactly how TARMAC works before you commit.`
+                    : `${freeQuestionsUsed} down, ${freeQuestionsRemaining} free questions left. Students who pass practice 200+ — unlock the full bank when you're ready.`}
               </p>
             </div>
 
@@ -196,11 +198,14 @@ export default async function DashboardPage() {
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">
-          {isFree ? `Welcome, ${firstName}` : `Welcome back, ${firstName} ✈️`}
+          {isFree ? `Welcome, ${firstName} ✈️` : `Welcome back, ${firstName} ✈️`}
         </h1>
         <p className="text-white/60 mt-1 text-sm">
           {isFree
-            ? <span>Free Trial &middot; <span className="font-semibold" style={{ color: readiness < 70 ? '#ef4444' : '#FFB627' }}>Pass prediction: {readiness}% — {readiness >= 70 ? 'on track' : 'below FAA minimum'}</span></span>
+            ? <span>Free Trial &middot; {totalAttempted > 0
+                ? <span className="font-semibold" style={{ color: readiness >= 70 ? '#22c55e' : '#FFB627' }}>Pass prediction: {readiness}% — {readiness >= 70 ? 'on track' : 'keep practicing to reach 70%'}</span>
+                : <span className="text-white/50">Start practicing to track your readiness</span>
+              }</span>
             : <>
                 {getSubscriptionLabel(user.subscription_status)}
                 {user.subscription_expires_at && !isExpired && (
@@ -219,12 +224,15 @@ export default async function DashboardPage() {
             <span className="text-white/50 text-xs">Questions Practiced</span>
           </div>
           <div className="text-3xl font-bold text-white">{totalAttempted.toLocaleString()}</div>
-          {isFree && totalAttempted < 200 && (
-            <div className="text-xs mt-1 font-semibold" style={{ color: '#ef4444' }}>
-              Need {(200 - totalAttempted).toLocaleString()} more to be ready
+          {totalAttempted === 0 && (
+            <div className="text-xs mt-1 text-white/40">Start your first session</div>
+          )}
+          {isFree && totalAttempted > 0 && totalAttempted < 200 && (
+            <div className="text-xs mt-1 font-semibold text-[#FFB627]">
+              {(200 - totalAttempted).toLocaleString()} more to test-ready
             </div>
           )}
-          {!isFree && totalAttempted < 200 && (
+          {!isFree && totalAttempted > 0 && totalAttempted < 200 && (
             <div className="text-xs text-white/35 mt-1">{200 - totalAttempted} more to full coverage</div>
           )}
         </div>
@@ -249,7 +257,7 @@ export default async function DashboardPage() {
             <div className="text-xs text-green-400 mt-1 font-semibold">Above FAA minimum ✓</div>
           )}
           {totalAttempted === 0 && (
-            <div className="text-xs mt-1" style={{ color: '#ef4444' }}>Start practicing to track this</div>
+            <div className="text-xs mt-1 text-white/40">Tracked after first session</div>
           )}
         </div>
 
@@ -259,7 +267,7 @@ export default async function DashboardPage() {
             <span className="text-white/50 text-xs">Study Sessions</span>
           </div>
           <div className="text-3xl font-bold text-white">{practiceSessionCount}</div>
-          {isFree && practiceSessionCount < 12 && (
+          {isFree && practiceSessionCount > 0 && practiceSessionCount < 12 && (
             <div className="text-xs mt-1 text-white/40">
               Top students: 12+ sessions
             </div>
@@ -282,8 +290,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Warning box for free users with low accuracy */}
-      {isFree && totalAttempted > 0 && overallAccuracy < 70 && (
+      {/* Warning box — only after they've practiced and are below threshold */}
+      {isFree && totalAttempted >= 5 && overallAccuracy < 70 && (
         <div
           className="mb-8 rounded-xl px-5 py-3.5 flex items-start gap-3"
           style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '4px solid #ef4444' }}
@@ -334,20 +342,25 @@ export default async function DashboardPage() {
             </div>
             <div>
               <div className="text-xs text-white/40 mb-0.5 uppercase tracking-wider">Exam Readiness</div>
-              <div className="text-lg font-bold" style={{ color: readinessColor }}>{readinessLabel}</div>
-              {readiness < 70 && isFree && (
-                <div className="text-xs font-semibold mt-0.5" style={{ color: '#ef4444' }}>
-                  {70 - readiness} pts below passing
+              <div className="text-lg font-bold" style={{ color: totalAttempted === 0 ? 'rgba(255,255,255,0.4)' : readinessColor }}>
+                {totalAttempted === 0 ? 'Not started' : readinessLabel}
+              </div>
+              {totalAttempted > 0 && readiness < 70 && isFree && (
+                <div className="text-xs font-semibold mt-0.5" style={{ color: '#FFB627' }}>
+                  {70 - readiness} pts to FAA passing score
                 </div>
               )}
-              {questionsToReady > 0 && (
+              {questionsToReady > 0 && totalAttempted > 0 && (
                 <div className="text-xs text-white/40 mt-0.5">~{questionsToReady} questions to test-ready</div>
+              )}
+              {totalAttempted === 0 && (
+                <div className="text-xs text-white/40 mt-0.5">Answer questions to see your score</div>
               )}
             </div>
           </div>
 
-          {/* Critical gaps for free users */}
-          {isFree && criticalCategories.length > 0 && (
+          {/* Critical gaps — only show after they've practiced */}
+          {isFree && totalAttempted > 0 && criticalCategories.length > 0 && (
             <div
               className="rounded-lg p-3.5 mb-4"
               style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderLeft: '3px solid #ef4444' }}
@@ -441,10 +454,10 @@ export default async function DashboardPage() {
                 {solidCategories > 0 && <p className="text-sm text-green-400">🟢 {solidCategories} strong area{solidCategories !== 1 ? 's' : ''}</p>}
                 {weakCategories > 0 && (
                   <>
-                    <p className="text-sm text-red-400">🔴 {weakCategories} weak area{weakCategories !== 1 ? 's' : ''}</p>
-                    {isFree && (
-                      <p className="text-xs mt-1" style={{ color: '#ef4444' }}>
-                        These represent your highest failure risk on the FAA exam.
+                    <p className="text-sm text-red-400">🔴 {weakCategories} area{weakCategories !== 1 ? 's' : ''} to work on</p>
+                    {isFree && totalAttempted >= 5 && (
+                      <p className="text-xs mt-1 text-white/40">
+                        Focus here to push your score above 70%.
                       </p>
                     )}
                   </>
@@ -659,8 +672,8 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            {/* Warning for free users with weak categories */}
-            {isFree && criticalCategories.length > 0 && (
+            {/* Warning for free users with weak categories — only after practicing */}
+            {isFree && totalAttempted > 0 && criticalCategories.length > 0 && (
               <div
                 className="mt-3 rounded-xl p-4 flex items-center justify-between gap-4"
                 style={{ background: 'rgba(255,182,39,0.06)', border: '1px solid rgba(255,182,39,0.2)' }}
@@ -683,8 +696,8 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* Progress vs Top Students (free users) OR Recent Activity (paid) */}
-          {isFree ? (
+          {/* Progress vs Top Students (free users with data) OR Recent Activity (paid) */}
+          {isFree && totalAttempted > 0 ? (
             <div>
               <h2 className="text-lg font-semibold text-white mb-4">Your Progress vs. Top Students</h2>
               <div className="glass-card p-5">
@@ -772,6 +785,24 @@ export default async function DashboardPage() {
                   <span>91% pass rate on first attempt</span>
                 </div>
               </div>
+            </div>
+          ) : isFree && totalAttempted === 0 ? (
+            // Zero state for new free users — motivational, not scary
+            <div className="glass-card p-6 text-center">
+              <div className="text-4xl mb-3">✈️</div>
+              <h3 className="text-lg font-bold text-white mb-2">You're ready for takeoff</h3>
+              <p className="text-sm text-white/60 mb-4 max-w-sm mx-auto">
+                Start your 10 free questions to see exactly how TARMAC works. No credit card, no commitment — just real FAA prep.
+              </p>
+              <Link
+                href="/practice"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+                style={{ background: '#FFB627', color: '#0A1628' }}
+              >
+                Start Practicing — Free
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+              <p className="text-xs text-white/30 mt-3">91% of students who practice 200+ questions pass on their first attempt</p>
             </div>
           ) : (
             sessions.length > 0 && (
