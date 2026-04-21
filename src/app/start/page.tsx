@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
@@ -207,6 +207,9 @@ const feedbackVariants: Variants = {
 
 export default function StartPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlPlan = searchParams.get('plan')
+
   const [step, setStep] = useState<Step>('q1')
   const [answers, setAnswers] = useState<Partial<OnboardingData>>({})
   const [selectedValue, setSelectedValue] = useState<string | null>(null)
@@ -223,8 +226,20 @@ export default function StartPage() {
   const [signupError, setSignupError] = useState('')
   const [signupSuccess, setSignupSuccess] = useState(false)
 
-  // Restore from localStorage
+  // Redirect already-logged-in users to dashboard
   useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) router.replace('/dashboard')
+    })
+  }, [router])
+
+  // Restore from localStorage (skip if coming fresh from landing with plan)
+  useEffect(() => {
+    if (urlPlan) {
+      localStorage.removeItem('tarmac_quiz')
+      return
+    }
     try {
       const saved = localStorage.getItem('tarmac_quiz')
       if (saved) {
@@ -232,7 +247,7 @@ export default function StartPage() {
         if (s && a) { setStep(s); setAnswers(a) }
       }
     } catch { /* ignore */ }
-  }, [])
+  }, [urlPlan])
 
   // Save progress
   useEffect(() => {

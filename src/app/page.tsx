@@ -477,7 +477,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
+                <Link href="/start" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
                   Start Free
                 </Link>
               </div>
@@ -501,7 +501,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup?plan=quick_prep" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
+                <Link href="/start?plan=quick_prep" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
                   Get Quick Prep
                 </Link>
               </div>
@@ -537,7 +537,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup?plan=study_pass" className="btn-gold block text-center py-3 rounded-xl font-bold text-sm">
+                <Link href="/start?plan=study_pass" className="btn-gold block text-center py-3 rounded-xl font-bold text-sm">
                   Get Study Pass — $89
                 </Link>
               </div>
@@ -569,7 +569,7 @@ export default function LandingPage() {
                 <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.2)' }}>
                   Price increases to $299 at Instrument launch.
                 </p>
-                <Link href="/signup?plan=founding_member" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'rgba(90,184,245,0.1)', border: '1px solid rgba(90,184,245,0.25)', color: '#5ab8f5' }}>
+                <Link href="/start?plan=founding_member" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'rgba(90,184,245,0.1)', border: '1px solid rgba(90,184,245,0.25)', color: '#5ab8f5' }}>
                   Get Founding Member
                 </Link>
               </div>
@@ -579,7 +579,7 @@ export default function LandingPage() {
           <FadeUp delay={0.25}>
             <p className="text-center mt-6 text-sm" style={{ color: 'rgba(255,255,255,0.22)' }}>
               Need flexibility?{' '}
-              <Link href="/signup?plan=monthly" className="underline hover:text-white/40 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <Link href="/start?plan=monthly" className="underline hover:text-white/40 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 $44.99/mo — cancel anytime
               </Link>
             </p>
