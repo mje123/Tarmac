@@ -123,8 +123,7 @@ function UpgradeContent() {
 
   // Plan selection UI
   return (
-    <div className="min-h-screen px-6 py-12" style={{ background: '#060e1f' }}>
-      <div className="max-w-5xl mx-auto">
+    <div className="px-4 md:px-8 py-10 max-w-5xl mx-auto animate-fade-in">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-extrabold text-white mb-2">Unlock Full Access</h1>
           <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -142,8 +141,8 @@ function UpgradeContent() {
               key={p.id}
               className="rounded-2xl p-6 flex flex-col relative"
               style={{
-                background: p.highlight ? '#0c1f4a' : '#0d1a38',
-                border: p.highlight ? `2px solid ${p.accent}` : '1px solid rgba(255,255,255,0.1)',
+                background: p.highlight ? 'rgba(255,182,39,0.06)' : 'rgba(255,255,255,0.04)',
+                border: p.highlight ? `2px solid ${p.accent}` : '1px solid rgba(255,255,255,0.08)',
               }}
             >
               {p.badge && (
@@ -201,7 +200,6 @@ function UpgradeContent() {
           †Instrument, Commercial &amp; CFI prep coming soon. Founding members get access at no extra cost.
           All one-time sales final. Not affiliated with the FAA.
         </p>
-      </div>
     </div>
   )
 }
