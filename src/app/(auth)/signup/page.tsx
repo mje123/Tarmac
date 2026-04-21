@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -10,6 +10,11 @@ function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan')
+
+  // Always redirect to /start so users go through the quiz
+  useEffect(() => {
+    router.replace(plan ? `/start?plan=${plan}` : '/start')
+  }, [router, plan])
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')

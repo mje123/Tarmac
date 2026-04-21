@@ -226,7 +226,7 @@ function StartPageInner() {
   const [signupError, setSignupError] = useState('')
   const [signupSuccess, setSignupSuccess] = useState(false)
 
-  // Restore from localStorage (skip if coming fresh from landing with plan)
+  // Restore quiz progress from localStorage (questions only — never restore signup/recommendation)
   useEffect(() => {
     if (urlPlan) {
       localStorage.removeItem('tarmac_quiz')
@@ -236,7 +236,9 @@ function StartPageInner() {
       const saved = localStorage.getItem('tarmac_quiz')
       if (saved) {
         const { step: s, answers: a } = JSON.parse(saved)
-        if (s && a) { setStep(s); setAnswers(a) }
+        // Only restore mid-quiz state, never the signup/recommendation steps
+        if (s && a && s.startsWith('q')) { setStep(s); setAnswers(a) }
+        else { localStorage.removeItem('tarmac_quiz') }
       }
     } catch { /* ignore */ }
   }, [urlPlan])
