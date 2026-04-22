@@ -240,7 +240,7 @@ export default function LandingPage() {
             className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6"
           >
             <Link href="/start" className="btn-gold text-base px-8 py-4 rounded-xl w-full sm:w-auto text-center justify-center font-bold">
-              Try 10 Questions Free
+              Start 7-Day Free Trial
               <ArrowRight className="w-5 h-5" />
             </Link>
             <a href="#demo"
@@ -256,7 +256,7 @@ export default function LandingPage() {
             style={{ color: 'rgba(255,255,255,0.3)' }}
             className="text-xs tracking-wide"
           >
-            No credit card · No time limit · Cancel anytime
+            7 days free · Credit card required · Cancel anytime
           </motion.p>
         </div>
 
@@ -516,7 +516,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <ul className="space-y-2.5 flex-1 mb-6">
-                    {['10 practice questions', 'Full AI explanations', 'No time limit'].map(f => (
+                    {['7 days free', 'Full access to all features', 'Cancel before day 7, pay nothing'].map(f => (
                       <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
                         <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.18)' }} />{f}
                       </li>
