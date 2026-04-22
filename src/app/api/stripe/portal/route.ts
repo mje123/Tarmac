@@ -16,11 +16,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No billing account found' }, { status: 400 })
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tarmac.study'
-
     const session = await stripe.billingPortal.sessions.create({
       customer: profile.stripe_customer_id,
-      return_url: `${appUrl}/settings`,
+      return_url: 'https://tarmac.study/settings',
     })
 
     return NextResponse.json({ url: session.url })
