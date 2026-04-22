@@ -60,7 +60,7 @@ const QUESTIONS: Question[] = [
       '2_weeks':    'Two weeks is tight but doable. Students who focus on weak areas in this window consistently pass.',
       '3_6_weeks':  "That's the sweet spot. Our most successful students study for 3–6 weeks.",
       '2_3_months': "You're thinking ahead — that kind of prep pays off on test day.",
-      'not_sure':   "No rush. Start with free questions and see how it feels.",
+      'not_sure':   "No rush. Start your 7-day free trial and see how it feels.",
     },
   },
   {

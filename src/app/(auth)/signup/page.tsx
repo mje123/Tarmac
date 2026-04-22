@@ -81,7 +81,7 @@ function SignupForm() {
            plan === 'quick_prep' ? 'Getting started with Quick Prep ($69)' :
            plan === 'study_pass' ? 'Getting started with Study Pass ($89)' :
            plan === 'founding_member' ? 'Getting started with Founding Member ($199)' :
-           'Start with 10 free questions'}
+           'Start your 7-day free trial'}
         </p>
       </div>
 

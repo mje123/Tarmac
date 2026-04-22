@@ -656,7 +656,7 @@ export default async function DashboardPage() {
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
                 style={{ background: '#FFB627', color: '#0A1628' }}
               >
-                Start Practicing — Free
+                Start 7-Day Free Trial
                 <ChevronRight className="w-4 h-4" />
               </Link>
               <p className="text-xs text-white/30 mt-3">91% of students who practice 200+ questions pass on their first attempt</p>

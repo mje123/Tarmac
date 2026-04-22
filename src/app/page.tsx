@@ -58,7 +58,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Do you offer refunds?',
-    a: 'All purchases are final and non-refundable. We\'re confident TARMAC works — that\'s why we offer 10 free questions with full AI explanations before you ever pay. Try it first, then decide.',
+    a: 'All purchases are final and non-refundable. We\'re confident TARMAC works — that\'s why we offer a 7-day free trial with full access before you\'re charged. Try it first, then decide.',
   },
   {
     q: 'Can I cancel anytime?',
@@ -652,7 +652,7 @@ export default function LandingPage() {
               <span style={{ color: '#FFB627' }}>The test is next.</span>
             </h2>
             <p className="text-lg mb-9 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-              Start with 10 free questions. You'll know in 5 minutes if TARMAC is different from anything you've tried.
+              Start your 7-day free trial. Full access to every question, the AI tutor, and timed exams — cancel anytime before day 7 and pay nothing.
             </p>
             <Link href="/start" className="btn-gold text-base px-10 py-4 rounded-xl inline-flex items-center gap-2">
               Start Practicing Free
