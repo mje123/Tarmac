@@ -494,7 +494,7 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/start" className="btn-gold block text-center py-4 rounded-xl font-bold text-base">
+                  <Link href="/start" className="btn-gold block w-full text-center py-4 rounded-xl font-bold text-base">
                     Start Free Trial
                   </Link>
                   <p className="text-center text-xs text-white/25 mt-3">
