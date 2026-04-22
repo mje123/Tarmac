@@ -256,7 +256,7 @@ export default function LandingPage() {
             style={{ color: 'rgba(255,255,255,0.3)' }}
             className="text-xs tracking-wide"
           >
-            7 days free · Credit card required · Cancel anytime
+            Cancel anytime
           </motion.p>
         </div>
 
