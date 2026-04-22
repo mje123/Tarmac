@@ -90,7 +90,7 @@ const QUESTIONS: Question[] = [
       { value: 'test_anxiety',       label: '😬  Test anxiety / pressure' },
     ],
     feedbacks: {
-      retake_cost:       "Full access is $89. A retake is $175. This is the math that pays for itself.",
+      retake_cost:       "Your trial is free. A retake is $175. This is the math that pays for itself.",
       not_understanding: "That's exactly why we built TARMAC. Every question has an AI tutor that explains the WHY.",
       no_time:           "200 focused questions in 2 weeks is enough. We'll show you exactly where to spend your time.",
       what_to_focus:     "We track your accuracy by category and tell you exactly what to drill. No guessing.",
@@ -110,7 +110,7 @@ const QUESTIONS: Question[] = [
       first_time:       "You're starting fresh — we'll guide you step by step.",
       didnt_like:       "That's exactly the gap TARMAC fills. Ask follow-up questions until it actually clicks.",
       failed_with_them: "Those tools teach memorization. We teach understanding. There's a real difference.",
-      exploring:        "Fair. Try the 10 free questions and compare the explanations yourself.",
+      exploring:        "Fair. Start your free trial and compare the explanations yourself.",
     },
   },
   {
@@ -135,7 +135,7 @@ const QUESTIONS: Question[] = [
 
 // ─── Recommendation logic ─────────────────────────────────────────────────────
 
-type PlanId = 'quick_prep' | 'study_pass' | 'founding_member' | 'monthly'
+type PlanId = 'beta_monthly'
 
 interface Recommendation {
   planId: PlanId
@@ -147,29 +147,24 @@ interface Recommendation {
 
 function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
   const { test_timeline, confidence_level, biggest_worry, previous_tools } = answers
-
-  let planId: PlanId = 'study_pass'
   const reasons: string[] = []
 
   if (test_timeline === '2_weeks') {
-    planId = 'quick_prep'
-    reasons.push('Your 2-week timeline fits the 60-day Quick Prep perfectly')
+    reasons.push('7 days free gives you a head start — start now, cancel anytime if you pass early')
   } else if (test_timeline === '2_3_months') {
-    planId = 'founding_member'
-    reasons.push("You're planning ahead — lock in lifetime access before the price increases")
+    reasons.push("You've got time to build deep understanding — not just memorize answers")
   } else {
-    planId = 'study_pass'
-    reasons.push('Your 3–6 week timeline is the sweet spot for the 90-day Study Pass')
+    reasons.push('Your timeline is perfect — 200 focused questions in 3–6 weeks is all it takes')
   }
 
   if (confidence_level === 'nervous' || confidence_level === 'unsure') {
     reasons.push('AI tutor on every question gives you the explanations you need to build real confidence')
   } else if (confidence_level === 'very_confident') {
-    reasons.push('Full-length practice exams will validate your knowledge before test day')
+    reasons.push('Full-length timed practice exams will validate your knowledge before test day')
   }
 
   if (biggest_worry === 'retake_cost') {
-    reasons.push('Full access costs less than half of a single FAA retake fee ($175)')
+    reasons.push('A retake costs $175. Your first month is free — the math is obvious')
   } else if (biggest_worry === 'not_understanding') {
     reasons.push('Every question has an AI tutor that explains the why, not just the answer')
   } else if (biggest_worry === 'what_to_focus') {
@@ -177,17 +172,16 @@ function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
   }
 
   if (previous_tools === 'failed_with_them') {
-    reasons.push("Unlike question banks, TARMAC builds genuine understanding — students who switch pass at a 91% rate")
+    reasons.push("TARMAC builds genuine understanding — students who switch pass at a 91% rate")
   }
 
-  const PLANS: Record<PlanId, { name: string; price: string; cta: string }> = {
-    quick_prep:      { name: 'Quick Prep',      price: '$69',  cta: 'Start Quick Prep' },
-    study_pass:      { name: 'Study Pass',       price: '$89',  cta: 'Start Study Pass' },
-    founding_member: { name: 'Founding Member',  price: '$199', cta: 'Get Lifetime Access' },
-    monthly:         { name: 'Monthly',          price: '$44.99/mo', cta: 'Start Monthly' },
+  return {
+    planId: 'beta_monthly',
+    name: 'Full Access',
+    price: '$14.99/mo',
+    reasons: reasons.slice(0, 3),
+    cta: 'Start Free Trial',
   }
-
-  return { planId, ...PLANS[planId], reasons: reasons.slice(0, 3) }
 }
 
 // ─── Animation variants ───────────────────────────────────────────────────────
@@ -495,9 +489,9 @@ function StartPageInner() {
                   <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2.5">Your Profile</div>
                   <div className="space-y-1.5">
                     {[
-                      { label: 'Training stage',  val: answers.training_stage?.replace('_', ' ') },
-                      { label: 'Test timeline',    val: answers.test_timeline?.replace(/_/g, ' ') },
-                      { label: 'Confidence',       val: answers.confidence_level?.replace('_', ' ') },
+                      { label: 'Training stage',  val: answers.training_stage?.replace(/_/g, ' ') },
+                      { label: 'Test timeline',    val: answers.test_timeline?.replace(/_/g, ' ').replace('2 weeks', '2 weeks').replace('3 6 weeks', '3–6 weeks').replace('2 3 months', '2–3 months').replace('not sure', 'Not sure') },
+                      { label: 'Confidence',       val: answers.confidence_level?.replace(/_/g, ' ') },
                       { label: 'Biggest concern',  val: answers.biggest_worry?.replace(/_/g, ' ') },
                     ].filter(r => r.val).map(row => (
                       <div key={row.label} className="flex items-center justify-between text-sm">
@@ -514,10 +508,11 @@ function StartPageInner() {
                   style={{ background: 'rgba(253,176,34,0.07)', border: '1px solid rgba(253,176,34,0.3)' }}
                 >
                   <div className="text-[10px] font-bold uppercase tracking-widest text-[#FDB022] mb-1">Recommended Plan</div>
-                  <div className="flex items-baseline gap-2 mb-3">
+                  <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-xl font-bold text-white">{recommendation.name}</span>
                     <span className="text-lg font-bold text-[#FDB022]">{recommendation.price}</span>
                   </div>
+                  <p className="text-xs text-green-400 font-semibold mb-3">7 days free — no charge until trial ends</p>
                   <div className="space-y-2">
                     {recommendation.reasons.map(r => (
                       <div key={r} className="flex items-start gap-2">
@@ -550,15 +545,9 @@ function StartPageInner() {
                   Start My Free Trial
                 </button>
 
-                <p className="text-center text-xs text-white/30 mb-2">
-                  10 free questions — no credit card required
+                <p className="text-center text-xs text-white/30">
+                  Cancel before 7 days and you won&apos;t be charged
                 </p>
-
-                <div className="text-center">
-                  <Link href="/upgrade" className="text-xs text-white/25 hover:text-white/50 transition-colors">
-                    See all pricing options →
-                  </Link>
-                </div>
               </motion.div>
             )}
 

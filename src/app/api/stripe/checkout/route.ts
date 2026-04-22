@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
     try {
       const body = await request.json()
       if (isBeta) {
-        // Beta mode: always use the beta monthly price
         priceId = process.env.STRIPE_BETA_MONTHLY_PRICE_ID!
       } else {
         priceId = (body.plan && FULL_PLAN_PRICE_MAP[body.plan]) || body.priceId || process.env.STRIPE_STUDY_PASS_PRICE_ID!
@@ -36,10 +35,23 @@ export async function POST(request: NextRequest) {
       priceId = isBeta ? process.env.STRIPE_BETA_MONTHLY_PRICE_ID! : process.env.STRIPE_STUDY_PASS_PRICE_ID!
     }
 
+    // Pre-create or reuse Stripe customer so stripe_customer_id is set before redirect
+    const { data: userProfile } = await supabase.from('users').select('stripe_customer_id, email').eq('id', user.id).single()
+    let customerId = userProfile?.stripe_customer_id ?? null
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: userProfile?.email || user.email || '',
+        metadata: { userId: user.id },
+      })
+      customerId = customer.id
+      await supabase.from('users').update({ stripe_customer_id: customerId }).eq('id', user.id)
+    }
+
     const mode = SUBSCRIPTION_PRICE_IDS.has(priceId) ? 'subscription' : 'payment'
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode,
+      customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: 'https://tarmac.study/dashboard?checkout=success',
       cancel_url: 'https://tarmac.study/#pricing',

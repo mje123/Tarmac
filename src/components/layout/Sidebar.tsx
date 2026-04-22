@@ -25,14 +25,16 @@ const navItems = [
 interface SidebarProps { user: User }
 
 const subscriptionLabels: Record<string, string> = {
-  free: 'Free Trial',
+  free: '',
+  trialing: 'Free Trial',
   study_pass: 'Study Pass',
   checkride_prep: 'Checkride Prep',
   annual: 'Annual Pass',
 }
 
 const subscriptionColors: Record<string, string> = {
-  free: 'text-white/50',
+  free: 'text-white/30',
+  trialing: 'text-green-400',
   study_pass: 'text-[#3E92CC]',
   checkride_prep: 'text-[#FFB627]',
   annual: 'text-green-400',
@@ -96,17 +98,19 @@ export default function Sidebar({ user }: SidebarProps) {
       <div className="px-3 pb-4 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
         <div className="px-3 py-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
           <div className="font-medium text-white text-sm truncate">{user.full_name || 'Pilot'}</div>
-          <div className={cn('text-xs mt-0.5', subscriptionColors[user.subscription_status])}>
-            {subscriptionLabels[user.subscription_status]}
-          </div>
+          {subscriptionLabels[user.subscription_status] && (
+            <div className={cn('text-xs mt-0.5', subscriptionColors[user.subscription_status])}>
+              {subscriptionLabels[user.subscription_status]}
+            </div>
+          )}
         </div>
 
-        {user.subscription_status === 'free' && (
+        {user.subscription_status === 'free' && !user.stripe_customer_id && (
           <Link href="/upgrade"
             className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium transition-all"
             style={{ background: 'rgba(255,182,39,0.1)', border: '1px solid rgba(255,182,39,0.3)', color: '#FFB627' }}>
             <span className="text-base leading-none">⚡</span>
-            Upgrade
+            Start Free Trial
           </Link>
         )}
 

@@ -71,6 +71,8 @@ export default async function DashboardPage() {
   const isExpired = user.subscription_expires_at && new Date(user.subscription_expires_at) < new Date()
   const isFree = user.subscription_status === 'free'
   const isTrialing = user.subscription_status === 'trialing'
+  // Hide trial CTA if user has already initiated checkout (stripe_customer_id set pre-redirect)
+  const hasPaid = !!user.stripe_customer_id || !isFree
 
   const trialDaysLeft = isTrialing && user.subscription_expires_at
     ? Math.max(0, Math.ceil((new Date(user.subscription_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -115,7 +117,7 @@ export default async function DashboardPage() {
       </Suspense>
 
       {/* ── No subscription — prompt to start trial ──────────────────── */}
-      {isFree && (
+      {isFree && !hasPaid && (
         <div
           className="mb-6 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4"
           style={{ background: 'linear-gradient(135deg, rgba(255,182,39,0.1) 0%, rgba(255,182,39,0.04) 100%)', border: '1px solid rgba(255,182,39,0.3)' }}

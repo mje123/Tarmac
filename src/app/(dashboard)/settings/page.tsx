@@ -32,6 +32,8 @@ export default async function SettingsPage() {
   const isExpired = user.subscription_expires_at && new Date(user.subscription_expires_at) < new Date()
   const isTrialing = user.subscription_status === 'trialing'
   const hasBilling = !!user.stripe_customer_id
+  // If stripe_customer_id is set, they've gone through checkout — show billing controls not trial CTA
+  const showTrialCTA = user.subscription_status === 'free' && !hasBilling
 
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto animate-fade-in">
@@ -71,7 +73,11 @@ export default async function SettingsPage() {
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-white/5">
             <span className="text-white/50 text-sm">Plan</span>
-            <span className="text-white text-sm font-medium">{getSubscriptionLabel(user.subscription_status)}</span>
+            <span className="text-white text-sm font-medium">
+              {user.subscription_status === 'free' && hasBilling
+                ? <span className="text-[#FFB627]">Activating…</span>
+                : getSubscriptionLabel(user.subscription_status)}
+            </span>
           </div>
           {isTrialing && user.subscription_expires_at && (
             <div className="flex justify-between items-center py-2 border-b border-white/5">
@@ -92,7 +98,7 @@ export default async function SettingsPage() {
         </div>
 
         <div className="mt-4">
-          {user.subscription_status === 'free' ? (
+          {showTrialCTA ? (
             <SettingsClient hasBilling={false} isUpgrade />
           ) : (
             <SettingsClient hasBilling={hasBilling} isTrialing={isTrialing} />
