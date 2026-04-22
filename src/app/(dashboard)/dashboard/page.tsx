@@ -69,10 +69,12 @@ export default async function DashboardPage() {
   const practiceSessionCount = sessions.filter(s => s.session_type === 'practice_mode').length
 
   const isExpired = user.subscription_expires_at && new Date(user.subscription_expires_at) < new Date()
-  const isFree = user.subscription_status === 'free'
+  const isFreeStatus = user.subscription_status === 'free'
+  const hasBilling = !!user.stripe_customer_id
+  // Treat as paid if they have billing, are admin, or have any non-free subscription
+  const isFree = isFreeStatus && !hasBilling && !user.is_admin
   const isTrialing = user.subscription_status === 'trialing'
-  // Hide trial CTA if user has already initiated checkout (stripe_customer_id set pre-redirect)
-  const hasPaid = !!user.stripe_customer_id || !isFree
+  const hasPaid = hasBilling || !isFreeStatus
 
   const trialDaysLeft = isTrialing && user.subscription_expires_at
     ? Math.max(0, Math.ceil((new Date(user.subscription_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
