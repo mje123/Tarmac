@@ -24,8 +24,9 @@ export function formatDate(dateString: string): string {
 
 export function getSubscriptionLabel(status: SubscriptionStatus): string {
   const labels: Record<SubscriptionStatus, string> = {
-    free: 'Free Trial',
-    study_pass: 'Study Pass',
+    free: 'No Subscription',
+    trialing: 'Free Trial',
+    study_pass: 'Active',
     checkride_prep: 'Checkride Prep',
     annual: 'Annual Pass',
   }
@@ -42,6 +43,7 @@ export function canAccessPractice(status: SubscriptionStatus): boolean {
 
 export function hasActiveSubscription(status: SubscriptionStatus, expiresAt: string | null): boolean {
   if (status === 'free') return false
+  if (status === 'trialing') return true
   if (!expiresAt) return false
   return new Date(expiresAt) > new Date()
 }

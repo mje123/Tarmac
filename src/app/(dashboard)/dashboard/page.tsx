@@ -12,8 +12,6 @@ import { Suspense } from 'react'
 import CheckoutSuccessBanner from '@/components/ui/CheckoutSuccessBanner'
 import UpgradeModal from '@/components/ui/UpgradeModal'
 
-const FREE_QUESTION_LIMIT = 10
-
 function CategoryBar({ category, accuracy, attempted }: { category: string; accuracy: number; attempted: number }) {
   const dot = accuracy >= 80 ? '🟢' : accuracy >= 60 ? '🟡' : '🔴'
   const color = accuracy >= 80 ? '#22c55e' : accuracy >= 60 ? '#FFB627' : '#ef4444'
@@ -40,26 +38,13 @@ export default async function DashboardPage() {
     { data: userProfile },
     { data: progressData },
     { data: recentSessions },
-    { data: practiceSessions },
     { data: savedData },
   ] = await Promise.all([
     supabase.from('users').select('*').eq('id', authUser.id).single(),
     supabase.from('user_progress').select('*').eq('user_id', authUser.id).order('accuracy_percentage', { ascending: true }),
     supabase.from('test_sessions').select('*').eq('user_id', authUser.id).order('started_at', { ascending: false }).limit(5),
-    supabase.from('test_sessions').select('id').eq('user_id', authUser.id),
     supabase.from('saved_questions').select('question_id, saved_at, questions(*)').eq('user_id', authUser.id).order('saved_at', { ascending: false }).limit(5),
   ])
-
-  const allSessionIds = (practiceSessions || []).map(s => s.id)
-  const { count: totalAnswerCount } = allSessionIds.length > 0
-    ? await supabase
-        .from('test_answers')
-        .select('id', { count: 'exact', head: true })
-        .in('session_id', allSessionIds)
-        .not('user_answer', 'is', null)
-    : { count: 0 }
-
-  const freeQuestionsUsed = totalAnswerCount ?? 0
 
   const user: User = userProfile ?? {
     id: authUser.id,
@@ -85,9 +70,11 @@ export default async function DashboardPage() {
 
   const isExpired = user.subscription_expires_at && new Date(user.subscription_expires_at) < new Date()
   const isFree = user.subscription_status === 'free'
+  const isTrialing = user.subscription_status === 'trialing'
 
-  const freeQuestionsRemaining = Math.max(0, FREE_QUESTION_LIMIT - freeQuestionsUsed)
-  const freeUsedPct = Math.min(100, (freeQuestionsUsed / FREE_QUESTION_LIMIT) * 100)
+  const trialDaysLeft = isTrialing && user.subscription_expires_at
+    ? Math.max(0, Math.ceil((new Date(user.subscription_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null
 
   const volumeScore = Math.min(totalAttempted / 200, 1) * 100
   const readiness = totalAttempted === 0 ? 0 : Math.round(overallAccuracy * 0.65 + volumeScore * 0.35)
@@ -127,70 +114,37 @@ export default async function DashboardPage() {
         <CheckoutSuccessBanner />
       </Suspense>
 
-      {/* ── Free trial urgent banner ─────────────────────────────────── */}
+      {/* ── No subscription — prompt to start trial ──────────────────── */}
       {isFree && (
         <div
-          className="mb-6 rounded-2xl p-5"
-          style={{
-            background: freeQuestionsRemaining === 0
-              ? 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.06) 100%)'
-              : 'linear-gradient(135deg, rgba(255,182,39,0.12) 0%, rgba(255,182,39,0.06) 100%)',
-            border: `1px solid ${freeQuestionsRemaining === 0 ? 'rgba(239,68,68,0.4)' : 'rgba(255,182,39,0.3)'}`,
-          }}
+          className="mb-6 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+          style={{ background: 'linear-gradient(135deg, rgba(255,182,39,0.1) 0%, rgba(255,182,39,0.04) 100%)', border: '1px solid rgba(255,182,39,0.3)' }}
         >
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-bold uppercase tracking-wider" style={{ color: freeQuestionsRemaining === 0 ? '#ef4444' : '#FFB627' }}>
-                  {freeQuestionsRemaining === 0 ? '⚠ Free Trial Ended' : '⚠ Free Trial'}
-                </span>
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-bold"
-                  style={{
-                    background: freeQuestionsRemaining === 0 ? 'rgba(239,68,68,0.2)' : 'rgba(255,182,39,0.15)',
-                    color: freeQuestionsRemaining === 0 ? '#ef4444' : '#FFB627',
-                  }}
-                >
-                  {freeQuestionsRemaining === 0 ? '0 questions remaining' : `${freeQuestionsRemaining} of ${FREE_QUESTION_LIMIT} left`}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${freeUsedPct}%`, background: freeQuestionsRemaining === 0 ? '#ef4444' : '#FFB627' }}
-                  />
-                </div>
-                <span className="text-xs font-bold text-white/60 shrink-0 tabular-nums">
-                  {freeQuestionsUsed}/{FREE_QUESTION_LIMIT} used
-                </span>
-              </div>
-
-              <p className="text-xs text-white/50">
-                {freeQuestionsRemaining === 0
-                  ? `You've used all ${FREE_QUESTION_LIMIT} free questions. Unlock everything to keep building toward your checkride.`
-                  : freeQuestionsUsed === 0
-                    ? `Start with your 10 free questions — no credit card needed. See exactly how TARMAC works before you commit.`
-                    : `${freeQuestionsUsed} down, ${freeQuestionsRemaining} free questions left. Students who pass practice 200+ — unlock the full bank when you're ready.`}
-              </p>
-            </div>
-
-            <UpgradeModal
-              readiness={readiness}
-              questionsNeeded={questionsToReady}
-              questionsAttempted={totalAttempted}
-              trigger={
-                <button
-                  className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-                  style={{ background: '#FFB627', color: '#0A1628', boxShadow: '0 4px 16px rgba(255,182,39,0.25)' }}
-                >
-                  Unlock Full Access
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              }
-            />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-[#FFB627] mb-1">Start your 7-day free trial</p>
+            <p className="text-xs text-white/50">Full access to all 1,400+ questions, AI tutor, and timed exams. $14.99/mo after trial — cancel anytime.</p>
           </div>
+          <Link
+            href="/upgrade"
+            className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
+            style={{ background: '#FFB627', color: '#0A1628', boxShadow: '0 4px 16px rgba(255,182,39,0.25)' }}
+          >
+            Start Free Trial
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
+
+      {/* ── Trial countdown ──────────────────────────────────────────── */}
+      {isTrialing && trialDaysLeft !== null && trialDaysLeft <= 3 && (
+        <div
+          className="mb-6 rounded-2xl p-4 flex items-center gap-4"
+          style={{ background: 'rgba(255,182,39,0.08)', border: '1px solid rgba(255,182,39,0.25)' }}
+        >
+          <p className="text-xs text-white/60 flex-1">
+            <span className="font-semibold text-[#FFB627]">{trialDaysLeft === 0 ? 'Trial ends today' : `${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left in trial`}</span>
+            {' · '}$14.99/mo begins automatically unless cancelled.
+          </p>
         </div>
       )}
 
@@ -210,21 +164,21 @@ export default async function DashboardPage() {
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">
-          {isFree ? `Welcome, ${firstName} ✈️` : `Welcome back, ${firstName} ✈️`}
+          Welcome back, {firstName} ✈️
         </h1>
         <p className="text-white/60 mt-1 text-sm">
-          {isFree
-            ? <span>Free Trial &middot; {totalAttempted > 0
-                ? <span className="font-semibold" style={{ color: readiness >= 70 ? '#22c55e' : '#FFB627' }}>Pass prediction: {readiness}% — {readiness >= 70 ? 'on track' : 'keep practicing to reach 70%'}</span>
-                : <span className="text-white/50">Start practicing to track your readiness</span>
-              }</span>
-            : <>
-                {getSubscriptionLabel(user.subscription_status)}
-                {user.subscription_expires_at && !isExpired && (
-                  <span className="ml-2 text-white/40">· Expires {formatDate(user.subscription_expires_at)}</span>
-                )}
-              </>
-          }
+          {getSubscriptionLabel(user.subscription_status)}
+          {isTrialing && trialDaysLeft !== null && (
+            <span className="ml-2 text-white/40">· {trialDaysLeft} day{trialDaysLeft === 1 ? '' : 's'} remaining</span>
+          )}
+          {!isTrialing && user.subscription_expires_at && !isExpired && (
+            <span className="ml-2 text-white/40">· Renews {formatDate(user.subscription_expires_at)}</span>
+          )}
+          {totalAttempted > 0 && (
+            <span className="ml-2 font-semibold" style={{ color: readiness >= 70 ? '#22c55e' : '#FFB627' }}>
+              · Readiness: {readiness}%
+            </span>
+          )}
         </p>
       </div>
 
@@ -401,7 +355,7 @@ export default async function DashboardPage() {
                     className="w-full py-2.5 rounded-lg text-xs font-bold transition-opacity hover:opacity-90"
                     style={{ background: '#FFB627', color: '#0A1628' }}
                   >
-                    Unlock Full Access — $89
+                    Start Free Trial — 7 Days Free
                   </button>
                 }
               />
@@ -553,7 +507,7 @@ export default async function DashboardPage() {
                     className="w-full py-3 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
                     style={{ background: '#FFB627', color: '#0A1628', boxShadow: '0 4px 16px rgba(255,182,39,0.2)' }}
                   >
-                    Unlock Everything — $89
+                    Start Free Trial — 7 Days Free
                   </button>
                 }
               />
@@ -691,7 +645,7 @@ export default async function DashboardPage() {
               <div className="text-4xl mb-3">✈️</div>
               <h3 className="text-lg font-bold text-white mb-2">You&apos;re ready for takeoff</h3>
               <p className="text-sm text-white/60 mb-4 max-w-sm mx-auto">
-                Start your 10 free questions to see exactly how TARMAC works. No credit card, no commitment — just real FAA prep.
+                Start practicing to see exactly how TARMAC works. Track your readiness across all 9 knowledge areas.
               </p>
               <Link
                 href="/practice"

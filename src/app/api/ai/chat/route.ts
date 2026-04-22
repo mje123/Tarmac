@@ -119,11 +119,30 @@ function getOptionText(options: Record<string, string>, key: string): string {
   return options[key] || key
 }
 
+const AI_MONTHLY_CALL_LIMIT = 400 // ~$6/user/month at claude-sonnet rates
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    // Server-side monthly AI usage check
+    const startOfMonth = new Date()
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+    const { data: monthlyConvs } = await supabase
+      .from('ai_conversations')
+      .select('messages')
+      .eq('user_id', user.id)
+      .gte('updated_at', startOfMonth.toISOString())
+    const totalAICalls = (monthlyConvs ?? []).reduce((sum, conv) => {
+      const msgs = conv.messages as Array<{ role: string }> | null
+      return sum + (msgs?.filter(m => m.role === 'assistant').length ?? 0)
+    }, 0)
+    if (totalAICalls >= AI_MONTHLY_CALL_LIMIT) {
+      return NextResponse.json({ error: 'MONTHLY_AI_LIMIT' }, { status: 429 })
+    }
 
     const body = await request.json()
     const {

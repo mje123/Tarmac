@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { isBeta } from '@/lib/pricing'
 
-const PLAN_PRICE_MAP: Record<string, string | undefined> = {
+// Full-pricing plan → price ID map
+const FULL_PLAN_PRICE_MAP: Record<string, string | undefined> = {
   monthly:          process.env.STRIPE_MONTHLY_PRICE_ID,
   quick_prep:       process.env.STRIPE_QUICK_PREP_PRICE_ID,
   study_pass:       process.env.STRIPE_STUDY_PASS_PRICE_ID,
   founding_member:  process.env.STRIPE_FOUNDING_MEMBER_PRICE_ID,
 }
 
-// Both the new monthly and the legacy $34.99/mo recurring price use subscription mode
 const SUBSCRIPTION_PRICE_IDS = new Set([
   process.env.STRIPE_MONTHLY_PRICE_ID,
-  process.env.STRIPE_STUDY_PASS_LEGACY_PRICE_ID,
+  process.env.STRIPE_BETA_MONTHLY_PRICE_ID,
 ])
 
 export async function POST(request: NextRequest) {
@@ -25,21 +26,33 @@ export async function POST(request: NextRequest) {
     let priceId: string
     try {
       const body = await request.json()
-      priceId = (body.plan && PLAN_PRICE_MAP[body.plan]) || body.priceId || process.env.STRIPE_STUDY_PASS_PRICE_ID!
+      if (isBeta) {
+        // Beta mode: always use the beta monthly price
+        priceId = process.env.STRIPE_BETA_MONTHLY_PRICE_ID!
+      } else {
+        priceId = (body.plan && FULL_PLAN_PRICE_MAP[body.plan]) || body.priceId || process.env.STRIPE_STUDY_PASS_PRICE_ID!
+      }
     } catch {
-      priceId = process.env.STRIPE_STUDY_PASS_PRICE_ID!
+      priceId = isBeta ? process.env.STRIPE_BETA_MONTHLY_PRICE_ID! : process.env.STRIPE_STUDY_PASS_PRICE_ID!
     }
 
     const mode = SUBSCRIPTION_PRICE_IDS.has(priceId) ? 'subscription' : 'payment'
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode,
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: 'https://tarmac.study/dashboard?checkout=success',
       cancel_url: 'https://tarmac.study/#pricing',
       allow_promotion_codes: true,
       metadata: { userId: user.id, priceId },
-    })
+    }
+
+    // Add 7-day free trial for beta subscription
+    if (isBeta && mode === 'subscription') {
+      sessionParams.subscription_data = { trial_period_days: 7 }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams)
 
     if (!session.url) {
       return NextResponse.json({ error: 'Stripe returned no URL — check Vercel logs' }, { status: 500 })

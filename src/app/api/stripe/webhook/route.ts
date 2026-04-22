@@ -40,17 +40,19 @@ export async function POST(request: NextRequest) {
         const customerId = session.customer as string
         let periodEnd: string | null = null
 
+        let subStatus: string = 'study_pass'
         if (session.mode === 'subscription' && session.subscription) {
           const sub = await stripe.subscriptions.retrieve(session.subscription as string)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const periodEndTs = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
           if (periodEndTs) periodEnd = new Date(periodEndTs * 1000).toISOString()
+          subStatus = sub.status === 'trialing' ? 'trialing' : 'study_pass'
         } else if (session.mode === 'payment' && priceId) {
           periodEnd = expiryForPriceId(priceId)
         }
 
         await supabase.from('users').update({
-          subscription_status: 'study_pass',
+          subscription_status: subStatus,
           stripe_customer_id: customerId,
           subscription_expires_at: periodEnd,
           updated_at: new Date().toISOString(),
@@ -91,12 +93,13 @@ export async function POST(request: NextRequest) {
         const sub = event.data.object as Stripe.Subscription
         const customerId = sub.customer as string
         const isActive = sub.status === 'active' || sub.status === 'trialing'
+        const newStatus = sub.status === 'trialing' ? 'trialing' : (sub.status === 'active' ? 'study_pass' : 'free')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const periodEndTs = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
         const periodEnd = periodEndTs ? new Date(periodEndTs * 1000).toISOString() : null
 
         await supabase.from('users').update({
-          subscription_status: isActive ? 'study_pass' : 'free',
+          subscription_status: newStatus,
           subscription_expires_at: isActive ? periodEnd : null,
           updated_at: new Date().toISOString(),
         }).eq('stripe_customer_id', customerId)

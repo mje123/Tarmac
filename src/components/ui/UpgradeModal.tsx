@@ -13,7 +13,6 @@ interface Props {
 export default function UpgradeModal({
   trigger,
   readiness = 0,
-  questionsNeeded = 181,
   questionsAttempted = 0,
 }: Props) {
   const [open, setOpen] = useState(false)
@@ -27,7 +26,7 @@ export default function UpgradeModal({
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: 'study_pass' }),
+        body: JSON.stringify({ plan: 'beta_monthly' }),
       })
       const data = await res.json()
       if (data.url) {
@@ -43,7 +42,6 @@ export default function UpgradeModal({
   }
 
   const hasPracticed = questionsAttempted > 0
-  const daysToReady = Math.ceil(questionsNeeded / 13)
 
   return (
     <>
@@ -67,27 +65,24 @@ export default function UpgradeModal({
             </button>
 
             <div className="p-6">
-              {/* Header */}
               <div className="mb-5">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#FFB627] mb-1.5">Study Pass — $89</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#FFB627] mb-1.5">Beta — 7-Day Free Trial</div>
                 <h2 className="text-xl font-bold text-white leading-snug">
-                  The smartest $89 you&apos;ll spend on flight training.
+                  Start free. Pass on your first try.
                 </h2>
                 <p className="text-sm text-white/45 mt-1">
-                  FAA retake fee: <span className="text-red-400 font-semibold">$175</span>.
-                  Full access: <span className="text-[#FFB627] font-semibold">$89</span>.
-                  {' '}The math is obvious.
+                  Try everything free for 7 days — no charge until your trial ends.
+                  Then just <span className="text-[#FFB627] font-semibold">$14.99/mo</span>. Cancel anytime.
                 </p>
               </div>
 
-              {/* Value stack — compact */}
               <div className="space-y-2 mb-5">
                 {[
                   'All 1,400+ FAA questions — unlimited practice',
-                  'AI tutor explains the WHY on every wrong answer',
+                  'AI tutor explains every wrong answer',
                   'Full 60-question timed practice exams',
-                  'Real-time progress across all 9 ACS knowledge areas',
-                  '90 days of access — more than enough to pass',
+                  'Real-time progress across all 9 knowledge areas',
+                  '7-day free trial — no charge until trial ends',
                 ].map(f => (
                   <div key={f} className="flex items-center gap-2.5">
                     <CheckCircle className="w-3.5 h-3.5 text-green-400 shrink-0" />
@@ -96,45 +91,6 @@ export default function UpgradeModal({
                 ))}
               </div>
 
-              {/* Math */}
-              <div
-                className="rounded-xl p-4 mb-5"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-              >
-                <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-3">The Math</div>
-                <div className="space-y-2">
-                  {[
-                    { label: 'FAA retake fee if you fail', value: '$175', color: '#ef4444' },
-                    { label: 'TARMAC full access (90 days)', value: '$89', color: '#FFB627' },
-                    { label: 'You save', value: '$86', color: '#22c55e' },
-                  ].map(row => (
-                    <div key={row.label} className="flex items-center justify-between">
-                      <span className="text-sm text-white/55">{row.label}</span>
-                      <span className="text-base font-bold tabular-nums" style={{ color: row.color }}>{row.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Social proof — compact */}
-              <div className="grid grid-cols-3 gap-2 mb-5">
-                {[
-                  { stat: '91%',  label: 'pass 1st try' },
-                  { stat: '87%',  label: 'avg score' },
-                  { stat: '~2wk', label: 'avg prep time' },
-                ].map(s => (
-                  <div
-                    key={s.stat}
-                    className="text-center py-2.5 rounded-lg"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-                  >
-                    <div className="text-base font-bold text-white">{s.stat}</div>
-                    <div className="text-[10px] text-white/35 mt-0.5">{s.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Readiness context — only when they've actually practiced */}
               {hasPracticed && readiness < 70 && (
                 <div
                   className="rounded-xl p-3 mb-4 flex items-start gap-2"
@@ -143,14 +99,13 @@ export default function UpgradeModal({
                   <span className="text-[#FFB627] text-sm shrink-0">⚡</span>
                   <p className="text-sm text-white/65">
                     You&apos;re at <strong className="text-white">{readiness}%</strong> readiness.
-                    With full access and ~{daysToReady} days of focused practice, you can clear the FAA&apos;s 70% bar.
+                    Students who use the full question bank pass at 91%.
                   </p>
                 </div>
               )}
 
               {error && <p className="text-sm text-red-400 mb-3">{error}</p>}
 
-              {/* CTAs */}
               <button
                 onClick={handleUpgrade}
                 disabled={loading}
@@ -159,18 +114,11 @@ export default function UpgradeModal({
               >
                 {loading
                   ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
-                  : 'GET FULL ACCESS — $89'}
+                  : 'START FREE TRIAL — 7 DAYS FREE'}
               </button>
 
-              <button
-                onClick={() => setOpen(false)}
-                className="w-full py-2 rounded-xl text-xs text-white/25 hover:text-white/50 transition-colors"
-              >
-                I&apos;ll take my chances with the $175 retake fee
-              </button>
-
-              <p className="text-center text-[10px] text-white/20 mt-3">
-                247 students upgraded this week · 91% pass rate
+              <p className="text-center text-[10px] text-white/25 mt-2">
+                Cancel before trial ends and you won&apos;t be charged. $14.99/mo after.
               </p>
             </div>
           </div>

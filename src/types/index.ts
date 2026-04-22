@@ -1,4 +1,4 @@
-export type SubscriptionStatus = 'free' | 'study_pass' | 'checkride_prep' | 'annual'
+export type SubscriptionStatus = 'free' | 'trialing' | 'study_pass' | 'checkride_prep' | 'annual'
 
 export type QuestionCategory =
   | 'Regulations'

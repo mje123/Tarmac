@@ -9,6 +9,7 @@ import {
   ChevronDown, ChevronUp, ArrowRight, Plane, MessageSquare,
   Zap, TrendingUp, AlertTriangle,
 } from 'lucide-react'
+import { isBeta, BETA_PLAN } from '@/lib/pricing'
 
 // ─── ANIMATION HELPERS ───────────────────────────────────────────────────────
 function FadeUp({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -450,142 +451,165 @@ export default function LandingPage() {
           <FadeUp>
             <div className="text-center mb-14">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Pricing</p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Less than one failed retake.</h2>
-              <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                The FAA charges $175 every time you retake the written. Pick a plan once.
-              </p>
+              {isBeta ? (
+                <>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Try it free for 7 days.</h2>
+                  <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    No charge until your trial ends. Cancel anytime before then.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Less than one failed retake.</h2>
+                  <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    The FAA charges $175 every time you retake the written. Pick a plan once.
+                  </p>
+                </>
+              )}
             </div>
           </FadeUp>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-
-            {/* Free Trial */}
-            <FadeUp delay={0.05}>
-              <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="mb-6">
-                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Free Trial</div>
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-3xl font-extrabold text-white">$0</span>
-                    <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>forever</span>
-                  </div>
-                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>No card needed</p>
-                </div>
-                <ul className="space-y-2.5 flex-1 mb-6">
-                  {['10 practice questions', 'Full AI explanations', 'No time limit'].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                      <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.18)' }} />{f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/start" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
-                  Start Free
-                </Link>
-              </div>
-            </FadeUp>
-
-            {/* Quick Prep */}
+          {isBeta ? (
+            /* ── Beta: single plan ── */
             <FadeUp delay={0.1}>
-              <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div className="mb-6">
-                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Quick Prep</div>
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-3xl font-extrabold text-white">$69</span>
-                    <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>one-time</span>
+              <div className="max-w-md mx-auto">
+                <div className="rounded-2xl p-8 relative" style={{ background: 'rgba(255,182,39,0.06)', border: '2px solid rgba(255,182,39,0.5)' }}>
+                  <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
+                    <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: '#FFB627', color: '#0A1628' }}>
+                      BETA — Limited Offer
+                    </span>
                   </div>
-                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>60-day access</p>
+                  <div className="text-center mt-2 mb-6">
+                    <div className="text-xs font-bold uppercase tracking-widest text-[#FFB627] mb-3">{BETA_PLAN.name}</div>
+                    <div className="flex items-end justify-center gap-1 mb-1">
+                      <span className="text-5xl font-extrabold text-white">{BETA_PLAN.price}</span>
+                      <span className="text-white/40 text-lg mb-1">{BETA_PLAN.period}</span>
+                    </div>
+                    <p className="text-sm text-green-400 font-semibold mt-1">7 days free — no charge until trial ends</p>
+                  </div>
+                  <ul className="space-y-3 mb-8">
+                    {BETA_PLAN.features.map(f => (
+                      <li key={f} className="flex items-start gap-3 text-sm text-white/75">
+                        <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/start" className="btn-gold block text-center py-4 rounded-xl font-bold text-base">
+                    Start Free Trial
+                  </Link>
+                  <p className="text-center text-xs text-white/25 mt-3">
+                    Cancel before 7 days — you won&apos;t be charged
+                  </p>
                 </div>
-                <ul className="space-y-2.5 flex-1 mb-6">
-                  {['All 1,400+ questions', 'AI tutor on every question', 'Progress by knowledge area', 'Timed practice exams'].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                      <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }} />{f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/start?plan=quick_prep" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
-                  Get Quick Prep
-                </Link>
               </div>
             </FadeUp>
-
-            {/* Study Pass — HERO */}
-            <FadeUp delay={0.15}>
-              <div className="rounded-2xl p-6 flex flex-col h-full relative" style={{ background: '#0c1f4a', border: '2px solid #FFB627' }}>
-                <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
-                  <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: '#FFB627', color: '#0A1628' }}>
-                    Most Popular
-                  </span>
-                </div>
-                <div className="mb-6 mt-3">
-                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Study Pass</div>
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-3xl font-extrabold text-white">$89</span>
-                    <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.35)' }}>one-time</span>
+          ) : (
+            /* ── Full pricing: 4 plans ── */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+              <FadeUp delay={0.05}>
+                <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="mb-6">
+                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Free Trial</div>
+                    <div className="flex items-baseline gap-1 mb-1">
+                      <span className="text-3xl font-extrabold text-white">$0</span>
+                      <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>forever</span>
+                    </div>
                   </div>
-                  <p className="text-xs mt-1 font-medium" style={{ color: '#FFB627' }}>90 days · Half the cost of failing</p>
+                  <ul className="space-y-2.5 flex-1 mb-6">
+                    {['10 practice questions', 'Full AI explanations', 'No time limit'].map(f => (
+                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                        <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.18)' }} />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/start" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
+                    Start Free
+                  </Link>
                 </div>
-                <ul className="space-y-2.5 flex-1 mb-6">
-                  {[
-                    'All 1,400+ questions',
-                    'AI tutor — unlimited follow-ups',
-                    'Progress by knowledge area',
-                    'Unlimited timed exams',
-                    'FAA supplement figures',
-                    '90-day access',
-                  ].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.82)' }}>
-                      <CheckCircle className="w-3.5 h-3.5 shrink-0 text-[#FFB627]" />{f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/start?plan=study_pass" className="btn-gold block text-center py-3 rounded-xl font-bold text-sm">
-                  Get Study Pass — $89
-                </Link>
-              </div>
-            </FadeUp>
-
-            {/* Founding Member */}
-            <FadeUp delay={0.2}>
-              <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(90,184,245,0.22)' }}>
-                <div className="mb-6">
-                  <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#5ab8f5' }}>Founding Member</div>
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-3xl font-extrabold text-white">$199</span>
-                    <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>one-time</span>
+              </FadeUp>
+              <FadeUp delay={0.1}>
+                <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div className="mb-6">
+                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Quick Prep</div>
+                    <div className="flex items-baseline gap-1 mb-1">
+                      <span className="text-3xl font-extrabold text-white">$69</span>
+                      <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>one-time</span>
+                    </div>
                   </div>
-                  <p className="text-xs mt-1 font-medium" style={{ color: '#5ab8f5' }}>Lifetime access</p>
+                  <ul className="space-y-2.5 flex-1 mb-6">
+                    {['All 1,400+ questions', 'AI tutor on every question', 'Progress by knowledge area', 'Timed practice exams'].map(f => (
+                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                        <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }} />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/start?plan=quick_prep" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
+                    Get Quick Prep
+                  </Link>
                 </div>
-                <ul className="space-y-2.5 flex-1 mb-2">
-                  {[
-                    'Everything in Study Pass',
-                    'Lifetime access',
-                    'Future ratings included†',
-                    'Price locks in now',
-                  ].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                      <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#5ab8f5' }} />{f}
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                  Price increases to $299 at Instrument launch.
-                </p>
-                <Link href="/start?plan=founding_member" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'rgba(90,184,245,0.1)', border: '1px solid rgba(90,184,245,0.25)', color: '#5ab8f5' }}>
-                  Get Founding Member
-                </Link>
-              </div>
-            </FadeUp>
-          </div>
+              </FadeUp>
+              <FadeUp delay={0.15}>
+                <div className="rounded-2xl p-6 flex flex-col h-full relative" style={{ background: '#0c1f4a', border: '2px solid #FFB627' }}>
+                  <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
+                    <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: '#FFB627', color: '#0A1628' }}>Most Popular</span>
+                  </div>
+                  <div className="mb-6 mt-3">
+                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Study Pass</div>
+                    <div className="flex items-baseline gap-1 mb-1">
+                      <span className="text-3xl font-extrabold text-white">$89</span>
+                      <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.35)' }}>one-time</span>
+                    </div>
+                    <p className="text-xs mt-1 font-medium" style={{ color: '#FFB627' }}>90 days · Half the cost of failing</p>
+                  </div>
+                  <ul className="space-y-2.5 flex-1 mb-6">
+                    {['All 1,400+ questions', 'AI tutor — unlimited follow-ups', 'Progress by knowledge area', 'Unlimited timed exams', 'FAA supplement figures'].map(f => (
+                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.82)' }}>
+                        <CheckCircle className="w-3.5 h-3.5 shrink-0 text-[#FFB627]" />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/start?plan=study_pass" className="btn-gold block text-center py-3 rounded-xl font-bold text-sm">Get Study Pass — $89</Link>
+                </div>
+              </FadeUp>
+              <FadeUp delay={0.2}>
+                <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(90,184,245,0.22)' }}>
+                  <div className="mb-6">
+                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#5ab8f5' }}>Founding Member</div>
+                    <div className="flex items-baseline gap-1 mb-1">
+                      <span className="text-3xl font-extrabold text-white">$199</span>
+                      <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>one-time</span>
+                    </div>
+                    <p className="text-xs mt-1 font-medium" style={{ color: '#5ab8f5' }}>Lifetime access</p>
+                  </div>
+                  <ul className="space-y-2.5 flex-1 mb-2">
+                    {['Everything in Study Pass', 'Lifetime access', 'Future ratings included†', 'Price locks in now'].map(f => (
+                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                        <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#5ab8f5' }} />{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.2)' }}>Price increases to $299 at Instrument launch.</p>
+                  <Link href="/start?plan=founding_member" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'rgba(90,184,245,0.1)', border: '1px solid rgba(90,184,245,0.25)', color: '#5ab8f5' }}>
+                    Get Founding Member
+                  </Link>
+                </div>
+              </FadeUp>
+            </div>
+          )}
 
           <FadeUp delay={0.25}>
-            <p className="text-center mt-6 text-sm" style={{ color: 'rgba(255,255,255,0.22)' }}>
-              Need flexibility?{' '}
-              <Link href="/start?plan=monthly" className="underline hover:text-white/40 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                $44.99/mo — cancel anytime
-              </Link>
-            </p>
+            {!isBeta && (
+              <p className="text-center mt-6 text-sm" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                Need flexibility?{' '}
+                <Link href="/start?plan=monthly" className="underline hover:text-white/40 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  $44.99/mo — cancel anytime
+                </Link>
+              </p>
+            )}
             <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.15)' }}>
-              †Instrument, Commercial &amp; CFI prep coming. Founding members get access at no extra cost.
-              {' '}All one-time sales final. Not affiliated with the FAA. See <Link href="/terms" className="underline">Terms</Link>.
+              {isBeta
+                ? 'Beta pricing. Not affiliated with the FAA.'
+                : '†Instrument, Commercial & CFI prep coming. Founding members get access at no extra cost. All one-time sales final. Not affiliated with the FAA.'}
             </p>
           </FadeUp>
         </div>

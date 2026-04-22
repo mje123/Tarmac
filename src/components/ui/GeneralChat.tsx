@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, Bot, ChevronDown, ChevronUp, Lock } from 'lucide-react'
-import { getAIMsgsUsed, incrementAIMsgs, isAILimitReached, AI_MSG_LIMIT } from '@/lib/aiMessageLimit'
+import { Send, Loader2, Bot, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -25,15 +24,9 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [msgsUsed, setMsgsUsed] = useState(0)
-  const [isPaid, setIsPaid] = useState(false)
+  const [limitReached, setLimitReached] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    setMsgsUsed(getAIMsgsUsed())
-    fetch('/api/user/subscription').then(r => r.json()).then(d => setIsPaid(d.isPaid))
-  }, [])
 
   useEffect(() => {
     if (open && messages.length === 0) {
@@ -49,16 +42,9 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const limitReached = !isPaid && msgsUsed >= AI_MSG_LIMIT
-
   async function sendMessage(text?: string) {
     const userMsg = (text ?? input).trim()
     if (!userMsg || loading) return
-
-    if (isAILimitReached()) {
-      setMsgsUsed(AI_MSG_LIMIT)
-      return
-    }
 
     setInput('')
     const newMessages: Message[] = [...messages, { role: 'user', content: userMsg }]
@@ -71,11 +57,10 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages, currentQuestionContext }),
       })
+      if (res.status === 429) { setLimitReached(true); return }
       const data = await res.json()
       if (data.message) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
-        const used = incrementAIMsgs()
-        setMsgsUsed(used)
       }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error — please try again.' }])
@@ -113,6 +98,11 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
         <div className="flex flex-col" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           {/* Messages */}
           <div className="overflow-y-auto px-4 py-4 space-y-3 scrollbar-hidden" style={{ maxHeight: '320px' }}>
+            {limitReached && (
+              <div className="text-center py-4 text-white/50 text-sm">
+                AI usage limit reached for this month. Resets on the 1st.
+              </div>
+            )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                 {msg.role === 'assistant' && (
@@ -165,21 +155,7 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
             </div>
           )}
 
-          {/* Limit wall */}
-          {limitReached ? (
-            <div className="mx-4 mb-4 rounded-xl p-4 text-center" style={{ background: 'rgba(255,182,39,0.08)', border: '1px solid rgba(255,182,39,0.2)' }}>
-              <Lock className="w-5 h-5 text-[#FFB627] mx-auto mb-2" />
-              <div className="text-sm font-semibold text-white mb-1">Free limit reached ({AI_MSG_LIMIT} messages)</div>
-              <div className="text-xs text-white/50 mb-3">Upgrade to Study Pass for unlimited AI Tutor access.</div>
-              <a
-                href="/dashboard/settings"
-                className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-[#0A2463]"
-                style={{ background: 'linear-gradient(135deg, #FFB627, #e5a020)' }}
-              >
-                Upgrade Now →
-              </a>
-            </div>
-          ) : (
+          {!limitReached && (
             <div className="px-4 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
               <form onSubmit={e => { e.preventDefault(); sendMessage() }} className="flex gap-2">
                 <input
@@ -187,7 +163,7 @@ export default function GeneralChat({ currentQuestionContext }: Props) {
                   type="text"
                   value={input}
                   onChange={e => setInput(e.target.value)}
-                  placeholder={isPaid ? 'Ask about regulations, weather, airspace...' : `Ask about regulations, weather, airspace… (${AI_MSG_LIMIT - msgsUsed} left)`}
+                  placeholder="Ask about regulations, weather, airspace..."
                   disabled={loading}
                   className="flex-1 text-sm"
                   style={{ borderRadius: '12px', padding: '10px 14px' }}

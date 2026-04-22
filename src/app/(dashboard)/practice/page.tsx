@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
@@ -83,8 +83,6 @@ export default function PracticePage() {
   const [showAI, setShowAI] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [askedIds, setAskedIds] = useState<string[]>([])
-  const [freeQuestionsLeft, setFreeQuestionsLeft] = useState<number | null>(null)
-  const freeQuestionsLeftRef = useRef<number | null>(null)
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [resumeState, setResumeState] = useState<PracticeState | null>(null)
   const [streak, setStreak] = useState(0)
@@ -119,16 +117,9 @@ export default function PracticePage() {
         fetch('/api/questions/save'),
       ])
       const data = await sessionRes.json()
-      if (data.error === 'FREE_LIMIT') {
-        setFreeQuestionsLeft(0)
-        setLoading(false)
-        return
-      }
       const savedData = await savedRes.json()
       setSavedIds(new Set(savedData.savedIds || []))
       setSessionId(data.sessionId)
-      freeQuestionsLeftRef.current = data.freeQuestionsLeft ?? null
-      setFreeQuestionsLeft(data.freeQuestionsLeft ?? null)
       setCorrectCount(0)
       setTotalAnswered(0)
       setAskedIds([])
@@ -143,19 +134,9 @@ export default function PracticePage() {
   async function resumeSession(state: PracticeState) {
     setLoading(true)
     try {
-      const [savedRes, freeRes] = await Promise.all([
-        fetch('/api/questions/save'),
-        fetch('/api/sessions/free-remaining'),
-      ])
+      const savedRes = await fetch('/api/questions/save')
       const savedData = await savedRes.json()
-      const freeData = await freeRes.json()
       setSavedIds(new Set(savedData.savedIds || []))
-      freeQuestionsLeftRef.current = freeData.freeQuestionsLeft ?? null
-      setFreeQuestionsLeft(freeData.freeQuestionsLeft ?? null)
-      if (freeData.freeQuestionsLeft === 0) {
-        setLoading(false)
-        return
-      }
       const restoredCats = new Set<QuestionCategory>(state.selectedCategories ?? [])
       setSessionId(state.sessionId)
       setCategory(state.category)
@@ -223,20 +204,11 @@ export default function PracticePage() {
       body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect }),
     })
     savePracticeProgress(sessionId, category, newCorrect, newTotal, askedIds, [...selectedCategories])
-    if (freeQuestionsLeftRef.current !== null) {
-      const next = freeQuestionsLeftRef.current - 1
-      freeQuestionsLeftRef.current = next
-      setFreeQuestionsLeft(next)
-    }
     if (isCorrect) setPhase('correct')
     else setPhase('wrong')
   }
 
   async function nextQuestion() {
-    if (freeQuestionsLeftRef.current !== null && freeQuestionsLeftRef.current <= 0) {
-      setFreeQuestionsLeft(0)
-      return
-    }
     const newIds = [...askedIds, question!.id]
     setAskedIds(newIds)
     await fetchQuestion(sessionId!, newIds, category, selectedCategories)
@@ -285,19 +257,6 @@ export default function PracticePage() {
     A: question.option_a, B: question.option_b, C: question.option_c, D: question.option_d || '',
   } : { A: '', B: '', C: '', D: '' }
 
-  // ── Free limit wall ──────────────────────────────────────────────────────────
-  if (freeQuestionsLeft === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen p-8">
-        <div className="glass-card p-10 max-w-md text-center animate-fade-in">
-          <Plane className="w-16 h-16 text-[#FFB627] mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Free trial complete</h2>
-          <p className="text-white/60 mb-6">You've used your 10 free questions. Upgrade to keep learning.</p>
-          <a href="/#pricing" className="btn-gold inline-flex justify-center px-8 py-3">View Plans</a>
-        </div>
-      </div>
-    )
-  }
 
   // ── Setup screen ─────────────────────────────────────────────────────────────
   if (phase === 'setup') {
@@ -511,9 +470,6 @@ export default function PracticePage() {
           )}
         </button>
 
-        {freeQuestionsLeft !== null && freeQuestionsLeft > 0 && (
-          <p className="text-center text-white/30 text-xs mt-3">{freeQuestionsLeft} free questions remaining</p>
-        )}
       </div>
     )
   }

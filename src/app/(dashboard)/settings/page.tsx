@@ -30,6 +30,7 @@ export default async function SettingsPage() {
   }
 
   const isExpired = user.subscription_expires_at && new Date(user.subscription_expires_at) < new Date()
+  const isTrialing = user.subscription_status === 'trialing'
   const hasBilling = !!user.stripe_customer_id
 
   return (
@@ -72,21 +73,29 @@ export default async function SettingsPage() {
             <span className="text-white/50 text-sm">Plan</span>
             <span className="text-white text-sm font-medium">{getSubscriptionLabel(user.subscription_status)}</span>
           </div>
-          {user.subscription_expires_at && (
+          {isTrialing && user.subscription_expires_at && (
             <div className="flex justify-between items-center py-2 border-b border-white/5">
-              <span className="text-white/50 text-sm">Expires</span>
+              <span className="text-white/50 text-sm">Trial ends</span>
+              <span className="text-[#FFB627] text-sm font-medium">
+                {formatDate(user.subscription_expires_at)}
+              </span>
+            </div>
+          )}
+          {!isTrialing && user.subscription_expires_at && (
+            <div className="flex justify-between items-center py-2 border-b border-white/5">
+              <span className="text-white/50 text-sm">{isExpired ? 'Expired' : 'Next billing'}</span>
               <span className={`text-sm font-medium ${isExpired ? 'text-red-400' : 'text-white'}`}>
-                {formatDate(user.subscription_expires_at)} {isExpired && '(expired)'}
+                {formatDate(user.subscription_expires_at)}
               </span>
             </div>
           )}
         </div>
 
-        <div className="mt-4 flex gap-3">
+        <div className="mt-4">
           {user.subscription_status === 'free' ? (
             <SettingsClient hasBilling={false} isUpgrade />
           ) : (
-            <SettingsClient hasBilling={hasBilling} />
+            <SettingsClient hasBilling={hasBilling} isTrialing={isTrialing} />
           )}
         </div>
       </div>
