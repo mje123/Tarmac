@@ -75,7 +75,7 @@ export default async function SettingsPage() {
             <span className="text-white/50 text-sm">Plan</span>
             <span className="text-white text-sm font-medium">
               {user.subscription_status === 'free' && hasBilling
-                ? <span className="text-[#FFB627]">Activating…</span>
+                ? 'TARMAC Membership'
                 : getSubscriptionLabel(user.subscription_status)}
             </span>
           </div>
