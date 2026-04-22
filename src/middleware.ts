@@ -2,6 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/', '/login', '/signup', '/start', '/auth/callback', '/terms', '/privacy', '/partners', '/unsubscribed']
+// Paths that require an active trial/subscription (free users redirect to /upgrade)
+const GATED_PATHS = ['/dashboard', '/practice', '/exam', '/saved', '/chat', '/admin']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -45,6 +47,26 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // Gate dashboard routes — free users with no stripe_customer_id go to /upgrade
+  if (user && GATED_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+    const supabaseAdmin = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => request.cookies.getAll(), setAll: () => {} } }
+    )
+    const { data: profile } = await supabaseAdmin
+      .from('users')
+      .select('subscription_status, stripe_customer_id')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.subscription_status === 'free' && !profile.stripe_customer_id)) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/upgrade'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

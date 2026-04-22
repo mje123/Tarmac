@@ -321,8 +321,8 @@ function StartPageInner() {
     try { localStorage.removeItem('tarmac_quiz') } catch { /* ignore */ }
 
     if (data.session) {
-      const plan = recommendation?.planId
-      router.push(plan && plan !== 'study_pass' ? `/upgrade?plan=${plan}` : '/dashboard')
+      // Always send new signups to /upgrade to start their free trial
+      router.push('/upgrade')
     } else {
       setSignupSuccess(true)
       setLoading(false)
@@ -589,9 +589,7 @@ function StartPageInner() {
                     <div className="mb-6">
                       <h1 className="text-2xl font-bold text-white mb-1">Create your account</h1>
                       <p className="text-sm text-white/50">
-                        {recommendation
-                          ? `Start with 10 free questions. Upgrade to ${recommendation.name} when you're ready.`
-                          : 'Start with 10 free questions — no credit card required.'}
+                        Create your account to start your 7-day free trial.
                       </p>
                     </div>
 
