@@ -8,6 +8,15 @@ import {
   ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift, RefreshCw,
 } from 'lucide-react'
 
+interface ReferralDetail {
+  id: string
+  user_name: string
+  user_email: string
+  amount_cents: number
+  commission_paid: boolean
+  created_at: string
+}
+
 interface Influencer {
   id: string
   name: string
@@ -18,7 +27,9 @@ interface Influencer {
   referralCount: number
   totalRevenueCents: number
   commissionOwedCents: number
+  totalCommissionPaidCents: number
   unpaidReferrals: number
+  referrals: ReferralDetail[]
 }
 
 interface AdminClientProps {
@@ -51,7 +62,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     question_text: '', option_a: '', option_b: '', option_c: '', option_d: '',
     correct_answer: 'A', category: 'Regulations', difficulty: 'medium', explanation: '', reference: '',
   })
-  const [newInf, setNewInf] = useState({ name: '', email: '', promo_code: '', commission_pct: 20 })
+  const [newInf, setNewInf] = useState({ name: '', email: '', promo_code: '', commission_pct: 30 })
+  const [expandedInf, setExpandedInf] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -274,8 +286,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
       })
       const data = await res.json()
       if (res.ok) {
-        setInfluencers(prev => [{ ...data, referralCount: 0, totalRevenueCents: 0, commissionOwedCents: 0, unpaidReferrals: 0 }, ...prev])
-        setNewInf({ name: '', email: '', promo_code: '', commission_pct: 20 })
+        setInfluencers(prev => [{ ...data, referralCount: 0, totalRevenueCents: 0, commissionOwedCents: 0, totalCommissionPaidCents: 0, unpaidReferrals: 0, referrals: [] }, ...prev])
+        setNewInf({ name: '', email: '', promo_code: '', commission_pct: 30 })
       } else {
         alert(`Error: ${data.error || res.status}`)
       }
@@ -307,6 +319,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   }
 
   const totalCommissionOwed = influencers.reduce((sum, inf) => sum + inf.commissionOwedCents, 0)
+  const totalPartnerRevenue = influencers.reduce((sum, inf) => sum + inf.totalRevenueCents, 0)
+  const totalCommissionPaid = influencers.reduce((sum, inf) => sum + (inf.totalCommissionPaidCents || 0), 0)
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in">
@@ -568,9 +582,9 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
       {tab === 'influencers' && (
         <div className="space-y-6">
           {/* Summary */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="glass-card p-5">
-              <div className="flex items-center gap-2 mb-2"><Link2 className="w-5 h-5 text-[#3E92CC]" /><span className="text-white/50 text-xs">Total Influencers</span></div>
+              <div className="flex items-center gap-2 mb-2"><Link2 className="w-5 h-5 text-[#3E92CC]" /><span className="text-white/50 text-xs">Partners</span></div>
               <div className="text-3xl font-bold text-white">{influencers.length}</div>
             </div>
             <div className="glass-card p-5">
@@ -578,18 +592,26 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               <div className="text-3xl font-bold text-white">{influencers.reduce((s, i) => s + i.referralCount, 0)}</div>
             </div>
             <div className="glass-card p-5">
+              <div className="flex items-center gap-2 mb-2"><TrendingUp className="w-5 h-5 text-green-400" /><span className="text-white/50 text-xs">Partner Revenue</span></div>
+              <div className="text-3xl font-bold text-white">${(totalPartnerRevenue / 100).toFixed(2)}</div>
+            </div>
+            <div className="glass-card p-5">
               <div className="flex items-center gap-2 mb-2"><DollarSign className="w-5 h-5 text-[#FFB627]" /><span className="text-white/50 text-xs">Commission Owed</span></div>
               <div className="text-3xl font-bold text-[#FFB627]">${(totalCommissionOwed / 100).toFixed(2)}</div>
+              {totalCommissionPaid > 0 && (
+                <div className="text-xs text-white/30 mt-1">${(totalCommissionPaid / 100).toFixed(2)} paid to date</div>
+              )}
             </div>
           </div>
 
           {/* Add influencer */}
           <div className="glass-card p-6">
-            <h3 className="font-semibold text-white mb-4 flex items-center gap-2"><Plus className="w-4 h-4 text-[#3E92CC]" /> Add Influencer</h3>
+            <h3 className="font-semibold text-white mb-4 flex items-center gap-2"><Plus className="w-4 h-4 text-[#3E92CC]" /> Add Partner</h3>
+            <p className="text-xs text-white/40 mb-4">After adding, create a matching Stripe promotion code (15% off) in Stripe Dashboard → Coupons. The code must match exactly.</p>
             <form onSubmit={addInfluencer} className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div>
                 <label className="block text-xs text-white/50 mb-1">Name *</label>
-                <input type="text" value={newInf.name} onChange={e => setNewInf(p => ({ ...p, name: e.target.value }))} placeholder="Jake Paul" required />
+                <input type="text" value={newInf.name} onChange={e => setNewInf(p => ({ ...p, name: e.target.value }))} placeholder="Jake Smith" required />
               </div>
               <div>
                 <label className="block text-xs text-white/50 mb-1">Email</label>
@@ -597,7 +619,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
               <div>
                 <label className="block text-xs text-white/50 mb-1">Promo Code * (must match Stripe exactly)</label>
-                <input type="text" value={newInf.promo_code} onChange={e => setNewInf(p => ({ ...p, promo_code: e.target.value.toUpperCase() }))} placeholder="JAKE20" required />
+                <input type="text" value={newInf.promo_code} onChange={e => setNewInf(p => ({ ...p, promo_code: e.target.value.toUpperCase() }))} placeholder="JAKE15" required />
               </div>
               <div>
                 <label className="block text-xs text-white/50 mb-1">Commission %</label>
@@ -605,73 +627,131 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
               <div className="md:col-span-4">
                 <button type="submit" disabled={addingInf} className="btn-primary py-2.5 px-6 text-sm">
-                  {addingInf ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" /> Add Influencer</>}
+                  {addingInf ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" /> Add Partner</>}
                 </button>
               </div>
             </form>
           </div>
 
-          {/* Influencer table */}
-          <div className="glass-card p-6">
-            <h3 className="font-semibold text-white mb-4">Influencers</h3>
+          {/* Partner list with expandable referral details */}
+          <div className="space-y-3">
             {influencers.length === 0 ? (
-              <p className="text-white/30 text-sm">No influencers yet. Add one above.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-white/40 text-left">
-                      <th className="pb-3 font-medium">Name</th>
-                      <th className="pb-3 font-medium">Code</th>
-                      <th className="pb-3 font-medium">Commission</th>
-                      <th className="pb-3 font-medium">Referrals</th>
-                      <th className="pb-3 font-medium">Revenue</th>
-                      <th className="pb-3 font-medium">Owed</th>
-                      <th className="pb-3 font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {influencers.map(inf => (
-                      <tr key={inf.id}>
-                        <td className="py-3">
-                          <div className="font-medium text-white">{inf.name}</div>
-                          {inf.email && <div className="text-xs text-white/40">{inf.email}</div>}
-                        </td>
-                        <td className="py-3">
-                          <span className="text-xs px-2 py-1 rounded-md font-mono font-bold text-[#FFB627] bg-[#FFB627]/10">
-                            {inf.promo_code}
-                          </span>
-                        </td>
-                        <td className="py-3 text-white/60">{inf.commission_pct}%</td>
-                        <td className="py-3 text-white">{inf.referralCount}</td>
-                        <td className="py-3 text-white">${(inf.totalRevenueCents / 100).toFixed(2)}</td>
-                        <td className="py-3">
-                          <span className={`font-semibold ${inf.commissionOwedCents > 0 ? 'text-[#FFB627]' : 'text-white/30'}`}>
-                            ${(inf.commissionOwedCents / 100).toFixed(2)}
-                          </span>
-                        </td>
-                        <td className="py-3">
-                          <div className="flex gap-1.5">
-                            {infLoading === inf.id ? <Loader2 className="w-4 h-4 text-white/40 animate-spin" /> : (
-                              <>
-                                {inf.unpaidReferrals > 0 && (
-                                  <button onClick={() => markPaid(inf.id)} title="Mark commission paid" className="p-1.5 rounded-lg hover:bg-green-400/10 text-green-400 transition-colors">
-                                    <CheckSquare className="w-4 h-4" />
-                                  </button>
+              <div className="glass-card p-8 text-center text-white/30 text-sm">No partners yet. Add one above.</div>
+            ) : influencers.map(inf => (
+              <div key={inf.id} className="glass-card overflow-hidden">
+                {/* Partner header row */}
+                <div
+                  className="p-4 flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors"
+                  onClick={() => setExpandedInf(expandedInf === inf.id ? null : inf.id)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-white text-sm">{inf.name}</span>
+                      {inf.email && <span className="text-white/40 text-xs">{inf.email}</span>}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-xs px-2 py-0.5 rounded font-mono font-bold text-[#FFB627] bg-[#FFB627]/10">{inf.promo_code}</span>
+                      <span className="text-xs text-white/40">{inf.commission_pct}% commission · 15% off for users</span>
+                      <span className="text-xs text-white/30">Added {formatDate(inf.created_at)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6 shrink-0 text-right">
+                    <div>
+                      <div className="text-lg font-bold text-white">{inf.referralCount}</div>
+                      <div className="text-xs text-white/40">referrals</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-white">${(inf.totalRevenueCents / 100).toFixed(2)}</div>
+                      <div className="text-xs text-white/40">revenue</div>
+                    </div>
+                    <div>
+                      <div className={`text-lg font-bold ${inf.commissionOwedCents > 0 ? 'text-[#FFB627]' : 'text-white/30'}`}>
+                        ${(inf.commissionOwedCents / 100).toFixed(2)}
+                      </div>
+                      <div className="text-xs text-white/40">owed</div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {infLoading === inf.id ? <Loader2 className="w-4 h-4 text-white/40 animate-spin" /> : (
+                        <>
+                          {inf.unpaidReferrals > 0 && (
+                            <button
+                              onClick={e => { e.stopPropagation(); markPaid(inf.id) }}
+                              title="Mark all commissions paid"
+                              className="p-1.5 rounded-lg hover:bg-green-400/10 text-green-400 transition-colors"
+                            >
+                              <CheckSquare className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={e => { e.stopPropagation(); deleteInfluencer(inf.id) }}
+                            title="Remove partner"
+                            className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/60 hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded referral details */}
+                {expandedInf === inf.id && (
+                  <div className="border-t border-white/5">
+                    {inf.referrals.length === 0 ? (
+                      <div className="px-4 py-4 text-sm text-white/30">No referrals yet.</div>
+                    ) : (
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-white/30 text-left bg-white/[0.02]">
+                            <th className="px-4 py-2 font-medium">User</th>
+                            <th className="px-4 py-2 font-medium">Date</th>
+                            <th className="px-4 py-2 font-medium">Amount Paid</th>
+                            <th className="px-4 py-2 font-medium">Commission ({inf.commission_pct}%)</th>
+                            <th className="px-4 py-2 font-medium">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {inf.referrals.map(ref => (
+                            <tr key={ref.id}>
+                              <td className="px-4 py-2.5">
+                                <div className="text-white/80">{ref.user_name}</div>
+                                {ref.user_email && ref.user_email !== ref.user_name && (
+                                  <div className="text-white/40">{ref.user_email}</div>
                                 )}
-                                <button onClick={() => deleteInfluencer(inf.id)} title="Remove influencer" className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/60 hover:text-red-400 transition-colors">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                              </td>
+                              <td className="px-4 py-2.5 text-white/50">{formatDate(ref.created_at)}</td>
+                              <td className="px-4 py-2.5 text-white">${(ref.amount_cents / 100).toFixed(2)}</td>
+                              <td className="px-4 py-2.5 font-semibold text-[#FFB627]">
+                                ${(ref.amount_cents * inf.commission_pct / 100 / 100).toFixed(2)}
+                              </td>
+                              <td className="px-4 py-2.5">
+                                {ref.commission_paid ? (
+                                  <span className="text-green-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Paid</span>
+                                ) : (
+                                  <span className="text-[#FFB627]">Unpaid</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="border-t border-white/10 bg-white/[0.02]">
+                            <td className="px-4 py-2.5 text-white/40 font-medium" colSpan={2}>Totals</td>
+                            <td className="px-4 py-2.5 font-semibold text-white">${(inf.totalRevenueCents / 100).toFixed(2)}</td>
+                            <td className="px-4 py-2.5 font-semibold text-[#FFB627]">
+                              ${((inf.commissionOwedCents + (inf.totalCommissionPaidCents || 0)) / 100).toFixed(2)} total
+                              {inf.commissionOwedCents > 0 && <span className="text-white/40 ml-1">(${(inf.commissionOwedCents / 100).toFixed(2)} owed)</span>}
+                            </td>
+                            <td className="px-4 py-2.5" />
+                          </tr>
+                        </tfoot>
+                      </table>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
         </div>
       )}

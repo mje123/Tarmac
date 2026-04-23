@@ -24,7 +24,8 @@ export async function GET() {
 
   const { data: referrals } = await admin
     .from('influencer_referrals')
-    .select('*')
+    .select('*, users(full_name, email)')
+    .order('created_at', { ascending: false })
 
   const result = (influencers || []).map(inf => {
     const refs = (referrals || []).filter(r => r.influencer_id === inf.id)
@@ -32,12 +33,24 @@ export async function GET() {
     const unpaidRefs = refs.filter(r => !r.commission_paid)
     const unpaidCents = unpaidRefs.reduce((sum, r) => sum + (r.amount_cents || 0), 0)
     const commissionOwedCents = Math.round(unpaidCents * inf.commission_pct / 100)
+    const totalCommissionPaidCents = Math.round(
+      refs.filter(r => r.commission_paid).reduce((sum, r) => sum + (r.amount_cents || 0), 0) * inf.commission_pct / 100
+    )
     return {
       ...inf,
       referralCount: refs.length,
       totalRevenueCents: totalCents,
       commissionOwedCents,
+      totalCommissionPaidCents,
       unpaidReferrals: unpaidRefs.length,
+      referrals: refs.map(r => ({
+        id: r.id,
+        user_name: (r.users as Record<string, string> | null)?.full_name || (r.users as Record<string, string> | null)?.email || 'Unknown',
+        user_email: (r.users as Record<string, string> | null)?.email || '',
+        amount_cents: r.amount_cents,
+        commission_paid: r.commission_paid,
+        created_at: r.created_at,
+      })),
     }
   })
 
@@ -58,7 +71,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error: dbError } = await admin
     .from('influencers')
-    .insert({ name, email, promo_code: promo_code.toUpperCase(), commission_pct: commission_pct || 20 })
+    .insert({ name, email, promo_code: promo_code.toUpperCase(), commission_pct: commission_pct || 30 })
     .select().single()
 
   if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 })

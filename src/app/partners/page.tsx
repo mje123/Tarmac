@@ -58,8 +58,8 @@ export default function PartnersPage() {
           <span className="text-xs font-bold uppercase tracking-widest text-[#FFB627] mb-3 block">Creator Program</span>
           <h1 className="text-4xl font-extrabold text-white mb-3">Partner with TARMAC</h1>
           <p className="text-white/60 text-base leading-relaxed">
-            Share TARMAC with your audience — they get <strong className="text-white">30% off</strong> their first month,
-            you earn <strong className="text-white">30% commission</strong> (~$7.35 per referral). Commission-only, no guarantees.
+            Share TARMAC with your audience — they get <strong className="text-white">15% off</strong> their first month,
+            you earn <strong className="text-white">30% commission</strong> (~$4.50 per referral). Commission-only, no guarantees.
           </p>
         </div>
 
@@ -115,7 +115,7 @@ export default function PartnersPage() {
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-2">Requested Promo Code *</label>
                 <input type="text" value={form.requested_code} onChange={e => setForm(p => ({ ...p, requested_code: e.target.value.toUpperCase() }))} placeholder="e.g. YOURNAME30" required style={{ fontFamily: 'monospace', letterSpacing: '0.05em' }} />
-                <p className="text-white/35 text-xs mt-1">Your audience gets 30% off their first month with this code.</p>
+                <p className="text-white/35 text-xs mt-1">Your audience gets 15% off their first month with this code.</p>
               </div>
 
               <div>
@@ -129,7 +129,7 @@ export default function PartnersPage() {
                 <p>By submitting this application, you acknowledge and agree to all of the following:</p>
                 <ul className="list-disc list-inside space-y-1 ml-1">
                   <li>This application does <strong className="text-white/70">not</strong> guarantee acceptance or promo code approval.</li>
-                  <li>If accepted, you earn a <strong className="text-white/70">30% commission on the first month's payment only</strong> (~$7.35/referral). No minimums, no ongoing commissions.</li>
+                  <li>If accepted, you earn a <strong className="text-white/70">30% commission on the first month's payment only</strong> (~$4.50/referral after trial discount). No minimums, no ongoing commissions.</li>
                   <li>Commissions are paid via <strong className="text-white/70">Venmo or a mutually agreed platform</strong>. You must contact TARMAC to confirm payment details — TARMAC does not initiate payment automatically.</li>
                   <li>TARMAC may <strong className="text-white/70">modify, pause, or terminate the program at any time</strong> without notice.</li>
                   <li>You are an <strong className="text-white/70">independent creator</strong>, not an employee or agent of TARMAC.</li>
