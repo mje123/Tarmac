@@ -5,26 +5,28 @@ import { BookOpen, ExternalLink, X, ChevronUp, ChevronDown } from 'lucide-react'
 
 // Maps figure/legend labels to PDF page numbers (FAA-CT-8080-2H)
 // Appendix 1 (Legends) starts around page 5; Appendix 2 (Figures) around page 25
+// Page numbers verified against FAA-CT-8080-2H PDF (113 pages total)
+// Figure 1 is at PDF page 35; all pages shifted +7 from original mapping
 const FIGURE_PAGES: Record<string, number> = {
-  'Legend 1': 5,   'Legend 2': 6,   'Legend 3': 7,   'Legend 4': 8,
-  'Legend 5': 9,   'Legend 6': 10,  'Legend 7': 11,  'Legend 8': 12,
-  'Legend 9': 13,  'Legend 10': 14, 'Legend 11': 15, 'Legend 12': 16,
-  'Legend 13': 17, 'Legend 14': 18, 'Legend 15': 19, 'Legend 16': 20,
-  'Legend 17': 21, 'Legend 18': 22, 'Legend 19': 23,
-  'Figure 1': 28,  'Figure 2': 29,  'Figure 3': 30,  'Figure 4': 31,
-  'Figure 5': 32,  'Figure 6': 33,  'Figure 7': 34,  'Figure 8': 35,
-  'Figure 9': 36,  'Figure 10': 37, 'Figure 11': 38, 'Figure 12': 39,
-  'Figure 13': 40, 'Figure 14': 41, 'Figure 15': 42, 'Figure 16': 43,
-  'Figure 17': 44, 'Figure 18': 45, 'Figure 19': 46, 'Figure 20': 47,
-  'Figure 21': 48, 'Figure 22': 49, 'Figure 23': 50, 'Figure 24': 51,
-  'Figure 25': 52, 'Figure 26': 53, 'Figure 27': 54, 'Figure 28': 55,
-  'Figure 29': 56, 'Figure 30': 60, 'Figure 31': 62,
-  'Figure 32': 63, 'Figure 33': 64, 'Figure 34': 65, 'Figure 35': 66,
-  'Figure 36': 67, 'Figure 37': 68, 'Figure 38': 69,
-  'Figure 47': 79, 'Figure 48': 80,
-  'Figure 52': 85, 'Figure 53': 86,
-  'Figure 64': 97, 'Figure 65': 98, 'Figure 66': 99, 'Figure 67': 100,
-  'Figure 78': 112,
+  'Legend 1': 12,  'Legend 2': 13,  'Legend 3': 14,  'Legend 4': 15,
+  'Legend 5': 16,  'Legend 6': 17,  'Legend 7': 18,  'Legend 8': 19,
+  'Legend 9': 20,  'Legend 10': 21, 'Legend 11': 22, 'Legend 12': 23,
+  'Legend 13': 24, 'Legend 14': 25, 'Legend 15': 26, 'Legend 16': 27,
+  'Legend 17': 28, 'Legend 18': 29, 'Legend 19': 30,
+  'Figure 1': 35,  'Figure 2': 36,  'Figure 3': 37,  'Figure 4': 38,
+  'Figure 5': 39,  'Figure 6': 40,  'Figure 7': 41,  'Figure 8': 42,
+  'Figure 9': 43,  'Figure 10': 44, 'Figure 11': 45, 'Figure 12': 46,
+  'Figure 13': 47, 'Figure 14': 48, 'Figure 15': 49, 'Figure 16': 50,
+  'Figure 17': 51, 'Figure 18': 52, 'Figure 19': 53, 'Figure 20': 54,
+  'Figure 21': 55, 'Figure 22': 56, 'Figure 23': 57, 'Figure 24': 58,
+  'Figure 25': 59, 'Figure 26': 60, 'Figure 27': 61, 'Figure 28': 62,
+  'Figure 29': 63, 'Figure 30': 67, 'Figure 31': 69,
+  'Figure 32': 70, 'Figure 33': 71, 'Figure 34': 72, 'Figure 35': 73,
+  'Figure 36': 74, 'Figure 37': 75, 'Figure 38': 76,
+  'Figure 47': 86, 'Figure 48': 87,
+  'Figure 52': 92, 'Figure 53': 93,
+  'Figure 64': 104, 'Figure 65': 105, 'Figure 66': 106, 'Figure 67': 107,
+  'Figure 78': 113,
 }
 
 function parseFigureKey(ref: string): string {

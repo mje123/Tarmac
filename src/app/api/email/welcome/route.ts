@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { userId, email, firstName } = await request.json().catch(() => ({}))
+    if (!userId || !email) return NextResponse.json({ error: 'Missing userId or email' }, { status: 400 })
 
-    const { firstName } = await request.json().catch(() => ({}))
-    const name = firstName || user.user_metadata?.full_name?.split(' ')[0] || 'Pilot'
-
-    await sendWelcomeEmail({ to: user.email!, userId: user.id, firstName: name })
+    const name = firstName || 'Pilot'
+    await sendWelcomeEmail({ to: email, userId, firstName: name })
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('Welcome email error:', err)

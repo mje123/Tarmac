@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { Eye, EyeOff, Loader2, CheckCircle, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, Loader2, CheckCircle, ArrowLeft, Plane } from 'lucide-react'
 import type { OnboardingData } from '@/types'
 
 // ─── Quiz data ────────────────────────────────────────────────────────────────
@@ -25,6 +25,7 @@ interface Option {
 interface Question {
   id: Step
   text: string
+  sub?: string
   options: Option[]
   skippable?: boolean
   feedbacks: Record<string, string>
@@ -35,10 +36,10 @@ const QUESTIONS: Question[] = [
     id: 'q1',
     text: 'Where are you in your pilot training?',
     options: [
-      { value: 'not_started',          label: "✈️  Haven't started flight training yet",    sub: 'Studying for the written first' },
-      { value: 'in_training',          label: '🎓  Currently in flight school',              sub: 'Taking lessons, need to pass written soon' },
-      { value: 'checkride_scheduled',  label: '📅  Checkride is scheduled',                  sub: 'Written test is the last thing I need' },
-      { value: 'retaking',             label: '🔄  Retaking the written',                    sub: "Failed once — need to pass this time" },
+      { value: 'not_started',          label: "Haven't started flight training yet",    sub: 'Studying for the written first' },
+      { value: 'in_training',          label: 'Currently in flight school',              sub: 'Taking lessons, need to pass written soon' },
+      { value: 'checkride_scheduled',  label: 'Checkride is scheduled',                  sub: 'Written test is the last thing I need' },
+      { value: 'retaking',             label: 'Retaking the written',                    sub: "Failed once — need to pass this time" },
     ],
     feedbacks: {
       not_started:         "Perfect time to start. Building a strong foundation now makes everything easier.",
@@ -51,10 +52,10 @@ const QUESTIONS: Question[] = [
     id: 'q2',
     text: 'When are you planning to take your FAA written test?',
     options: [
-      { value: '2_weeks',    label: '⚡  In the next 2 weeks',    sub: 'I need to cram fast' },
-      { value: '3_6_weeks',  label: '📅  In 3–6 weeks',           sub: 'I have time to prepare properly' },
-      { value: '2_3_months', label: '🗓️  In 2–3 months',          sub: "I'm studying well in advance" },
-      { value: 'not_sure',   label: '🤷  Not sure yet',           sub: 'Just starting to research' },
+      { value: '2_weeks',    label: 'In the next 2 weeks',    sub: 'I need to cram fast' },
+      { value: '3_6_weeks',  label: 'In 3–6 weeks',           sub: 'I have time to prepare properly' },
+      { value: '2_3_months', label: 'In 2–3 months',          sub: "I'm studying well in advance" },
+      { value: 'not_sure',   label: 'Not sure yet',           sub: 'Just starting to research' },
     ],
     feedbacks: {
       '2_weeks':    'Two weeks is tight but doable. Students who focus on weak areas in this window consistently pass.',
@@ -67,10 +68,10 @@ const QUESTIONS: Question[] = [
     id: 'q3',
     text: 'How confident are you about passing the FAA written test?',
     options: [
-      { value: 'nervous',            label: "😰  Nervous — I don't feel ready at all" },
-      { value: 'unsure',             label: "😐  Unsure — I know some stuff, but not enough" },
-      { value: 'somewhat_confident', label: '😊  Somewhat confident — just need more practice' },
-      { value: 'very_confident',     label: '😎  Very confident — just want to sharpen up' },
+      { value: 'nervous',            label: "Not confident at all",      sub: "I don't feel ready" },
+      { value: 'unsure',             label: "Unsure",                    sub: 'I know some stuff, but not enough' },
+      { value: 'somewhat_confident', label: 'Somewhat confident',        sub: 'Just need more practice' },
+      { value: 'very_confident',     label: 'Very confident',            sub: 'Just want to sharpen up' },
     ],
     feedbacks: {
       nervous:            "Totally normal. 64% of students feel this way at first. That's exactly what we fix.",
@@ -83,11 +84,11 @@ const QUESTIONS: Question[] = [
     id: 'q4',
     text: "What's your biggest worry about the written test?",
     options: [
-      { value: 'retake_cost',        label: '💸  Wasting $175 on a retake if I fail' },
-      { value: 'not_understanding',  label: '📚  Not understanding the material (just memorizing)' },
-      { value: 'no_time',            label: '⏱️  Running out of time to study' },
-      { value: 'what_to_focus',      label: '🎯  Not knowing what to focus on' },
-      { value: 'test_anxiety',       label: '😬  Test anxiety / pressure' },
+      { value: 'retake_cost',        label: 'Wasting $175 on a retake if I fail' },
+      { value: 'not_understanding',  label: 'Not understanding the material (just memorizing)' },
+      { value: 'no_time',            label: 'Running out of time to study' },
+      { value: 'what_to_focus',      label: 'Not knowing what to focus on' },
+      { value: 'test_anxiety',       label: 'Test anxiety / pressure' },
     ],
     feedbacks: {
       retake_cost:       "Your trial is free. A retake is $175. This is the math that pays for itself.",
@@ -101,10 +102,10 @@ const QUESTIONS: Question[] = [
     id: 'q5',
     text: 'Have you used other FAA test prep tools before?',
     options: [
-      { value: 'first_time',       label: '❌  No, this is my first time studying' },
-      { value: 'didnt_like',       label: "📖  Yes, but I didn't like them",         sub: 'Too much memorization, not enough explanation' },
-      { value: 'failed_with_them', label: '🔄  Yes, and I failed with them',         sub: "That's why I'm here" },
-      { value: 'exploring',        label: '✅  Yes, and they were fine',             sub: 'Just exploring other options' },
+      { value: 'first_time',       label: 'No, this is my first time studying' },
+      { value: 'didnt_like',       label: "Yes, but I didn't like them",         sub: 'Too much memorization, not enough explanation' },
+      { value: 'failed_with_them', label: 'Yes, and I failed with them',         sub: "That's why I'm here" },
+      { value: 'exploring',        label: 'Yes, and they were fine',             sub: 'Just exploring other options' },
     ],
     feedbacks: {
       first_time:       "You're starting fresh — we'll guide you step by step.",
@@ -118,10 +119,10 @@ const QUESTIONS: Question[] = [
     text: "What's your learning style?",
     skippable: true,
     options: [
-      { value: 'detailed_explanations', label: '📖  I need detailed explanations' },
-      { value: 'learning_by_doing',     label: '⚡  I learn by doing (just give me questions)' },
-      { value: 'need_structure',        label: '🎯  I need structure (tell me exactly what to do)' },
-      { value: 'mixed',                 label: '🤷  Not sure / Mix of everything' },
+      { value: 'detailed_explanations', label: 'I need detailed explanations' },
+      { value: 'learning_by_doing',     label: 'I learn by doing (just give me questions)' },
+      { value: 'need_structure',        label: 'I need structure (tell me exactly what to do)' },
+      { value: 'mixed',                 label: 'Not sure / Mix of everything' },
     ],
     feedbacks: {
       detailed_explanations: "Our AI tutor gives you as much depth as you need on every single question.",
@@ -132,6 +133,17 @@ const QUESTIONS: Question[] = [
     },
   },
 ]
+
+// ─── Option icons ─────────────────────────────────────────────────────────────
+
+const OPTION_ICONS: Record<string, string> = {
+  not_started: '✈️', in_training: '🎓', checkride_scheduled: '📅', retaking: '🔄',
+  '2_weeks': '⚡', '3_6_weeks': '📅', '2_3_months': '🗓️', not_sure: '🤷',
+  nervous: '😰', unsure: '😐', somewhat_confident: '😊', very_confident: '😎',
+  retake_cost: '💸', not_understanding: '📚', no_time: '⏱️', what_to_focus: '🎯', test_anxiety: '😬',
+  first_time: '❌', didnt_like: '📖', failed_with_them: '🔄', exploring: '✅',
+  detailed_explanations: '📖', learning_by_doing: '⚡', need_structure: '🎯', mixed: '🤷',
+}
 
 // ─── Recommendation logic ─────────────────────────────────────────────────────
 
@@ -186,15 +198,25 @@ function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 
-const slideVariants: Variants = {
-  hidden:  { opacity: 0, x: 48 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.35 } },
-  exit:    { opacity: 0, x: -48, transition: { duration: 0.25 } },
+const pageVariants: Variants = {
+  hidden:  { opacity: 0, y: 24, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', damping: 28, stiffness: 260 } },
+  exit:    { opacity: 0, y: -16, scale: 0.98, transition: { duration: 0.2 } },
+}
+
+const containerVariants: Variants = {
+  visible: { transition: { staggerChildren: 0.06 } },
+}
+
+const optionVariants: Variants = {
+  hidden:  { opacity: 0, x: 20 },
+  visible: { opacity: 1, x: 0, transition: { type: 'spring', damping: 26, stiffness: 300 } },
 }
 
 const feedbackVariants: Variants = {
-  hidden:  { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.3 } },
+  hidden:  { opacity: 0, y: 16, scale: 0.96 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', damping: 20, stiffness: 260, delay: 0.1 } },
+  exit:    { opacity: 0, y: 8, transition: { duration: 0.15 } },
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -221,24 +243,18 @@ function StartPageInner() {
   const [signupError, setSignupError] = useState('')
   const [signupSuccess, setSignupSuccess] = useState(false)
 
-  // Restore quiz progress from localStorage (questions only — never restore signup/recommendation)
   useEffect(() => {
-    if (urlPlan) {
-      localStorage.removeItem('tarmac_quiz')
-      return
-    }
+    if (urlPlan) { localStorage.removeItem('tarmac_quiz'); return }
     try {
       const saved = localStorage.getItem('tarmac_quiz')
       if (saved) {
         const { step: s, answers: a } = JSON.parse(saved)
-        // Only restore mid-quiz state, never the signup/recommendation steps
         if (s && a && s.startsWith('q')) { setStep(s); setAnswers(a) }
         else { localStorage.removeItem('tarmac_quiz') }
       }
     } catch { /* ignore */ }
   }, [urlPlan])
 
-  // Save progress
   useEffect(() => {
     try { localStorage.setItem('tarmac_quiz', JSON.stringify({ step, answers })) } catch { /* ignore */ }
   }, [step, answers])
@@ -247,17 +263,11 @@ function StartPageInner() {
   const questionSteps = STEP_ORDER.filter(s => s.startsWith('q')) as Step[]
   const currentQuestionIndex = questionSteps.indexOf(step)
   const totalQuestions = questionSteps.length
-  const progress = step === 'recommendation' || step === 'signup'
-    ? 100
-    : ((currentQuestionIndex + 1) / totalQuestions) * 100
-
   const currentQuestion = QUESTIONS.find(q => q.id === step)
 
   function selectOption(value: string) {
-    if (selectedValue) return // already selected, waiting for auto-advance
+    if (selectedValue) return
     setSelectedValue(value)
-
-    const key = step.replace('q', '') as keyof OnboardingData
     const fieldMap: Record<string, keyof OnboardingData> = {
       q1: 'training_stage', q2: 'test_timeline', q3: 'confidence_level',
       q4: 'biggest_worry', q5: 'previous_tools', q6: 'learning_style',
@@ -265,11 +275,9 @@ function StartPageInner() {
     const field = fieldMap[step]
     const newAnswers = { ...answers, [field]: value as never }
     setAnswers(newAnswers)
-
     const feedback = currentQuestion?.feedbacks[value]
     if (feedback) setFeedbackText(feedback)
-
-    setTimeout(() => advance(step, newAnswers), 1200)
+    setTimeout(() => advance(step, newAnswers), 1400)
   }
 
   function skipQuestion() {
@@ -281,13 +289,9 @@ function StartPageInner() {
   function advance(currentStep: Step, currentAnswers: Partial<OnboardingData>) {
     setSelectedValue(null)
     setFeedbackText(null)
-
     const idx = STEP_ORDER.indexOf(currentStep)
     const next = STEP_ORDER[idx + 1] as Step
-
-    if (next === 'recommendation') {
-      setRecommendation(getRecommendation(currentAnswers))
-    }
+    if (next === 'recommendation') setRecommendation(getRecommendation(currentAnswers))
     setStep(next)
   }
 
@@ -302,26 +306,25 @@ function StartPageInner() {
     e.preventDefault()
     setLoading(true)
     setSignupError('')
-
     const supabase = createClient()
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email, password,
       options: { data: { full_name: fullName, marketing_emails: marketingEmails } },
     })
-
     if (error) { setSignupError(error.message); setLoading(false); return }
-
-    // Store onboarding data
     if (data.user) {
       const finalAnswers = { ...answers, recommended_plan: recommendation?.planId }
       await supabase.from('users').update({ onboarding_data: finalAnswers }).eq('id', data.user.id)
+      if (!marketingEmails) {
+        await supabase.from('users').update({ marketing_emails: false }).eq('id', data.user.id)
+      }
+      fetch('/api/email/welcome', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: data.user.id, email: data.user.email, firstName: fullName.split(' ')[0] }),
+      }).catch(() => {})
     }
-
     try { localStorage.removeItem('tarmac_quiz') } catch { /* ignore */ }
-
     if (data.session) {
-      // Always send new signups to /upgrade to start their free trial
       router.push('/upgrade')
     } else {
       setSignupSuccess(true)
@@ -332,247 +335,388 @@ function StartPageInner() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(160deg, #060e1f 0%, #0d1a38 100%)' }}>
+    <div className="min-h-screen flex flex-col relative overflow-hidden"
+      style={{ background: 'linear-gradient(160deg, #040c1e 0%, #071430 50%, #0a1940 100%)' }}>
+
+      {/* Animated background orbs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute" style={{
+          top: '-20%', left: '-10%', width: '60%', height: '60%',
+          background: 'radial-gradient(circle, rgba(62,146,204,0.08) 0%, transparent 70%)',
+          animation: 'floatOrb1 18s ease-in-out infinite',
+        }} />
+        <div className="absolute" style={{
+          bottom: '-10%', right: '-10%', width: '50%', height: '50%',
+          background: 'radial-gradient(circle, rgba(255,182,39,0.06) 0%, transparent 70%)',
+          animation: 'floatOrb2 22s ease-in-out infinite',
+        }} />
+        <div className="absolute" style={{
+          top: '40%', right: '20%', width: '30%', height: '30%',
+          background: 'radial-gradient(circle, rgba(62,146,204,0.05) 0%, transparent 70%)',
+          animation: 'floatOrb3 14s ease-in-out infinite',
+        }} />
+      </div>
+
+      <style>{`
+        @keyframes floatOrb1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(3%, 4%) scale(1.05); }
+          66% { transform: translate(-2%, 2%) scale(0.97); }
+        }
+        @keyframes floatOrb2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          40% { transform: translate(-3%, -3%) scale(1.08); }
+          70% { transform: translate(2%, -1%) scale(0.95); }
+        }
+        @keyframes floatOrb3 {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(-4%, 3%); }
+        }
+        @keyframes shimmer {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-4 shrink-0">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo-white.png" alt="TARMAC" width={28} height={28} />
+      <div className="relative z-10 flex items-center justify-between px-5 py-4 shrink-0">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <Image src="/logo-white.png" alt="TARMAC" width={30} height={30} className="group-hover:scale-105 transition-transform" />
           <span className="text-sm font-bold text-white tracking-tight">TARMAC</span>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>
+            BETA
+          </span>
         </Link>
 
-        {/* Progress bar */}
+        {/* Step dots progress */}
         {step !== 'signup' && (
-          <div className="flex-1 mx-8 max-w-xs">
-            <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-              <motion.div
-                className="h-full rounded-full"
-                style={{ background: '#FDB022' }}
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.5, ease: 'easeInOut' }}
-              />
-            </div>
-            {currentQuestionIndex >= 0 && (
-              <div className="text-[10px] text-white/30 text-right mt-1">
-                {currentQuestionIndex + 1} / {totalQuestions}
-              </div>
-            )}
+          <div className="flex items-center gap-1.5">
+            {questionSteps.map((s, i) => {
+              const done = currentQuestionIndex > i || step === 'recommendation'
+              const active = currentQuestionIndex === i
+              return (
+                <motion.div
+                  key={s}
+                  animate={{
+                    width: active ? 20 : 6,
+                    background: done ? '#FFB627' : active ? '#FFB627' : 'rgba(255,255,255,0.15)',
+                    opacity: done ? 0.6 : 1,
+                  }}
+                  transition={{ duration: 0.35, ease: 'easeInOut' }}
+                  style={{ height: 6, borderRadius: 99 }}
+                />
+              )
+            })}
           </div>
         )}
 
-        <Link href="/login" className="text-xs text-white/40 hover:text-white transition-colors">
+        <Link href="/login" className="text-xs text-white/35 hover:text-white/70 transition-colors">
           Sign in
         </Link>
       </div>
 
-      {/* Main */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-lg">
+      {/* Main content */}
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-md">
           <AnimatePresence mode="wait">
 
-            {/* ── Quiz questions ─────────────────────────────────────── */}
+            {/* ── Quiz questions ──────────────────────────────────────── */}
             {currentQuestion && (
-              <motion.div
-                key={step}
-                variants={slideVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                {/* Back button */}
-                {currentQuestionIndex > 0 && (
-                  <button
-                    onClick={goBack}
-                    className="flex items-center gap-1.5 text-sm text-white/30 hover:text-white/70 transition-colors mb-6"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back
-                  </button>
-                )}
+              <motion.div key={step} variants={pageVariants} initial="hidden" animate="visible" exit="exit">
 
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-snug">
-                  {currentQuestion.text}
-                </h1>
-                {currentQuestion.skippable && (
-                  <p className="text-sm text-white/40 mb-6">Optional — helps us personalize your dashboard</p>
-                )}
-                {!currentQuestion.skippable && <div className="mb-6" />}
+                {/* Header */}
+                <div className="mb-7">
+                  {currentQuestionIndex > 0 && (
+                    <button
+                      onClick={goBack}
+                      className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors mb-4 group"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                      Back
+                    </button>
+                  )}
 
-                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
+                      style={{ background: 'rgba(255,182,39,0.1)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.2)' }}>
+                      Step {currentQuestionIndex + 1} of {totalQuestions}
+                    </span>
+                    {currentQuestion.skippable && (
+                      <span className="text-[10px] text-white/30">Optional</span>
+                    )}
+                  </div>
+
+                  <h1 className="text-2xl md:text-[1.75rem] font-bold text-white leading-tight tracking-tight">
+                    {currentQuestion.text}
+                  </h1>
+                </div>
+
+                {/* Options */}
+                <motion.div
+                  className="space-y-2.5"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
                   {currentQuestion.options.map(opt => {
                     const isSelected = selectedValue === opt.value
+                    const isOther = selectedValue !== null && !isSelected
                     return (
                       <motion.button
                         key={opt.value}
+                        variants={optionVariants}
                         onClick={() => selectOption(opt.value)}
                         disabled={!!selectedValue}
-                        whileHover={!selectedValue ? { y: -2 } : {}}
-                        className="w-full text-left rounded-xl px-5 py-4 transition-all disabled:cursor-default"
+                        whileHover={!selectedValue ? { y: -2, scale: 1.005 } : {}}
+                        whileTap={!selectedValue ? { scale: 0.99 } : {}}
+                        animate={{
+                          opacity: isOther ? 0.45 : 1,
+                          scale: isSelected ? 1.01 : 1,
+                        }}
+                        className="w-full text-left rounded-2xl px-5 py-4 transition-colors disabled:cursor-default relative overflow-hidden"
                         style={{
-                          background: isSelected ? 'rgba(253,176,34,0.12)' : 'rgba(255,255,255,0.04)',
-                          border: isSelected ? '1px solid rgba(253,176,34,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                          boxShadow: isSelected ? '0 4px 20px rgba(253,176,34,0.15)' : undefined,
+                          background: isSelected
+                            ? 'rgba(255,182,39,0.1)'
+                            : 'rgba(255,255,255,0.04)',
+                          border: isSelected
+                            ? '1.5px solid rgba(255,182,39,0.5)'
+                            : '1px solid rgba(255,255,255,0.08)',
+                          boxShadow: isSelected
+                            ? '0 0 0 3px rgba(255,182,39,0.08), 0 8px 24px rgba(255,182,39,0.12)'
+                            : undefined,
                         }}
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-medium text-white">{opt.label}</div>
+                        {/* Shimmer on select */}
+                        {isSelected && (
+                          <motion.div
+                            className="absolute inset-0 pointer-events-none"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0, 0.15, 0] }}
+                            transition={{ duration: 0.6 }}
+                            style={{ background: 'linear-gradient(90deg, transparent, rgba(255,182,39,0.3), transparent)' }}
+                          />
+                        )}
+
+                        <div className="flex items-center gap-3.5">
+                          <div
+                            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base transition-all"
+                            style={{
+                              background: isSelected ? 'rgba(255,182,39,0.15)' : 'rgba(255,255,255,0.06)',
+                              border: isSelected ? '1px solid rgba(255,182,39,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                            }}
+                          >
+                            {OPTION_ICONS[opt.value] || '•'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-white leading-snug">{opt.label}</div>
                             {opt.sub && (
-                              <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{opt.sub}</div>
+                              <div className="text-xs mt-0.5 text-white/40">{opt.sub}</div>
                             )}
                           </div>
-                          {isSelected && (
-                            <CheckCircle className="w-4 h-4 text-[#FDB022] shrink-0 mt-0.5" />
-                          )}
+                          <AnimatePresence>
+                            {isSelected && (
+                              <motion.div
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0, opacity: 0 }}
+                                transition={{ type: 'spring', damping: 15, stiffness: 400 }}
+                              >
+                                <CheckCircle className="w-4 h-4 text-[#FFB627] shrink-0" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       </motion.button>
                     )
                   })}
-                </div>
+                </motion.div>
 
                 {/* Skip */}
                 {currentQuestion.skippable && !selectedValue && (
-                  <button
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
                     onClick={skipQuestion}
-                    className="mt-4 w-full text-center text-sm text-white/30 hover:text-white/60 transition-colors py-2"
+                    className="mt-4 w-full text-center text-xs text-white/25 hover:text-white/50 transition-colors py-2.5"
                   >
                     Skip this question →
-                  </button>
+                  </motion.button>
                 )}
 
-                {/* Micro-feedback */}
+                {/* Feedback */}
                 <AnimatePresence>
                   {feedbackText && (
                     <motion.div
                       variants={feedbackVariants}
                       initial="hidden"
                       animate="visible"
-                      exit="hidden"
-                      className="mt-5 flex items-start gap-2.5 px-4 py-3 rounded-xl"
-                      style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}
+                      exit="exit"
+                      className="mt-4 flex items-start gap-3 px-4 py-3.5 rounded-2xl"
+                      style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)' }}
                     >
-                      <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
-                      <p className="text-sm text-green-300/80">{feedbackText}</p>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                        style={{ background: 'rgba(16,185,129,0.15)' }}>
+                        <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                      </div>
+                      <p className="text-sm text-green-300/80 leading-relaxed">{feedbackText}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
                 {/* Social proof */}
-                <p className="text-center text-[11px] text-white/20 mt-6">
-                  🔥 2,847 students completed this quiz this week
-                </p>
+                <motion.p
+                  className="text-center text-[11px] text-white/18 mt-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  style={{ color: 'rgba(255,255,255,0.18)' }}
+                >
+                  ✈️ &nbsp;2,847 students completed this quiz this week
+                </motion.p>
               </motion.div>
             )}
 
-            {/* ── Recommendation screen ──────────────────────────────── */}
+            {/* ── Recommendation ──────────────────────────────────────── */}
             {step === 'recommendation' && recommendation && (
-              <motion.div
-                key="recommendation"
-                variants={slideVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                <div className="text-center mb-6">
-                  <div
-                    className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-4"
-                    style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}
+              <motion.div key="recommendation" variants={pageVariants} initial="hidden" animate="visible" exit="exit">
+
+                {/* Success header */}
+                <div className="text-center mb-7">
+                  <motion.div
+                    className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                    initial={{ scale: 0, rotate: -20 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', damping: 15, stiffness: 260, delay: 0.1 }}
+                    style={{ background: 'rgba(16,185,129,0.12)', border: '1.5px solid rgba(16,185,129,0.3)' }}
                   >
-                    <CheckCircle className="w-6 h-6 text-green-400" />
-                  </div>
-                  <h1 className="text-2xl font-bold text-white mb-1">Analysis complete</h1>
-                  <p className="text-sm text-white/50">Based on your answers, here&apos;s what we recommend</p>
+                    <CheckCircle className="w-8 h-8 text-green-400" />
+                  </motion.div>
+                  <motion.h1
+                    className="text-2xl font-bold text-white mb-1"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    Analysis complete ✈️
+                  </motion.h1>
+                  <motion.p
+                    className="text-sm text-white/45"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    Based on your answers, here&apos;s what we recommend
+                  </motion.p>
                 </div>
 
-                {/* Profile summary */}
-                <div className="rounded-xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-2.5">Your Profile</div>
-                  <div className="space-y-1.5">
-                    {[
-                      { label: 'Training stage',  val: answers.training_stage?.replace(/_/g, ' ') },
-                      { label: 'Test timeline',    val: answers.test_timeline?.replace(/_/g, ' ').replace('2 weeks', '2 weeks').replace('3 6 weeks', '3–6 weeks').replace('2 3 months', '2–3 months').replace('not sure', 'Not sure') },
-                      { label: 'Confidence',       val: answers.confidence_level?.replace(/_/g, ' ') },
-                      { label: 'Biggest concern',  val: answers.biggest_worry?.replace(/_/g, ' ') },
-                    ].filter(r => r.val).map(row => (
-                      <div key={row.label} className="flex items-center justify-between text-sm">
-                        <span className="text-white/40">{row.label}</span>
-                        <span className="text-white capitalize font-medium">{row.val}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Recommended plan */}
-                <div
-                  className="rounded-xl p-5 mb-4"
-                  style={{ background: 'rgba(253,176,34,0.07)', border: '1px solid rgba(253,176,34,0.3)' }}
+                {/* Stats row */}
+                <motion.div
+                  className="grid grid-cols-3 gap-2 mb-4"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, type: 'spring', damping: 24 }}
                 >
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#FDB022] mb-1">Recommended Plan</div>
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-xl font-bold text-white">{recommendation.name}</span>
-                    <span className="text-lg font-bold text-[#FDB022]">{recommendation.price}</span>
-                  </div>
-                  <p className="text-xs text-green-400 font-semibold mb-3">7 days free — no charge until trial ends</p>
-                  <div className="space-y-2">
-                    {recommendation.reasons.map(r => (
-                      <div key={r} className="flex items-start gap-2">
-                        <CheckCircle className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                        <span className="text-sm text-white/70">{r}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* What students like you achieve */}
-                <div className="grid grid-cols-3 gap-2 mb-5">
                   {[
-                    { stat: '91%',   label: 'pass first try' },
-                    { stat: '87%',   label: 'avg exam score' },
-                    { stat: '~2 wk', label: 'avg time to ready' },
+                    { stat: '91%', label: 'first-attempt pass rate' },
+                    { stat: '1,400+', label: 'practice questions' },
+                    { stat: '~3 wks', label: 'avg time to ready' },
                   ].map(s => (
-                    <div key={s.stat} className="rounded-lg py-3 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div className="text-base font-bold text-white">{s.stat}</div>
-                      <div className="text-[10px] text-white/35 mt-0.5">{s.label}</div>
+                    <div key={s.stat}
+                      className="rounded-xl py-3.5 text-center"
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="text-lg font-bold text-white">{s.stat}</div>
+                      <div className="text-[10px] text-white/35 mt-0.5 leading-tight">{s.label}</div>
                     </div>
                   ))}
-                </div>
+                </motion.div>
 
-                <button
-                  onClick={() => setStep('signup')}
-                  className="w-full py-3.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 mb-3"
-                  style={{ background: '#FDB022', color: '#080E1C', boxShadow: '0 4px 16px rgba(253,176,34,0.25)' }}
+                {/* Plan card */}
+                <motion.div
+                  className="rounded-2xl p-5 mb-4"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, type: 'spring', damping: 24 }}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,182,39,0.1) 0%, rgba(255,182,39,0.04) 100%)',
+                    border: '1.5px solid rgba(255,182,39,0.3)',
+                    boxShadow: '0 8px 32px rgba(255,182,39,0.08)',
+                  }}
                 >
-                  Start My Free Trial
-                </button>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#FFB627]">Recommended</span>
+                    <span className="text-xs font-bold text-green-400 px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                      7 days free
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <span className="text-xl font-bold text-white">{recommendation.name}</span>
+                    <span className="text-[#FFB627] font-bold">{recommendation.price}</span>
+                    <span className="text-white/30 text-xs">after trial</span>
+                  </div>
+                  <div className="space-y-2.5">
+                    {recommendation.reasons.map((r, i) => (
+                      <motion.div
+                        key={r}
+                        className="flex items-start gap-2.5"
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + i * 0.08 }}
+                      >
+                        <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                          style={{ background: 'rgba(34,197,94,0.15)' }}>
+                          <CheckCircle className="w-2.5 h-2.5 text-green-400" />
+                        </div>
+                        <span className="text-sm text-white/70 leading-snug">{r}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
 
-                <p className="text-center text-xs text-white/30">
-                  Cancel before 7 days and you won&apos;t be charged
-                </p>
+                {/* CTA */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.55 }}
+                >
+                  <motion.button
+                    onClick={() => setStep('signup')}
+                    whileHover={{ scale: 1.02, boxShadow: '0 8px 28px rgba(255,182,39,0.35)' }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-4 rounded-2xl text-sm font-bold mb-3 flex items-center justify-center gap-2"
+                    style={{ background: 'linear-gradient(135deg, #FFB627, #f5a300)', color: '#080E1C', boxShadow: '0 4px 20px rgba(255,182,39,0.25)' }}
+                  >
+                    <Plane className="w-4 h-4" />
+                    Start My Free Trial
+                  </motion.button>
+                  <p className="text-center text-xs text-white/30">
+                    Cancel before 7 days and you won&apos;t be charged
+                  </p>
+                </motion.div>
               </motion.div>
             )}
 
-            {/* ── Signup form ────────────────────────────────────────── */}
+            {/* ── Signup form ─────────────────────────────────────────── */}
             {step === 'signup' && (
-              <motion.div
-                key="signup"
-                variants={slideVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
+              <motion.div key="signup" variants={pageVariants} initial="hidden" animate="visible" exit="exit">
                 {signupSuccess ? (
                   <div className="text-center">
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
-                      style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', damping: 14, stiffness: 260 }}
+                      className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
+                      style={{ background: 'rgba(34,197,94,0.12)', border: '1.5px solid rgba(34,197,94,0.3)' }}
                     >
-                      <span className="text-3xl">✉️</span>
-                    </div>
+                      <span className="text-4xl">✉️</span>
+                    </motion.div>
                     <h1 className="text-2xl font-bold text-white mb-2">Check your email</h1>
-                    <p className="text-white/50 text-sm mb-4">
-                      We sent a confirmation link to <strong className="text-white">{email}</strong>. Click it to activate your account.
+                    <p className="text-white/50 text-sm mb-5">
+                      We sent a confirmation link to <strong className="text-white">{email}</strong>.
                     </p>
-                    <Link href="/login" className="text-[#FDB022] text-sm font-medium hover:opacity-80 transition-opacity">
+                    <Link href="/login" className="text-[#FFB627] text-sm font-semibold hover:opacity-80 transition-opacity">
                       Back to login →
                     </Link>
                   </div>
@@ -580,124 +724,102 @@ function StartPageInner() {
                   <>
                     <button
                       onClick={goBack}
-                      className="flex items-center gap-1.5 text-sm text-white/30 hover:text-white/70 transition-colors mb-6"
+                      className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors mb-5 group"
                     >
-                      <ArrowLeft className="w-4 h-4" />
+                      <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
                       Back
                     </button>
 
-                    <div className="mb-6">
-                      <h1 className="text-2xl font-bold text-white mb-1">Create your account</h1>
-                      <p className="text-sm text-white/50">
-                        Create your account to start your 7-day free trial.
-                      </p>
+                    {/* Progress indicator */}
+                    <div className="flex items-center gap-2 mb-5">
+                      <div className="flex items-center gap-1">
+                        {['Profile', 'Plan', 'Account'].map((label, i) => (
+                          <div key={label} className="flex items-center">
+                            <div className="flex items-center gap-1.5">
+                              <div
+                                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                                style={{
+                                  background: i < 2 ? '#FFB627' : 'rgba(255,182,39,0.2)',
+                                  color: i < 2 ? '#080E1C' : '#FFB627',
+                                  border: i === 2 ? '1.5px solid rgba(255,182,39,0.4)' : 'none',
+                                }}
+                              >
+                                {i < 2 ? '✓' : '3'}
+                              </div>
+                              <span className="text-[10px] font-medium" style={{ color: i === 2 ? 'rgba(255,182,39,0.9)' : 'rgba(255,255,255,0.3)' }}>{label}</span>
+                            </div>
+                            {i < 2 && <div className="w-5 h-px mx-1.5" style={{ background: 'rgba(255,182,39,0.3)' }} />}
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    <div
-                      className="rounded-2xl p-6"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                    >
+                    <div className="mb-5">
+                      <h1 className="text-2xl font-bold text-white mb-1">Create your account</h1>
+                      <p className="text-sm text-white/45">You&apos;re almost there — create an account to start your 7-day free trial.</p>
+                    </div>
+
+                    <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                       <form onSubmit={handleSignup} className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-white/70 mb-1.5">Full Name</label>
-                          <input
-                            type="text"
-                            value={fullName}
-                            onChange={e => setFullName(e.target.value)}
-                            placeholder="John Smith"
-                            required
-                            autoComplete="name"
-                          />
+                          <label className="block text-xs font-medium text-white/60 mb-1.5">Full Name</label>
+                          <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="John Smith" required autoComplete="name" />
                         </div>
-
                         <div>
-                          <label className="block text-sm font-medium text-white/70 mb-1.5">Email</label>
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            placeholder="you@example.com"
-                            required
-                            autoComplete="email"
-                          />
+                          <label className="block text-xs font-medium text-white/60 mb-1.5">Email</label>
+                          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required autoComplete="email" />
                         </div>
-
                         <div>
-                          <label className="block text-sm font-medium text-white/70 mb-1.5">Password</label>
+                          <label className="block text-xs font-medium text-white/60 mb-1.5">Password</label>
                           <div className="relative">
-                            <input
-                              type={showPassword ? 'text' : 'password'}
-                              value={password}
-                              onChange={e => setPassword(e.target.value)}
-                              placeholder="Min 8 characters"
-                              required
-                              minLength={8}
-                              autoComplete="new-password"
-                              style={{ paddingRight: '48px' }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70"
-                            >
+                            <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 8 characters" required minLength={8} autoComplete="new-password" style={{ paddingRight: '48px' }} />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
                               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                           </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '10px', alignItems: 'start' }}>
-                          <input
-                            id="terms"
-                            type="checkbox"
-                            checked={agreedToTerms}
-                            onChange={e => setAgreedToTerms(e.target.checked)}
-                            style={{ marginTop: '2px', width: '16px', height: '16px', accentColor: '#FDB022' }}
-                            required
-                          />
-                          <label htmlFor="terms" className="text-xs text-white/50 leading-relaxed cursor-pointer">
-                            I agree to the{' '}
-                            <Link href="/terms" target="_blank" className="text-[#FDB022] underline">Terms</Link>
-                            {' '}and{' '}
-                            <Link href="/privacy" target="_blank" className="text-[#FDB022] underline">Privacy Policy</Link>.
-                            I understand all sales are final.
+                        <div className="grid gap-3 pt-1">
+                          <label className="flex items-start gap-2.5 cursor-pointer">
+                            <input type="checkbox" checked={agreedToTerms} onChange={e => setAgreedToTerms(e.target.checked)} required style={{ marginTop: '2px', width: '15px', height: '15px', accentColor: '#FFB627', flexShrink: 0 }} />
+                            <span className="text-xs text-white/45 leading-relaxed">
+                              I agree to the{' '}
+                              <Link href="/terms" target="_blank" className="text-[#FFB627] underline">Terms</Link>
+                              {' '}and{' '}
+                              <Link href="/privacy" target="_blank" className="text-[#FFB627] underline">Privacy Policy</Link>.
+                              {' '}All sales final.
+                            </span>
                           </label>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '10px', alignItems: 'start' }}>
-                          <input
-                            id="marketing"
-                            type="checkbox"
-                            checked={marketingEmails}
-                            onChange={e => setMarketingEmails(e.target.checked)}
-                            style={{ marginTop: '2px', width: '16px', height: '16px', accentColor: '#FDB022' }}
-                          />
-                          <label htmlFor="marketing" className="text-xs text-white/50 leading-relaxed cursor-pointer">
-                            Send me weekly progress updates and study tips. Unsubscribe anytime.
+                          <label className="flex items-start gap-2.5 cursor-pointer">
+                            <input type="checkbox" checked={marketingEmails} onChange={e => setMarketingEmails(e.target.checked)} style={{ marginTop: '2px', width: '15px', height: '15px', accentColor: '#FFB627', flexShrink: 0 }} />
+                            <span className="text-xs text-white/45 leading-relaxed">Send me weekly progress updates. Unsubscribe anytime.</span>
                           </label>
                         </div>
 
                         {signupError && (
-                          <div className="px-4 py-3 rounded-lg text-sm text-red-300" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                          <div className="px-4 py-3 rounded-xl text-sm text-red-300" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
                             {signupError}
                           </div>
                         )}
 
-                        <button
+                        <motion.button
                           type="submit"
                           disabled={loading || !agreedToTerms}
-                          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-opacity disabled:opacity-50"
-                          style={{ background: '#FDB022', color: '#080E1C' }}
+                          whileHover={!loading && agreedToTerms ? { scale: 1.01 } : {}}
+                          whileTap={!loading && agreedToTerms ? { scale: 0.99 } : {}}
+                          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold disabled:opacity-40"
+                          style={{ background: 'linear-gradient(135deg, #FFB627, #f5a300)', color: '#080E1C', boxShadow: '0 4px 16px rgba(255,182,39,0.2)' }}
                         >
-                          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</> : 'Create My Free Account'}
-                        </button>
+                          {loading
+                            ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</>
+                            : <><Plane className="w-4 h-4" /> Create My Free Account</>}
+                        </motion.button>
                       </form>
                     </div>
 
-                    <p className="text-center mt-4 text-sm text-white/40">
+                    <p className="text-center mt-4 text-sm text-white/35">
                       Already have an account?{' '}
-                      <Link href="/login" className="text-[#FDB022] hover:opacity-80 transition-opacity font-medium">
-                        Sign in
-                      </Link>
+                      <Link href="/login" className="text-[#FFB627] hover:opacity-80 transition-opacity font-medium">Sign in</Link>
                     </p>
                   </>
                 )}
@@ -713,7 +835,11 @@ function StartPageInner() {
 
 export default function StartPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0A2463] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#FFB627]" /></div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#040c1e' }}>
+        <Loader2 className="w-8 h-8 animate-spin text-[#FFB627]" />
+      </div>
+    }>
       <StartPageInner />
     </Suspense>
   )

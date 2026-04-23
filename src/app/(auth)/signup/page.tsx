@@ -56,7 +56,7 @@ function SignupForm() {
       fetch('/api/email/welcome', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName: fullName.split(' ')[0] }),
+        body: JSON.stringify({ userId: data.user.id, email: data.user.email, firstName: fullName.split(' ')[0] }),
       }).catch(() => {})
     }
 

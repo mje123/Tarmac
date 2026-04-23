@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       mode,
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: 'https://tarmac.study/dashboard?checkout=success',
+      success_url: 'https://tarmac.study/checkout/success',
       cancel_url: 'https://tarmac.study/#pricing',
       allow_promotion_codes: true,
       metadata: { userId: user.id, priceId },
