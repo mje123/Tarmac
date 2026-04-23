@@ -51,6 +51,15 @@ function SignupForm() {
       await supabase.from('users').update({ marketing_emails: false }).eq('id', data.user.id)
     }
 
+    // Send welcome email (fire and forget — don't block navigation)
+    if (data.user) {
+      fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName: fullName.split(' ')[0] }),
+      }).catch(() => {})
+    }
+
     if (data.session) {
       router.push(plan ? `/upgrade?plan=${plan}` : '/dashboard')
     } else {

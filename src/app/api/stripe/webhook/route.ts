@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendTrialStartEmail } from '@/lib/email'
 import { SupabaseClient } from '@supabase/supabase-js'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
@@ -132,6 +133,21 @@ export async function POST(request: NextRequest) {
           subscription_expires_at: periodEnd,
           updated_at: new Date().toISOString(),
         }).eq('id', userId)
+
+        // Send trial-start email
+        if (subStatus === 'trialing') {
+          const { data: userRow } = await supabase
+            .from('users')
+            .select('email, full_name')
+            .eq('id', userId)
+            .single()
+          if (userRow?.email) {
+            const firstName = userRow.full_name?.split(' ')[0] || 'Pilot'
+            sendTrialStartEmail({ to: userRow.email, userId, firstName }).catch(e =>
+              console.error('Trial start email failed:', e)
+            )
+          }
+        }
         break
       }
 

@@ -516,6 +516,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                 <tr className="text-white/40 text-left">
                   <th className="pb-3 font-medium">Name / Email</th>
                   <th className="pb-3 font-medium">Plan</th>
+                  <th className="pb-3 font-medium">Emails</th>
                   <th className="pb-3 font-medium">Qs Answered</th>
                   <th className="pb-3 font-medium">Joined</th>
                   <th className="pb-3 font-medium">Expires</th>
@@ -540,6 +541,15 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                         <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || 'text-white/40 bg-white/5'}`}>
                           {u.subscription_status as string}
                         </span>
+                      </td>
+                      <td className="py-3">
+                        {u.marketing_emails !== false ? (
+                          <span title="Subscribed to emails" className="flex items-center gap-1 text-green-400 text-xs font-medium">
+                            <Mail className="w-3.5 h-3.5" /> Yes
+                          </span>
+                        ) : (
+                          <span title="Unsubscribed" className="text-white/25 text-xs">No</span>
+                        )}
                       </td>
                       <td className="py-3 text-white/60">{(answeredPerUser[u.id as string] || 0).toLocaleString()}</td>
                       <td className="py-3 text-white/60">{formatDate(u.created_at as string)}</td>
