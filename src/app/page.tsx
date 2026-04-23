@@ -230,7 +230,7 @@ export default function LandingPage() {
             className="text-lg sm:text-xl max-w-xl mx-auto mb-10 leading-relaxed"
             style={{ color: 'rgba(255,255,255,0.65)' }}
           >
-            The FAA changes how questions are worded. TARMAC makes sure that doesn&apos;t matter.
+            1,400+ FAA questions. Get one wrong — AI explains exactly why, not just which letter is correct.
           </motion.p>
 
           <motion.div
@@ -286,6 +286,79 @@ export default function LandingPage() {
             ))}
           </div>
         </FadeUp>
+      </section>
+
+      {/* ── Question bank + AI ── */}
+      <section className="py-24 px-6" style={{ background: '#060e1f' }}>
+        <div className="max-w-4xl mx-auto">
+          <FadeUp>
+            <div className="text-center mb-14">
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>How it works</p>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-snug mb-4">
+                A question bank that<br />
+                <span style={{ color: '#5ab8f5' }}>explains your mistakes.</span>
+              </h2>
+              <p className="text-base max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                Most question banks show you the right answer and move on. TARMAC gives you an AI that breaks down exactly what you got wrong — the concept, the trap, and what to remember.
+              </p>
+            </div>
+          </FadeUp>
+
+          <div className="grid md:grid-cols-3 gap-4 mb-10">
+            {[
+              {
+                step: '01',
+                icon: <Target className="w-5 h-5" />,
+                color: '#FFB627',
+                title: 'Answer a question',
+                body: '1,400+ FAA-style questions across every knowledge area — regulations, weather, airspace, weight & balance, and more.',
+              },
+              {
+                step: '02',
+                icon: <AlertTriangle className="w-5 h-5" />,
+                color: '#ef4444',
+                title: 'Miss one',
+                body: 'Wrong answers are flagged and tracked. Your accuracy by category updates live — you always know exactly where your gaps are.',
+              },
+              {
+                step: '03',
+                icon: <MessageSquare className="w-5 h-5" />,
+                color: '#5ab8f5',
+                title: 'AI breaks it down',
+                body: 'Not "the answer is B." A full explanation: why you were wrong, what makes the right answer correct, and the memory hook to make it stick.',
+              },
+            ].map((s, i) => (
+              <FadeUp key={s.step} delay={i * 0.1}>
+                <div className="rounded-2xl p-6 h-full" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: s.color + '18', color: s.color }}>
+                      {s.icon}
+                    </div>
+                    <span className="text-2xl font-extrabold" style={{ color: 'rgba(255,255,255,0.07)' }}>{s.step}</span>
+                  </div>
+                  <h3 className="font-bold text-white mb-2 text-sm">{s.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>{s.body}</p>
+                </div>
+              </FadeUp>
+            ))}
+          </div>
+
+          <FadeUp delay={0.35}>
+            <div className="rounded-2xl p-6 md:p-8" style={{ background: 'rgba(90,184,245,0.05)', border: '1px solid rgba(90,184,245,0.15)' }}>
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-5">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(90,184,245,0.12)', color: '#5ab8f5' }}>
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white mb-1">Then ask follow-up questions.</p>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                    &ldquo;Why 30 minutes and not 45?&rdquo; &ldquo;What changes at night?&rdquo; &ldquo;Can you give me an example?&rdquo; — The AI tutor doesn&apos;t move on until you actually understand it.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+        </div>
       </section>
 
       {/* ── The one difference ── */}
