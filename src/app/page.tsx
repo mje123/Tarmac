@@ -219,8 +219,8 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight"
           >
-            Know It.<br />
-            <span style={{ color: '#5ab8f5' }}>Don&apos;t Memorize It.</span>
+            Pass Your Written<br />
+            <span style={{ color: '#5ab8f5' }}>With Flying Colors.</span>
           </motion.h1>
 
           <motion.p
