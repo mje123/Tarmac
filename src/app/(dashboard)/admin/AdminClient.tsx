@@ -5,7 +5,7 @@ import { formatDate } from '@/lib/utils'
 import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
-  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift, RefreshCw,
+  ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift, RefreshCw, MessageSquare,
 } from 'lucide-react'
 
 interface ReferralDetail {
@@ -54,7 +54,7 @@ const SUB_COLORS: Record<string, string> = {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact'>('overview')
   const [users, setUsers] = useState(initialUsers)
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [influencersLoaded, setInfluencersLoaded] = useState(false)
@@ -81,6 +81,9 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [suggestions, setSuggestions] = useState<Record<string, unknown>[]>([])
   const [suggestionsLoaded, setSuggestionsLoaded] = useState(false)
   const [suggestionLoading, setSuggestionLoading] = useState<string | null>(null)
+  const [contacts, setContacts] = useState<Record<string, unknown>[]>([])
+  const [contactsLoaded, setContactsLoaded] = useState(false)
+  const [contactLoading, setContactLoading] = useState<string | null>(null)
   const [emailForm, setEmailForm] = useState({ subject: '', body: '', recipient_group: 'all', specific_email: '' })
   const [emailSending, setEmailSending] = useState(false)
   const [emailResult, setEmailResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
@@ -126,6 +129,22 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     const data = await res.json()
     setSuggestions(data)
     setSuggestionsLoaded(true)
+  }
+
+  async function loadContacts() {
+    if (contactsLoaded) return
+    const res = await fetch('/api/admin/contact')
+    const data = await res.json()
+    setContacts(data)
+    setContactsLoaded(true)
+  }
+
+  async function deleteContact(id: string) {
+    setContactLoading(id)
+    try {
+      await fetch(`/api/admin/contact/${id}`, { method: 'DELETE' })
+      setContacts(prev => prev.filter(c => c.id !== id))
+    } finally { setContactLoading(null) }
   }
 
   async function deleteSuggestion(id: string) {
@@ -215,6 +234,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     if (t === 'applications') loadApplications()
     if (t === 'email') loadEmailHistory()
     if (t === 'suggestions') loadSuggestions()
+    if (t === 'contact') loadContacts()
   }
 
   async function saveQuestion(e: React.FormEvent) {
@@ -331,13 +351,14 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
             {t === 'email' && <Mail className="w-3.5 h-3.5" />}
             {t === 'suggestions' && <Lightbulb className="w-3.5 h-3.5" />}
-            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t}
+            {t === 'contact' && <MessageSquare className="w-3.5 h-3.5" />}
+            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t}
             {t === 'bugs' && bugs.filter(b => b.status === 'open').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white">
                 {bugs.filter(b => b.status === 'open').length}
@@ -351,6 +372,11 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             {t === 'suggestions' && suggestionsLoaded && suggestions.filter(s => s.status !== 'archived').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FFB627] text-black">
                 {suggestions.filter(s => s.status !== 'archived').length}
+              </span>
+            )}
+            {t === 'contact' && contactsLoaded && contacts.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#5ab8f5] text-black">
+                {contacts.length}
               </span>
             )}
           </button>
@@ -1009,6 +1035,45 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'contact' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-white">Contact Submissions</h2>
+            <span className="text-xs text-white/40">{contacts.length} total</span>
+          </div>
+          {!contactsLoaded ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-white/30 animate-spin" /></div>
+          ) : contacts.length === 0 ? (
+            <div className="glass-card p-10 text-center text-white/30">No contact submissions yet.</div>
+          ) : (
+            <div className="space-y-3">
+              {contacts.map(c => (
+                <div key={c.id as string} className="glass-card p-5 flex gap-4 items-start">
+                  <MessageSquare className="w-5 h-5 shrink-0 mt-0.5 text-[#5ab8f5]" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="font-medium text-white text-sm">{c.name as string}</span>
+                      <a href={`mailto:${c.email as string}`} className="text-[#5ab8f5] text-xs hover:underline">{c.email as string}</a>
+                      <span className="text-white/25 text-xs">{formatDate(c.created_at as string)}</span>
+                    </div>
+                    <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{c.message as string}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    {contactLoading === (c.id as string) ? (
+                      <Loader2 className="w-4 h-4 text-white/30 animate-spin" />
+                    ) : (
+                      <button onClick={() => deleteContact(c.id as string)} title="Delete" className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/50 hover:text-red-400 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     )}
                   </div>
                 </div>

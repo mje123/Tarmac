@@ -7,7 +7,7 @@ import { motion, useInView } from 'framer-motion'
 import {
   CheckCircle, Brain, BarChart3, Smartphone, Target,
   ChevronDown, ChevronUp, ArrowRight, Plane, MessageSquare,
-  Zap, TrendingUp, AlertTriangle,
+  Zap, TrendingUp, AlertTriangle, Send, Loader2,
 } from 'lucide-react'
 import { isBeta, BETA_PLAN } from '@/lib/pricing'
 
@@ -164,6 +164,99 @@ function DemoWidget() {
   )
 }
 
+// ─── CONTACT FORM ─────────────────────────────────────────────────────────────
+function ContactForm() {
+  const [form, setForm] = useState({ name: '', email: '', message: '' })
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setStatus('sending')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (res.ok) {
+        setStatus('sent')
+        setForm({ name: '', email: '', message: '' })
+      } else {
+        setStatus('error')
+      }
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-medium text-white/50 mb-1.5">Name</label>
+          <input
+            type="text"
+            value={form.name}
+            onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+            placeholder="Your name"
+            required
+            className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:ring-1 focus:ring-[#5ab8f5]/50 transition-all"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-white/50 mb-1.5">Email</label>
+          <input
+            type="email"
+            value={form.email}
+            onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+            placeholder="you@example.com"
+            required
+            className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:ring-1 focus:ring-[#5ab8f5]/50 transition-all"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-white/50 mb-1.5">Message</label>
+        <textarea
+          value={form.message}
+          onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
+          placeholder="What's on your mind?"
+          required
+          rows={5}
+          className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:ring-1 focus:ring-[#5ab8f5]/50 transition-all resize-none"
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+        />
+      </div>
+      {status === 'error' && (
+        <p className="text-sm text-red-400">Something went wrong — try again or email us directly.</p>
+      )}
+      {status === 'sent' ? (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-green-400 font-medium"
+          style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}
+        >
+          <CheckCircle className="w-4 h-4 shrink-0" />
+          Got it — we&apos;ll be in touch soon.
+        </motion.div>
+      ) : (
+        <button
+          type="submit"
+          disabled={status === 'sending'}
+          className="btn-gold px-7 py-3 text-sm font-bold disabled:opacity-60"
+        >
+          {status === 'sending'
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</>
+            : <><Send className="w-4 h-4" /> Send Message</>}
+        </button>
+      )}
+    </form>
+  )
+}
+
 // ─── PAGE ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
@@ -181,6 +274,7 @@ export default function LandingPage() {
           <a href="#why" className="hover:text-white transition-colors">Why TARMAC</a>
           <a href="#demo" className="hover:text-white transition-colors">Try demo</a>
           <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/login" className="text-sm px-4 py-2 transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Log in</Link>
@@ -705,6 +799,26 @@ export default function LandingPage() {
               Something else?{' '}
               <a href="mailto:mewing713@gmail.com" className="text-[#5ab8f5] hover:underline">Email us</a>
             </p>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ── Contact ── */}
+      <section id="contact" className="py-24 px-6" style={{ background: '#060e1f' }}>
+        <div className="max-w-2xl mx-auto">
+          <FadeUp>
+            <div className="text-center mb-10">
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Get in touch</p>
+              <h2 className="text-3xl font-extrabold text-white mb-3">Have a question?</h2>
+              <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                Whether it&apos;s about pricing, your account, or feedback — we read everything.
+              </p>
+            </div>
+          </FadeUp>
+          <FadeUp delay={0.1}>
+            <div className="rounded-2xl p-8" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <ContactForm />
+            </div>
           </FadeUp>
         </div>
       </section>
