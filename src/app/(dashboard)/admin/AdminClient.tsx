@@ -84,6 +84,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [contacts, setContacts] = useState<Record<string, unknown>[]>([])
   const [contactsLoaded, setContactsLoaded] = useState(false)
   const [contactLoading, setContactLoading] = useState<string | null>(null)
+  const [syncingStripe, setSyncingStripe] = useState(false)
+  const [syncResult, setSyncResult] = useState<{ fixed: number; results: { email: string; result: string }[] } | null>(null)
   const [emailForm, setEmailForm] = useState({ subject: '', body: '', recipient_group: 'all', specific_email: '' })
   const [emailSending, setEmailSending] = useState(false)
   const [emailResult, setEmailResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
@@ -225,6 +227,17 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
       const data = await res.json()
       if (res.ok) setUsers(data.users)
     } finally { setUsersRefreshing(false) }
+  }
+
+  async function syncStripe() {
+    setSyncingStripe(true)
+    setSyncResult(null)
+    try {
+      const res = await fetch('/api/admin/sync-subscriptions', { method: 'POST' })
+      const data = await res.json()
+      setSyncResult(data)
+      if (data.fixed > 0) await refreshUsers()
+    } finally { setSyncingStripe(false) }
   }
 
   function handleTabChange(t: typeof tab) {
@@ -531,11 +544,25 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-white">All Users ({users.length})</h3>
-            <button onClick={refreshUsers} disabled={usersRefreshing} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
-              <RefreshCw className={`w-3.5 h-3.5 ${usersRefreshing ? 'animate-spin' : ''}`} />
-              {usersRefreshing ? 'Refreshing…' : 'Refresh'}
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={syncStripe} disabled={syncingStripe} className="flex items-center gap-1.5 text-xs text-[#3E92CC]/70 hover:text-[#3E92CC] transition-colors disabled:opacity-40">
+                <RefreshCw className={`w-3.5 h-3.5 ${syncingStripe ? 'animate-spin' : ''}`} />
+                {syncingStripe ? 'Syncing Stripe…' : 'Sync Stripe'}
+              </button>
+              <button onClick={refreshUsers} disabled={usersRefreshing} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
+                <RefreshCw className={`w-3.5 h-3.5 ${usersRefreshing ? 'animate-spin' : ''}`} />
+                {usersRefreshing ? 'Refreshing…' : 'Refresh'}
+              </button>
+            </div>
           </div>
+          {syncResult && (
+            <div className={`mb-4 p-3 rounded-lg text-xs ${syncResult.fixed > 0 ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-white/50'}`}>
+              Stripe sync complete — {syncResult.fixed} user{syncResult.fixed !== 1 ? 's' : ''} fixed.
+              {syncResult.results?.filter(r => r.result.startsWith('fixed')).map(r => (
+                <span key={r.email} className="ml-2 font-medium">{r.email}</span>
+              ))}
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
