@@ -35,6 +35,11 @@ export async function POST(request: NextRequest) {
       priceId = isBeta ? process.env.STRIPE_BETA_MONTHLY_PRICE_ID! : process.env.STRIPE_STUDY_PASS_PRICE_ID!
     }
 
+    if (!priceId) {
+      console.error('Checkout error: priceId is undefined. Set STRIPE_BETA_MONTHLY_PRICE_ID in env.')
+      return NextResponse.json({ error: 'Payment configuration error — contact support.' }, { status: 500 })
+    }
+
     // Pre-create or reuse Stripe customer so stripe_customer_id is set before redirect
     const { data: userProfile } = await supabase.from('users').select('stripe_customer_id, email').eq('id', user.id).single()
     let customerId = userProfile?.stripe_customer_id ?? null
