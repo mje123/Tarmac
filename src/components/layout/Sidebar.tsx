@@ -27,7 +27,7 @@ interface SidebarProps { user: User }
 const subscriptionLabels: Record<string, string> = {
   free: '',
   trialing: 'Free Trial',
-  study_pass: 'Study Pass',
+  study_pass: 'Tarmac Membership',
   checkride_prep: 'Checkride Prep',
   annual: 'Annual Pass',
 }

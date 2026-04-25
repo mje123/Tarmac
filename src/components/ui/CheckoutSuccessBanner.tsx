@@ -26,7 +26,7 @@ export default function CheckoutSuccessBanner() {
       style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)' }}>
       <CheckCircle className="w-5 h-5 text-green-400 shrink-0" />
       <div className="flex-1">
-        <div className="text-white font-semibold text-sm">Welcome to Study Pass!</div>
+        <div className="text-white font-semibold text-sm">Welcome to Tarmac Membership!</div>
         <div className="text-white/60 text-xs mt-0.5">Your subscription is active. Full access unlocked — let's get you test-ready. ✈️</div>
       </div>
       <button onClick={() => setShow(false)} className="text-white/40 hover:text-white transition-colors">

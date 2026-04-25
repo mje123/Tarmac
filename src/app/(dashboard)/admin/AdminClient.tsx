@@ -50,7 +50,16 @@ interface AdminClientProps {
 
 const SUB_COLORS: Record<string, string> = {
   study_pass: 'text-[#3E92CC] bg-[#3E92CC]/10',
+  trialing: 'text-green-400 bg-green-400/10',
   free: 'text-white/40 bg-white/5',
+}
+
+const SUB_LABELS: Record<string, string> = {
+  study_pass: 'Tarmac Membership',
+  trialing: 'Free Trial',
+  free: 'Free',
+  checkride_prep: 'Checkride Prep',
+  annual: 'Annual',
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
@@ -437,7 +446,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-xs text-white/40">{(answeredPerUser[u.id as string] || 0).toLocaleString()} Qs</span>
                       <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || 'text-white/40 bg-white/5'}`}>
-                        {u.subscription_status as string}
+                        {SUB_LABELS[u.subscription_status as string] || u.subscription_status as string}
                       </span>
                     </div>
                   </div>
@@ -475,7 +484,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
               <div className="text-center p-4 rounded-xl" style={{ background: 'rgba(62,146,204,0.08)' }}>
                 <div className="text-2xl font-bold text-[#3E92CC]">{stats.subCounts['study_pass'] || 0}</div>
-                <div className="text-xs text-white/50 mt-1">Study Pass</div>
+                <div className="text-xs text-white/50 mt-1">Tarmac Membership</div>
               </div>
               <div className="text-center p-4 rounded-xl" style={{ background: 'rgba(255,182,39,0.08)' }}>
                 <div className="text-2xl font-bold text-[#FFB627]">{totalPaid}</div>
@@ -592,7 +601,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                       </td>
                       <td className="py-3">
                         <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || 'text-white/40 bg-white/5'}`}>
-                          {u.subscription_status as string}
+                          {SUB_LABELS[u.subscription_status as string] || u.subscription_status as string}
                         </span>
                       </td>
                       <td className="py-3">
