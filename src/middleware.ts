@@ -58,11 +58,22 @@ export async function middleware(request: NextRequest) {
     )
     const { data: profile } = await supabaseAdmin
       .from('users')
-      .select('subscription_status, stripe_customer_id')
+      .select('subscription_status, subscription_expires_at, is_admin')
       .eq('id', user.id)
       .single()
 
-    if (!profile || (profile.subscription_status === 'free' && !profile.stripe_customer_id)) {
+    const status = profile?.subscription_status
+    const expires = profile?.subscription_expires_at
+    const isAdmin = profile?.is_admin
+
+    const hasAccess = isAdmin ||
+      (status && status !== 'free' && (
+        status === 'trialing' ||
+        !expires ||
+        new Date(expires) > new Date()
+      ))
+
+    if (!hasAccess) {
       const url = request.nextUrl.clone()
       url.pathname = '/upgrade'
       return NextResponse.redirect(url)
