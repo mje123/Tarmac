@@ -17,6 +17,11 @@ export default function CheckoutSuccessPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        // Sync subscription from Stripe before redirecting so the user
+        // isn't blocked by exam-access even if the webhook hasn't fired yet.
+        try {
+          await fetch('/api/stripe/sync', { method: 'POST' })
+        } catch { /* non-fatal — webhook will catch up */ }
         setStatus('redirect')
         router.replace('/dashboard?checkout=success')
         return
