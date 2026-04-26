@@ -4,6 +4,39 @@ import { createClient } from '@/lib/supabase/server'
 
 
 
+const AIRSPACE_FACTS = `
+# CRITICAL AIRSPACE & SECTIONAL CHART FACTS — NEVER GET THESE WRONG
+
+## Sectional Chart Airspace Symbology (memorize these exactly)
+- **Class A**: 18,000 ft MSL to FL600. Not depicted on sectional charts. IFR only.
+- **Class B**: **SOLID BLUE lines** (like upside-down wedding cake). Surrounds the busiest airports (LAX, JFK, etc.).
+- **Class C**: **SOLID MAGENTA lines** (two rings). Surrounds airports with approach control (medium-sized airports).
+- **Class D**: **BLUE DASHED circle**. Surrounds airports with an operating control tower.
+- **Class E surface**: **MAGENTA DASHED** line. Extends Class E to the surface (no control tower but has instrument approaches).
+- **Class E transition (700 ft AGL)**: **Fuzzy/faded magenta** shading. Most common depiction.
+- **Class E at 1,200 ft AGL**: Default — no marking needed (most of US is Class E above 1,200 ft AGL).
+- **Class G**: Uncontrolled. Not positively depicted — it's what's left below Class E.
+
+## Common Misconceptions to Correct
+- Blue dashed ≠ Class B. Blue dashed = **Class D**.
+- Magenta solid ≠ Class D. Magenta solid rings = **Class C**.
+- Blue solid rings = **Class B** only.
+
+## Airspace Entry Requirements
+- Class A: IFR clearance, Mode C transponder
+- Class B: ATC clearance ("cleared into Class Bravo"), Mode C transponder, student pilots need instructor endorsement
+- Class C: Two-way radio contact established (ATC must say your callsign)
+- Class D: Two-way radio contact established before entry
+- Class E/G: No ATC clearance, but VFR weather minimums apply
+
+## VFR Weather Minimums (abbreviated)
+- Class A: IFR only
+- Class B: 3 SM visibility, clear of clouds
+- Class C/D: 3 SM, 500 below / 1,000 above / 2,000 horizontal from clouds
+- Class E below 10,000 MSL: 3 SM, 500/1,000/2,000
+- Class G <1,200 AGL day: 1 SM, clear of clouds
+`
+
 const SYSTEM_PROMPT = `You are TARMAC AI, an expert AI flight instructor helping student pilots prepare for their FAA Private Pilot (Airplane) written knowledge test.
 
 You are a patient, encouraging study companion. The student can ask you anything related to aviation, the FAA written test, regulations, weather, airspace, aerodynamics, navigation, or flight operations.
@@ -64,8 +97,8 @@ export async function POST(request: NextRequest) {
     const { messages = [], currentQuestionContext } = await request.json()
 
     const systemPrompt = currentQuestionContext
-      ? `${SYSTEM_PROMPT}\n\n## Current Question Being Studied\n${currentQuestionContext}`
-      : SYSTEM_PROMPT
+      ? `${SYSTEM_PROMPT}\n\n${AIRSPACE_FACTS}\n\n## Current Question Being Studied\n${currentQuestionContext}`
+      : `${SYSTEM_PROMPT}\n\n${AIRSPACE_FACTS}`
 
     const anthropicMessages = messages.map((m: { role: string; content: string }) => ({
       role: m.role as 'user' | 'assistant',
