@@ -15,73 +15,86 @@ export async function sendExamResultEmail(payload: ExamEmailPayload) {
   const { toEmail, userName, score, totalQuestions, pct, passed, pdfBuffer } = payload
   const firstName = userName.split(' ')[0] || 'Pilot'
 
-  const subject = `Your Practice Exam Results — ${pct}% ${passed ? '✓ Pass' : '✗'}`
+  const subject = passed
+    ? `You passed! ${pct}% on your practice exam ✈️`
+    : `Practice exam complete — ${pct}% (keep going)`
+
+  const scoreColor = passed ? '#10B981' : '#EF4444'
+  const scoreCardBg = passed
+    ? 'linear-gradient(135deg, #052e16 0%, #064e3b 100%)'
+    : 'linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 100%)'
+  const badgeBg = passed ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'
+  const badgeText = passed ? '#34d399' : '#f87171'
+  const badgeBorder = passed ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)'
+  const badgeLabel = passed ? '✓ &nbsp;PASSED' : '✗ &nbsp;FAILED'
+
+  const bodyText = passed
+    ? `You cleared the 70% threshold — solid work. Keep this momentum going. The more you practice, the more confident you'll feel walking into the real exam.`
+    : `You're building knowledge with every attempt. Review the missed questions in your PDF report, focus on the weak categories, and retake the exam when you're ready. Most pilots nail it within a few tries.`
 
   const html = `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Exam Results</title>
-  <style>
-    body { margin: 0; padding: 0; background: #EDF4FC; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .wrapper { max-width: 560px; margin: 32px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(10,36,99,0.10); }
-    .header { background: #0A2463; padding: 32px 32px 24px; }
-    .header h1 { margin: 0 0 4px; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-    .header p { margin: 0; color: rgba(255,255,255,0.65); font-size: 13px; }
-    .gold-bar { height: 4px; background: linear-gradient(90deg, #FFB627, #3E92CC); }
-    .body { padding: 32px; }
-    .score-card { background: #EDF4FC; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px; }
-    .score-big { font-size: 52px; font-weight: 800; color: #0A2463; line-height: 1; }
-    .score-pct { font-size: 28px; font-weight: 700; margin-top: 4px; }
-    .pass { color: #16a34a; } .fail { color: #dc2626; }
-    .badge { display: inline-block; padding: 6px 18px; border-radius: 99px; font-size: 13px; font-weight: 700; margin-top: 12px; }
-    .badge-pass { background: #dcfce7; color: #15803d; }
-    .badge-fail { background: #fee2e2; color: #b91c1c; }
-    p { color: #1e3a6e; font-size: 15px; line-height: 1.6; }
-    .cta { display: block; background: linear-gradient(135deg, #3E92CC, #2a7ab5); color: #ffffff; text-decoration: none; text-align: center; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; margin: 24px 0; }
-    .footer { background: #0A2463; padding: 20px 32px; text-align: center; color: rgba(255,255,255,0.5); font-size: 12px; }
-    .footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
-  </style>
 </head>
-<body>
-  <div class="wrapper">
-    <div class="header">
-      <h1>TARMAC</h1>
-      <p>Private Pilot Exam Prep</p>
-    </div>
-    <div class="gold-bar"></div>
-    <div class="body">
-      <p>Hi ${firstName},</p>
-      <p>You just completed a full 60-question practice exam. Here's how you did:</p>
+<body style="margin:0;padding:0;background:#0d1117;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;padding:32px 16px;">
 
-      <div class="score-card">
-        <div class="score-big">${score}/${totalQuestions}</div>
-        <div class="score-pct ${passed ? 'pass' : 'fail'}">${pct}%</div>
-        <div class="badge ${passed ? 'badge-pass' : 'badge-fail'}">${passed ? '✓ PASSED' : '✗ FAILED'}</div>
+    <!-- Header -->
+    <div style="background:#0A2463;border-radius:16px 16px 0 0;padding:28px 36px 22px;border-bottom:3px solid #FFB627;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#FFB627,#e09e1a);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:18px;">✈</span>
+        </div>
+        <div>
+          <div style="color:#ffffff;font-size:18px;font-weight:800;letter-spacing:-0.3px;">TARMAC</div>
+          <div style="color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:0.5px;text-transform:uppercase;">Private Pilot Exam Prep</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div style="background:#ffffff;padding:36px;border-radius:0 0 16px 16px;box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+
+      <p style="margin:0 0 24px;color:#0A2463;font-size:16px;line-height:1.5;">Hi ${firstName},</p>
+
+      <!-- Score card -->
+      <div style="background:${scoreCardBg};border-radius:14px;padding:32px 24px;text-align:center;margin-bottom:28px;border:1px solid ${badgeBorder};">
+        <div style="color:rgba(255,255,255,0.5);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">Practice Exam Score</div>
+        <div style="color:#ffffff;font-size:64px;font-weight:800;line-height:1;letter-spacing:-2px;">${score}<span style="font-size:32px;color:rgba(255,255,255,0.4);font-weight:600;">/${totalQuestions}</span></div>
+        <div style="color:${scoreColor};font-size:32px;font-weight:700;margin-top:6px;">${pct}%</div>
+        <div style="display:inline-block;margin-top:14px;padding:7px 20px;border-radius:99px;background:${badgeBg};border:1px solid ${badgeBorder};color:${badgeText};font-size:13px;font-weight:700;letter-spacing:0.5px;">${badgeLabel}</div>
       </div>
 
-      ${passed
-        ? `<p>Great work — you cleared the 70% passing threshold! Keep practicing to build even more confidence before your checkride.</p>`
-        : `<p>You're not there yet, but every exam is a learning opportunity. Review the missed questions in your attached PDF report and focus on the categories where you struggled.</p>`
-      }
+      <p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.65;">${bodyText}</p>
 
-      <p>Your detailed PDF report is attached. It includes:</p>
-      <ul style="color:#1e3a6e;font-size:15px;line-height:1.8;">
-        <li>Score summary &amp; pass/fail status</li>
-        <li>Performance breakdown by category</li>
-        <li>Every missed question with the correct answer &amp; explanation</li>
-      </ul>
+      <!-- PDF section -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px 20px;margin-bottom:28px;">
+        <div style="color:#0A2463;font-size:13px;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">📎 &nbsp;Your PDF Report Includes</div>
+        <div style="color:#475569;font-size:14px;line-height:1.8;">
+          &nbsp;• &nbsp;Score summary &amp; pass/fail status<br/>
+          &nbsp;• &nbsp;Performance breakdown by category<br/>
+          &nbsp;• &nbsp;Every missed question with the correct answer &amp; explanation
+        </div>
+      </div>
 
-      <a href="https://tarmac.study/dashboard" class="cta">View Dashboard →</a>
+      <!-- CTA -->
+      <a href="https://tarmac.study/dashboard"
+        style="display:block;background:linear-gradient(135deg,#FFB627,#e09e1a);color:#0A2463;text-decoration:none;text-align:center;padding:15px 28px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:-0.2px;">
+        Back to Dashboard &nbsp;→
+      </a>
 
-      <p style="color:#6b7280;font-size:13px;">Keep up the momentum — consistent practice is how you ace the real thing. ✈️</p>
+      <p style="margin:20px 0 0;color:#9ca3af;font-size:13px;text-align:center;line-height:1.5;">Consistent practice is how you ace the real thing. You've got this. ✈️</p>
     </div>
-    <div class="footer">
-      <p>© ${new Date().getFullYear()} Tarmac · <a href="https://tarmac.study">tarmac.study</a></p>
-      <p style="margin-top:4px;">You received this because you completed a practice exam. <a href="https://tarmac.study/dashboard">Manage preferences</a></p>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:20px 0 8px;">
+      <p style="margin:0;color:rgba(255,255,255,0.3);font-size:12px;">© ${new Date().getFullYear()} Tarmac &nbsp;·&nbsp; <a href="https://tarmac.study" style="color:rgba(255,255,255,0.4);text-decoration:none;">tarmac.study</a></p>
     </div>
+
   </div>
 </body>
 </html>`
