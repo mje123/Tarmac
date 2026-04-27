@@ -504,19 +504,22 @@ export default function QuizPage() {
             let textColor = 'rgba(255,255,255,0.85)'
 
             if (isAnswered) {
-              if (isCorrectOption) {
+              if (isSelected && isCorrectOption) {
+                // Right answer — show green on what they picked
                 bg = 'rgba(16,185,129,0.1)'
                 border = 'rgba(16,185,129,0.35)'
                 letterBg = 'rgba(16,185,129,0.2)'
                 letterColor = '#10B981'
                 textColor = 'white'
               } else if (isSelected && !isCorrectOption) {
+                // Wrong answer — show red on what they picked only
                 bg = 'rgba(239,68,68,0.1)'
                 border = 'rgba(239,68,68,0.35)'
                 letterBg = 'rgba(239,68,68,0.2)'
                 letterColor = '#EF4444'
                 textColor = 'rgba(255,255,255,0.6)'
               } else {
+                // All other options fade out — correct answer NOT revealed
                 textColor = 'rgba(255,255,255,0.3)'
                 letterColor = 'rgba(255,255,255,0.2)'
               }
@@ -534,7 +537,7 @@ export default function QuizPage() {
                   {key}
                 </span>
                 <span className="leading-relaxed text-sm" style={{ color: textColor }}>{optionValues[key]}</span>
-                {isAnswered && isCorrectOption && <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 ml-auto" />}
+                {isAnswered && isSelected && isCorrectOption && <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 ml-auto" />}
                 {isAnswered && isSelected && !isCorrectOption && <XCircle className="w-5 h-5 text-red-400 shrink-0 ml-auto" />}
               </button>
             )
