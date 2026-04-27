@@ -459,7 +459,7 @@ export default function QuizPage() {
                 className="h-2 flex-1 rounded-full transition-all duration-300"
                 style={{
                   background: isDone
-                    ? (res.isCorrect ? '#10B981' : '#EF4444')
+                    ? 'rgba(255,255,255,0.3)'
                     : isCurrent
                     ? '#FFB627'
                     : 'rgba(255,255,255,0.08)',
