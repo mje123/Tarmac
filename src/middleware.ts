@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/', '/login', '/signup', '/start', '/auth/callback', '/terms', '/privacy', '/partners', '/unsubscribed', '/checkout']
 // Paths that require an active trial/subscription (free users redirect to /upgrade)
-const GATED_PATHS = ['/dashboard', '/practice', '/exam', '/saved', '/chat', '/admin']
+const GATED_PATHS = ['/dashboard', '/practice', '/exam', '/quiz', '/saved', '/chat', '/admin']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
