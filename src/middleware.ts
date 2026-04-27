@@ -66,12 +66,11 @@ export async function middleware(request: NextRequest) {
     const expires = profile?.subscription_expires_at
     const isAdmin = profile?.is_admin
 
+    // For all non-free statuses: check expiry if present.
+    // Trialing gets NO special bypass — if webhook is delayed, the expiry date
+    // set at checkout (= trial end) still gates access correctly.
     const hasAccess = isAdmin ||
-      (status && status !== 'free' && (
-        status === 'trialing' ||
-        !expires ||
-        new Date(expires) > new Date()
-      ))
+      (status && status !== 'free' && (!expires || new Date(expires) > new Date()))
 
     if (!hasAccess) {
       const url = request.nextUrl.clone()
