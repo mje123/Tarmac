@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { formatDate } from '@/lib/utils'
 import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
@@ -64,6 +64,8 @@ const SUB_LABELS: Record<string, string> = {
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
   const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact'>('overview')
+  const [referralStats, setReferralStats] = useState<{ key: string; label: string; count: number; pct: number }[]>([])
+  const [referralTotal, setReferralTotal] = useState(0)
   const [users, setUsers] = useState(initialUsers)
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [influencersLoaded, setInfluencersLoaded] = useState(false)
@@ -101,6 +103,13 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
   const totalPaid = Object.values(stats.subCounts).reduce((a, b) => a + b, 0)
   const freeUsers = stats.totalUsers - totalPaid
+
+  useEffect(() => {
+    fetch('/api/admin/referral-stats')
+      .then(r => r.json())
+      .then(d => { if (d.results) { setReferralStats(d.results); setReferralTotal(d.total) } })
+      .catch(() => {})
+  }, [])
 
   async function loadInfluencers() {
     if (influencersLoaded) return
@@ -492,6 +501,28 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               </div>
             </div>
           </div>
+
+          {/* Referral source chart */}
+          {referralStats.length > 0 && (
+            <div className="glass-card p-6 mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-white">Where Users Come From</h3>
+                <span className="text-xs text-white/30">{referralTotal} responded</span>
+              </div>
+              <div className="space-y-3">
+                {referralStats.map(s => (
+                  <div key={s.key} className="flex items-center gap-3">
+                    <div className="text-sm text-white/70 w-32 shrink-0">{s.label}</div>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${s.pct}%`, background: 'linear-gradient(90deg, #3E92CC, #FFB627)' }} />
+                    </div>
+                    <div className="text-xs text-white/50 w-16 text-right shrink-0">{s.count} ({s.pct}%)</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -12,7 +12,7 @@ import type { OnboardingData } from '@/types'
 // ─── Quiz data ────────────────────────────────────────────────────────────────
 
 type Step =
-  | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6'
+  | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7'
   | 'recommendation'
   | 'signup'
 
@@ -132,6 +132,32 @@ const QUESTIONS: Question[] = [
       skipped:               '',
     },
   },
+  {
+    id: 'q7',
+    text: 'Last one — how did you hear about Tarmac?',
+    skippable: true,
+    options: [
+      { value: 'instagram', label: 'Instagram' },
+      { value: 'tiktok',    label: 'TikTok' },
+      { value: 'youtube',   label: 'YouTube' },
+      { value: 'google',    label: 'Google / Search' },
+      { value: 'reddit',    label: 'Reddit' },
+      { value: 'friend',    label: 'Friend or classmate' },
+      { value: 'cfi',       label: 'My flight instructor (CFI)' },
+      { value: 'other',     label: 'Somewhere else' },
+    ],
+    feedbacks: {
+      instagram: "Welcome! Glad the feed led you here.",
+      tiktok:    "TikTok → Tarmac. The pilot pipeline.",
+      youtube:   "Good taste in content.",
+      google:    "You searched, you found.",
+      reddit:    "The aviation subreddit delivers again.",
+      friend:    "Tell them we said thanks.",
+      cfi:       "Your CFI has good judgment.",
+      other:     "However you got here — glad you did.",
+      skipped:   '',
+    },
+  },
 ]
 
 // ─── Option icons ─────────────────────────────────────────────────────────────
@@ -143,6 +169,8 @@ const OPTION_ICONS: Record<string, string> = {
   retake_cost: '💸', not_understanding: '📚', no_time: '⏱️', what_to_focus: '🎯', test_anxiety: '😬',
   first_time: '❌', didnt_like: '📖', failed_with_them: '🔄', exploring: '✅',
   detailed_explanations: '📖', learning_by_doing: '⚡', need_structure: '🎯', mixed: '🤷',
+  instagram: '📸', tiktok: '🎵', youtube: '▶️', google: '🔍', reddit: '🤖',
+  friend: '🤝', cfi: '🧑‍✈️', other: '🌐',
 }
 
 // ─── Recommendation logic ─────────────────────────────────────────────────────
@@ -259,7 +287,7 @@ function StartPageInner() {
     try { localStorage.setItem('tarmac_quiz', JSON.stringify({ step, answers })) } catch { /* ignore */ }
   }, [step, answers])
 
-  const STEP_ORDER: Step[] = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'recommendation', 'signup']
+  const STEP_ORDER: Step[] = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'recommendation', 'signup']
   const questionSteps = STEP_ORDER.filter(s => s.startsWith('q')) as Step[]
   const currentQuestionIndex = questionSteps.indexOf(step)
   const totalQuestions = questionSteps.length
@@ -270,7 +298,7 @@ function StartPageInner() {
     setSelectedValue(value)
     const fieldMap: Record<string, keyof OnboardingData> = {
       q1: 'training_stage', q2: 'test_timeline', q3: 'confidence_level',
-      q4: 'biggest_worry', q5: 'previous_tools', q6: 'learning_style',
+      q4: 'biggest_worry', q5: 'previous_tools', q6: 'learning_style', q7: 'referral_source',
     }
     const field = fieldMap[step]
     const newAnswers = { ...answers, [field]: value as never }
@@ -281,7 +309,9 @@ function StartPageInner() {
   }
 
   function skipQuestion() {
-    const newAnswers = { ...answers, learning_style: 'skipped' as const }
+    const fieldMap: Record<string, keyof OnboardingData> = { q6: 'learning_style', q7: 'referral_source' }
+    const field = fieldMap[step]
+    const newAnswers = field ? { ...answers, [field]: 'skipped' as never } : { ...answers }
     setAnswers(newAnswers)
     advance(step, newAnswers)
   }

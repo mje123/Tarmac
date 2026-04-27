@@ -23,6 +23,7 @@ export interface OnboardingData {
   biggest_worry?: 'retake_cost' | 'not_understanding' | 'no_time' | 'what_to_focus' | 'test_anxiety'
   previous_tools?: 'first_time' | 'didnt_like' | 'failed_with_them' | 'exploring'
   learning_style?: 'detailed_explanations' | 'learning_by_doing' | 'need_structure' | 'mixed' | 'skipped'
+  referral_source?: 'instagram' | 'tiktok' | 'youtube' | 'google' | 'reddit' | 'friend' | 'cfi' | 'other'
   recommended_plan?: string
 }
 
