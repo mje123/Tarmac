@@ -474,8 +474,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                         <div className="text-xs text-white/40">{s.session_type as string} · {formatDate(s.started_at as string)}</div>
                       </div>
                       {s.score !== null && s.score !== undefined && (
-                        <span className={`text-sm font-semibold ${((s.score as number) / 60) >= 0.7 ? 'text-green-400' : 'text-red-400'}`}>
-                          {s.score as number}/60
+                        <span className={`text-sm font-semibold ${((s.score as number) / ((s.total_questions as number) || 60)) >= 0.7 ? 'text-green-400' : 'text-red-400'}`}>
+                          {s.score as number}/{(s.total_questions as number) || 60}
                         </span>
                       )}
                     </div>
