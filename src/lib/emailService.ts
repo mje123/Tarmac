@@ -30,7 +30,7 @@ export async function sendExamResultEmail(payload: ExamEmailPayload) {
 
   const bodyText = passed
     ? `You cleared the 70% threshold — solid work. Keep this momentum going. The more you practice, the more confident you'll feel walking into the real exam.`
-    : `You're building knowledge with every attempt. Review the missed questions in your PDF report, focus on the weak categories, and retake the exam when you're ready. Most pilots nail it within a few tries.`
+    : `You're building knowledge with every attempt. Review the missed questions in your PDF report, focus on the weak categories, and retake when you're ready. <strong>Your plan includes unlimited practice exams</strong> — use them.`
 
   const html = `
 <!DOCTYPE html>
