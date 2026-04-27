@@ -424,7 +424,6 @@ export default function QuizPage() {
   const progressPct = (questionNumber / questions.length) * 100
   const catInfo = CATEGORIES.find(c => c.value === currentQuestion.category)
   const isAnswered = phase === 'answered'
-  const isCorrect = selectedAnswer === currentQuestion.correct_answer
 
   const optionKeys = (['A', 'B', 'C', 'D'] as AnswerOption[]).filter(k =>
     k !== 'D' || !!currentQuestion.option_d
@@ -504,22 +503,14 @@ export default function QuizPage() {
             let textColor = 'rgba(255,255,255,0.85)'
 
             if (isAnswered) {
-              if (isSelected && isCorrectOption) {
-                // Right answer — show green on what they picked
-                bg = 'rgba(16,185,129,0.1)'
-                border = 'rgba(16,185,129,0.35)'
-                letterBg = 'rgba(16,185,129,0.2)'
-                letterColor = '#10B981'
+              if (isSelected) {
+                // Highlight selected answer neutrally — no correct/wrong revealed
+                bg = 'rgba(255,182,39,0.08)'
+                border = 'rgba(255,182,39,0.35)'
+                letterBg = 'rgba(255,182,39,0.2)'
+                letterColor = '#FFB627'
                 textColor = 'white'
-              } else if (isSelected && !isCorrectOption) {
-                // Wrong answer — show red on what they picked only
-                bg = 'rgba(239,68,68,0.1)'
-                border = 'rgba(239,68,68,0.35)'
-                letterBg = 'rgba(239,68,68,0.2)'
-                letterColor = '#EF4444'
-                textColor = 'rgba(255,255,255,0.6)'
               } else {
-                // All other options fade out — correct answer NOT revealed
                 textColor = 'rgba(255,255,255,0.3)'
                 letterColor = 'rgba(255,255,255,0.2)'
               }
@@ -537,56 +528,23 @@ export default function QuizPage() {
                   {key}
                 </span>
                 <span className="leading-relaxed text-sm" style={{ color: textColor }}>{optionValues[key]}</span>
-                {isAnswered && isSelected && isCorrectOption && <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 ml-auto" />}
-                {isAnswered && isSelected && !isCorrectOption && <XCircle className="w-5 h-5 text-red-400 shrink-0 ml-auto" />}
+                {isAnswered && isSelected && <ChevronRight className="w-4 h-4 text-[#FFB627] shrink-0 ml-auto" />}
               </button>
             )
           })}
         </div>
 
-        {/* Feedback */}
+        {/* Next button — appears after selection, no feedback shown until results */}
         {isAnswered && (
           <div className="mt-5 animate-fade-in">
-            <div
-              className="p-4 rounded-2xl mb-4"
-              style={{
-                background: isCorrect ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
-                border: `1px solid ${isCorrect ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
-              }}
+            <button
+              onClick={next}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-bold transition-all hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.35)' }}
             >
-              <div className="flex items-center gap-2 font-bold mb-1.5 text-sm"
-                style={{ color: isCorrect ? '#34d399' : '#f87171' }}>
-                {isCorrect ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                {isCorrect ? 'Correct!' : 'Not quite — review the explanation'}
-              </div>
-              <p className="text-white/65 text-sm leading-relaxed">{currentQuestion.explanation}</p>
-              {currentQuestion.reference && (
-                <p className="text-white/30 text-xs mt-2">Ref: {currentQuestion.reference}</p>
-              )}
-            </div>
-
-            <div className={isCorrect ? '' : 'grid grid-cols-2 gap-3'}>
-              {!isCorrect && (
-                <button
-                  onClick={() => setShowAI(true)}
-                  className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #3E92CC, #2a7ab5)', color: 'white' }}
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                  </svg>
-                  Ask AI Tutor
-                </button>
-              )}
-              <button
-                onClick={next}
-                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.35)' }}
-              >
-                {isLastQuestion ? 'See Results' : 'Next Question'}
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+              {isLastQuestion ? 'See Results' : 'Next Question'}
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
         )}
       </div>
