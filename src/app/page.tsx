@@ -721,7 +721,7 @@ export default function LandingPage() {
                     <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: '#FFB627', color: '#0A1628' }}>Most Popular</span>
                   </div>
                   <div className="mb-6 mt-3">
-                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Study Pass</div>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Tarmac Membership</div>
                     <div className="flex items-baseline gap-1 mb-1">
                       <span className="text-3xl font-extrabold text-white">$89</span>
                       <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.35)' }}>one-time</span>
@@ -735,7 +735,7 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/start?plan=study_pass" className="btn-gold block text-center py-3 rounded-xl font-bold text-sm">Get Study Pass — $89</Link>
+                  <Link href="/start?plan=study_pass" className="btn-gold block text-center py-3 rounded-xl font-bold text-sm">Get Tarmac Membership — $89</Link>
                 </div>
               </FadeUp>
               <FadeUp delay={0.2}>
@@ -749,7 +749,7 @@ export default function LandingPage() {
                     <p className="text-xs mt-1 font-medium" style={{ color: '#5ab8f5' }}>Lifetime access</p>
                   </div>
                   <ul className="space-y-2.5 flex-1 mb-2">
-                    {['Everything in Study Pass', 'Lifetime access', 'Future ratings included†', 'Price locks in now'].map(f => (
+                    {['Everything in Tarmac Membership', 'Lifetime access', 'Future ratings included†', 'Price locks in now'].map(f => (
                       <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
                         <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#5ab8f5' }} />{f}
                       </li>

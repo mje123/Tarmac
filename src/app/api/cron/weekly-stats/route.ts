@@ -81,8 +81,8 @@ export async function GET(request: NextRequest) {
       ${!isPaid ? `
       <div style="background:linear-gradient(135deg,#0A2463,#0d3080);border-radius:10px;padding:20px;margin-top:20px;text-align:center;">
         <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#FFB627;">Ready to go unlimited?</p>
-        <p style="margin:0 0 14px;font-size:13px;color:rgba(255,255,255,0.7);">Study Pass gives you unlimited questions, full AI explanations, and exam simulations.</p>
-        <a href="https://tarmac.study/upgrade" style="display:inline-block;background:#FFB627;color:#0A2463;font-weight:800;font-size:13px;padding:10px 24px;border-radius:8px;text-decoration:none;">Upgrade to Study Pass →</a>
+        <p style="margin:0 0 14px;font-size:13px;color:rgba(255,255,255,0.7);">Tarmac Membership gives you unlimited questions, full AI explanations, and exam simulations.</p>
+        <a href="https://tarmac.study/upgrade" style="display:inline-block;background:#FFB627;color:#0A2463;font-weight:800;font-size:13px;padding:10px 24px;border-radius:8px;text-decoration:none;">Get Tarmac Membership →</a>
       </div>` : ''}
     `
 

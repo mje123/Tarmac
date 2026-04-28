@@ -88,7 +88,7 @@ function SignupForm() {
         <p className="text-white/60">
           {plan === 'monthly' ? 'Getting started with Monthly ($44.99/mo)' :
            plan === 'quick_prep' ? 'Getting started with Quick Prep ($69)' :
-           plan === 'study_pass' ? 'Getting started with Study Pass ($89)' :
+           plan === 'study_pass' ? 'Getting started with Tarmac Membership ($89)' :
            plan === 'founding_member' ? 'Getting started with Founding Member ($199)' :
            'Start your 7-day free trial'}
         </p>

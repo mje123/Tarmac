@@ -58,11 +58,11 @@ export async function GET(request: NextRequest) {
       </table>
 
       <div style="background:linear-gradient(135deg,#0A2463,#0d3080);border-radius:12px;padding:24px;text-align:center;">
-        <p style="margin:0 0 4px;font-size:16px;font-weight:800;color:#FFB627;">Study Pass — $34.99/month</p>
+        <p style="margin:0 0 4px;font-size:16px;font-weight:800;color:#FFB627;">Tarmac Membership — $14.99/month</p>
         <p style="margin:0 0 16px;font-size:13px;color:rgba(255,255,255,0.65);">Less than a single FAA retake fee. Cancel anytime.</p>
         <a href="https://tarmac.study/upgrade"
           style="display:inline-block;background:#FFB627;color:#0A2463;font-weight:800;font-size:14px;padding:12px 32px;border-radius:10px;text-decoration:none;">
-          Unlock Study Pass →
+          Get Tarmac Membership →
         </a>
       </div>
     `

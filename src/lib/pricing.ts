@@ -34,7 +34,7 @@ export const FULL_PLANS = [
   },
   {
     id: 'study_pass',
-    name: 'Study Pass',
+    name: 'Tarmac Membership',
     price: '$89',
     period: 'one-time',
     duration: '90 days · Half the cost of failing',
@@ -48,7 +48,7 @@ export const FULL_PLANS = [
     price: '$199',
     period: 'one-time',
     duration: 'Lifetime access',
-    features: ['Everything in Study Pass', 'Lifetime access', 'Future ratings included†', 'Price locks in now'],
+    features: ['Everything in Tarmac Membership', 'Lifetime access', 'Future ratings included†', 'Price locks in now'],
     highlighted: false,
     note: 'Increases to $299 at Instrument launch.',
   },

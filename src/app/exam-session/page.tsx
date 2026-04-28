@@ -113,8 +113,8 @@ export default function ExamSessionPage() {
       <div className="flex items-center justify-center min-h-screen p-8" style={{ background: '#060d1f' }}>
         <div className="p-10 max-w-md text-center rounded-2xl" style={{ background: '#0d1b3e', border: '1px solid rgba(255,255,255,0.1)' }}>
           <Lock className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Study Pass Required</h2>
-          <p className="text-white/60 mb-6">Practice exams are available with Study Pass.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Tarmac Membership Required</h2>
+          <p className="text-white/60 mb-6">Practice exams are available with Tarmac Membership.</p>
           <a href="/settings" className="btn-gold inline-flex justify-center px-8 py-3">Upgrade Now</a>
         </div>
       </div>
