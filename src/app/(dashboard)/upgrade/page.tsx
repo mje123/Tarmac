@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Loader2, CheckCircle } from 'lucide-react'
 import { isBeta, BETA_PLAN, FULL_PLANS } from '@/lib/pricing'
+import { createClient } from '@/lib/supabase/client'
 
 function UpgradeContent() {
   const searchParams = useSearchParams()
@@ -11,6 +12,19 @@ function UpgradeContent() {
   const plan = searchParams.get('plan')
   const [error, setError] = useState('')
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [trialEligible, setTrialEligible] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { setTrialEligible(true); return }
+      supabase.from('users').select('stripe_customer_id, subscription_status').eq('id', user.id).single()
+        .then(({ data }) => {
+          // Eligible for trial only if they've never been through Stripe checkout
+          setTrialEligible(!data?.stripe_customer_id)
+        })
+    })
+  }, [])
 
   useEffect(() => {
     if (!plan) return
@@ -71,14 +85,26 @@ function UpgradeContent() {
   }
 
   if (isBeta) {
+    if (trialEligible === null) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#FFB627]" />
+        </div>
+      )
+    }
+
     return (
       <div className="px-4 md:px-8 py-12 max-w-lg mx-auto animate-fade-in">
         <div className="text-center mb-8">
           <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block" style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>
             BETA
           </span>
-          <h1 className="text-3xl font-extrabold text-white mb-2 mt-3">Start Your Free Trial</h1>
-          <p className="text-white/50">{BETA_PLAN.tagline}</p>
+          <h1 className="text-3xl font-extrabold text-white mb-2 mt-3">
+            {trialEligible ? 'Start Your Free Trial' : 'Get Tarmac Membership'}
+          </h1>
+          <p className="text-white/50">
+            {trialEligible ? BETA_PLAN.tagline : `$${BETA_PLAN.price.replace('$', '')}${BETA_PLAN.period} — cancel anytime`}
+          </p>
         </div>
 
         {error && <p className="text-center text-red-400 text-sm mb-6">{error}</p>}
@@ -93,16 +119,21 @@ function UpgradeContent() {
               <span className="text-5xl font-extrabold text-white">{BETA_PLAN.price}</span>
               <span className="text-white/40 text-lg mb-1">{BETA_PLAN.period}</span>
             </div>
-            <p className="text-sm text-green-400 font-semibold">7 days free — no charge until trial ends</p>
+            {trialEligible
+              ? <p className="text-sm text-green-400 font-semibold">7 days free — no charge until trial ends</p>
+              : <p className="text-sm text-white/50">Billed monthly — cancel anytime</p>
+            }
           </div>
 
           <ul className="space-y-3 mb-8">
-            {BETA_PLAN.features.map(f => (
-              <li key={f} className="flex items-start gap-3 text-sm text-white/75">
-                <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
-                {f}
-              </li>
-            ))}
+            {BETA_PLAN.features
+              .filter(f => trialEligible || !f.includes('free trial'))
+              .map(f => (
+                <li key={f} className="flex items-start gap-3 text-sm text-white/75">
+                  <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
+                  {f}
+                </li>
+              ))}
           </ul>
 
           <button
@@ -111,11 +142,16 @@ function UpgradeContent() {
             className="w-full py-4 rounded-xl text-base font-bold transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             style={{ background: '#FFB627', color: '#0A1628', boxShadow: '0 4px 20px rgba(255,182,39,0.3)' }}
           >
-            {loadingPlan ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</> : 'Start Free Trial'}
+            {loadingPlan
+              ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
+              : trialEligible ? 'Start Free Trial' : 'Subscribe — $14.99/mo'
+            }
           </button>
 
           <p className="text-center text-xs text-white/25 mt-4">
-            Cancel anytime before trial ends — you won&apos;t be charged
+            {trialEligible
+              ? "Cancel anytime before trial ends — you won't be charged"
+              : 'Cancel anytime from your account settings'}
           </p>
         </div>
 
