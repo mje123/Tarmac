@@ -64,9 +64,13 @@ export async function POST(request: NextRequest) {
       metadata: { userId: user.id, priceId },
     }
 
-    // Add 7-day free trial for beta subscription
+    // Add 7-day free trial only if this customer has never had a subscription before
     if (isBeta && mode === 'subscription') {
-      sessionParams.subscription_data = { trial_period_days: 7 }
+      const priorSubs = await stripe.subscriptions.list({ customer: customerId, limit: 1 })
+      const hasPriorSubscription = priorSubs.data.length > 0
+      if (!hasPriorSubscription) {
+        sessionParams.subscription_data = { trial_period_days: 7 }
+      }
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams)
