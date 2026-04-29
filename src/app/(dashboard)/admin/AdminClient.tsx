@@ -62,6 +62,24 @@ const SUB_LABELS: Record<string, string> = {
   annual: 'Annual',
 }
 
+const REFERRAL_LABELS: Record<string, string> = {
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  google: 'Google',
+  reddit: 'Reddit',
+  friend: 'Friend',
+  cfi: 'CFI',
+  other: 'Other',
+}
+
+function getReferralSource(u: Record<string, unknown>): string | null {
+  const od = u.onboarding_data as Record<string, string> | null
+  const src = od?.referral_source
+  if (!src || src === 'skipped') return null
+  return REFERRAL_LABELS[src] || src
+}
+
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
   const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact'>('overview')
   const [referralStats, setReferralStats] = useState<{ key: string; label: string; count: number; pct: number }[]>([])
@@ -446,11 +464,16 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             <div className="glass-card p-6">
               <h3 className="font-semibold text-white mb-4">Recent Users</h3>
               <div className="space-y-3">
-                {users.slice(0, 8).map((u: Record<string, unknown>) => (
+                {users.slice(0, 8).map((u: Record<string, unknown>) => {
+                  const ref = getReferralSource(u)
+                  return (
                   <div key={u.id as string} className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-sm font-medium text-white">{u.full_name as string || u.email as string}</div>
-                      <div className="text-xs text-white/40">{formatDate(u.created_at as string)}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-white/40">{formatDate(u.created_at as string)}</span>
+                        {ref && <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{ background: 'rgba(62,146,204,0.12)', color: '#3E92CC' }}>via {ref}</span>}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-xs text-white/40">{(answeredPerUser[u.id as string] || 0).toLocaleString()} Qs</span>
@@ -459,7 +482,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                       </span>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             </div>
             <div className="glass-card p-6">
@@ -629,6 +652,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                           {isAdmin && <Shield className="w-3 h-3 text-[#FFB627]" />}
                         </div>
                         <div className="text-white/40 text-xs">{u.email as string}</div>
+                        {(() => { const ref = getReferralSource(u); return ref ? <span className="text-xs px-1.5 py-0.5 rounded font-medium mt-0.5 inline-block" style={{ background: 'rgba(62,146,204,0.12)', color: '#3E92CC' }}>via {ref}</span> : null })()}
                       </td>
                       <td className="py-3">
                         <span className={`text-xs px-2 py-1 rounded-md font-medium ${SUB_COLORS[(u.subscription_status as string)] || 'text-white/40 bg-white/5'}`}>
