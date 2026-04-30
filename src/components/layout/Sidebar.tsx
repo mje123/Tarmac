@@ -9,7 +9,7 @@ import { User } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
-  Settings, LogOut, Shield, Bot, Menu, X, ListChecks,
+  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
@@ -20,6 +20,7 @@ const navItems = [
   { href: '/quiz', icon: ListChecks, label: 'Quiz Mode' },
   { href: '/exam', icon: ClipboardList, label: 'Practice Exam' },
   { href: '/saved', icon: Bookmark, label: 'Saved Questions' },
+  { href: '/flashcards', icon: Layers, label: 'Flashcards' },
   { href: '/chat', icon: Bot, label: 'AI Tutor' },
 ]
 
