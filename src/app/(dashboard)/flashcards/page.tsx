@@ -1,16 +1,16 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Question, QuestionCategory } from '@/types'
+import { Question } from '@/types'
 import {
   Layers, BookOpen, Compass, Cloud, Wind, Gauge, Scale,
   Plane, Radio, Map, Zap, Trophy, RotateCcw, CheckCircle,
-  XCircle, ArrowLeft, ArrowRight, Loader2, ChevronRight,
+  ArrowLeft, ArrowRight, Loader2,
 } from 'lucide-react'
 
 // ── Categories ────────────────────────────────────────────────────────────────
 const CATEGORIES: { value: string; label: string; icon: React.ElementType; color: string }[] = [
-  { value: 'all',                  label: 'Mixed Topics',       icon: Zap,     color: '#FFB627' },
+  { value: 'all',                  label: 'Mixed Topics',       icon: Zap,      color: '#FFB627' },
   { value: 'Regulations',          label: 'Regulations',        icon: BookOpen, color: '#3E92CC' },
   { value: 'Airspace',             label: 'Airspace',           icon: Compass,  color: '#8B5CF6' },
   { value: 'Weather Theory',       label: 'Weather Theory',     icon: Cloud,    color: '#06B6D4' },
@@ -24,7 +24,6 @@ const CATEGORIES: { value: string; label: string; icon: React.ElementType; color
 
 type Phase = 'setup' | 'study' | 'complete'
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function getAnswerText(q: Question): string {
   const map: Record<string, string | undefined> = {
     A: q.option_a, B: q.option_b, C: q.option_c, D: q.option_d ?? undefined,
@@ -92,8 +91,8 @@ function SetupScreen({ onStart, loading }: { onStart: (cat: string) => void; loa
       <div className="flex items-center gap-4 mb-6 px-1">
         {[
           { icon: Layers, text: 'Up to 40 cards' },
-          { icon: CheckCircle, text: 'Track what you know' },
-          { icon: RotateCcw, text: 'Retry missed cards' },
+          { icon: CheckCircle, text: 'Study More cards recycle' },
+          { icon: RotateCcw, text: 'Until you know them all' },
         ].map(({ icon: Icon, text }) => (
           <div key={text} className="flex items-center gap-1.5 text-white/35 text-xs">
             <Icon className="w-3.5 h-3.5" />
@@ -123,86 +122,71 @@ function SetupScreen({ onStart, loading }: { onStart: (cat: string) => void; loa
 
 // ── Complete Screen ───────────────────────────────────────────────────────────
 function CompleteScreen({
-  knowIt, studyMore, studyMoreCards, category, onRetryMissed, onNewDeck,
+  totalCards, studyMoreSwipes, category, onNewDeck,
 }: {
-  knowIt: number; studyMore: number; studyMoreCards: Question[]
-  category: string; onRetryMissed: () => void; onNewDeck: () => void
+  totalCards: number; studyMoreSwipes: number
+  category: string; onNewDeck: () => void
 }) {
-  const total = knowIt + studyMore
-  const pct = total > 0 ? Math.round((knowIt / total) * 100) : 0
   const catInfo = getCatInfo(category)
-  const passed = pct >= 70
+  const perfect = studyMoreSwipes === 0
 
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-lg mx-auto flex flex-col items-center justify-center animate-fade-in">
       <div className="w-full rounded-2xl p-8 text-center mb-6"
         style={{
-          background: passed
+          background: perfect
             ? 'linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.04) 100%)'
             : 'linear-gradient(135deg, rgba(255,182,39,0.1) 0%, rgba(255,182,39,0.03) 100%)',
-          border: `1px solid ${passed ? 'rgba(16,185,129,0.3)' : 'rgba(255,182,39,0.3)'}`,
+          border: `1px solid ${perfect ? 'rgba(16,185,129,0.3)' : 'rgba(255,182,39,0.3)'}`,
         }}>
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-          style={{ background: passed ? 'rgba(16,185,129,0.15)' : 'rgba(255,182,39,0.15)', border: `2px solid ${passed ? 'rgba(16,185,129,0.4)' : 'rgba(255,182,39,0.4)'}` }}>
-          <Trophy className="w-8 h-8" style={{ color: passed ? '#10B981' : '#FFB627' }} />
+          style={{
+            background: perfect ? 'rgba(16,185,129,0.15)' : 'rgba(255,182,39,0.15)',
+            border: `2px solid ${perfect ? 'rgba(16,185,129,0.4)' : 'rgba(255,182,39,0.4)'}`,
+          }}>
+          <Trophy className="w-8 h-8" style={{ color: perfect ? '#10B981' : '#FFB627' }} />
         </div>
         <div className="text-white/40 text-xs uppercase tracking-widest mb-2">
-          {catInfo.label} · {total} Cards
+          {catInfo.label} · {totalCards} Cards
         </div>
-        <div className="text-7xl font-extrabold text-white leading-none tracking-tight mb-2">
-          {pct}<span className="text-3xl text-white/30 font-semibold">%</span>
+        <div className="text-4xl font-extrabold text-white leading-none tracking-tight mb-3">
+          All cleared!
         </div>
         <div className="flex items-center justify-center gap-2 text-sm font-semibold"
-          style={{ color: passed ? '#10B981' : '#FFB627' }}>
-          {passed ? <CheckCircle className="w-4 h-4" /> : <RotateCcw className="w-4 h-4" />}
-          {passed ? 'Solid session — keep it up' : 'More reps needed — you\'ve got this'}
+          style={{ color: perfect ? '#10B981' : '#FFB627' }}>
+          {perfect ? <CheckCircle className="w-4 h-4" /> : <RotateCcw className="w-4 h-4" />}
+          {perfect ? 'First-pass perfect — nice work' : `${studyMoreSwipes} card${studyMoreSwipes !== 1 ? 's' : ''} needed extra reps`}
         </div>
       </div>
 
       <div className="w-full glass-card p-5 mb-6">
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-2 gap-4 text-center">
           <div>
-            <div className="text-2xl font-bold text-green-400 tabular-nums">{knowIt}</div>
-            <div className="text-white/40 text-xs mt-0.5 uppercase tracking-wide">Know It</div>
+            <div className="text-2xl font-bold text-green-400 tabular-nums">{totalCards}</div>
+            <div className="text-white/40 text-xs mt-0.5 uppercase tracking-wide">Cleared</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-[#FFB627] tabular-nums">{studyMore}</div>
-            <div className="text-white/40 text-xs mt-0.5 uppercase tracking-wide">Study More</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-white tabular-nums">{total}</div>
-            <div className="text-white/40 text-xs mt-0.5 uppercase tracking-wide">Total</div>
+            <div className="text-2xl font-bold text-[#FFB627] tabular-nums">{studyMoreSwipes}</div>
+            <div className="text-white/40 text-xs mt-0.5 uppercase tracking-wide">Extra Reps</div>
           </div>
         </div>
       </div>
 
-      <div className="w-full flex flex-col gap-3">
-        {studyMoreCards.length > 0 && (
-          <button
-            onClick={onRetryMissed}
-            className="btn-gold w-full justify-center py-3.5 gap-2"
-            style={{ borderRadius: '12px' }}
-          >
-            <RotateCcw className="w-4 h-4" />
-            Retry {studyMoreCards.length} "Study More" Cards
-          </button>
-        )}
-        <button
-          onClick={onNewDeck}
-          className="w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)' }}
-        >
-          <Layers className="w-4 h-4" />
-          Choose New Deck
-        </button>
-      </div>
+      <button
+        onClick={onNewDeck}
+        className="btn-gold w-full justify-center py-3.5 gap-2"
+        style={{ borderRadius: '12px' }}
+      >
+        <Layers className="w-4 h-4" />
+        Choose New Deck
+      </button>
     </div>
   )
 }
 
 // ── Flashcard ─────────────────────────────────────────────────────────────────
 function Flashcard({
-  card, isFlipped, dragX, isDragging, onFlip,
+  card, isFlipped, dragX, isDragging, exiting, onFlip,
   onMouseDown, onMouseMove, onMouseUp, onMouseLeave,
   onTouchStart, onTouchMove, onTouchEnd,
 }: {
@@ -210,6 +194,7 @@ function Flashcard({
   isFlipped: boolean
   dragX: number
   isDragging: boolean
+  exiting: boolean
   onFlip: () => void
   onMouseDown: (e: React.MouseEvent) => void
   onMouseMove: (e: React.MouseEvent) => void
@@ -228,8 +213,8 @@ function Flashcard({
   return (
     <div
       style={{
-        transform: `translateX(${dragX}px) rotate(${dragX * 0.04}deg)`,
-        transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)',
+        transform: `translateX(${dragX}px) rotate(${dragX * 0.03}deg)`,
+        transition: isDragging ? 'none' : exiting ? 'transform 0.28s ease-in' : 'transform 0.35s ease-out',
         cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none',
         position: 'relative',
@@ -243,7 +228,6 @@ function Flashcard({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {/* The 3D flip wrapper */}
       <div
         onClick={onFlip}
         style={{
@@ -251,7 +235,7 @@ function Flashcard({
           height: 'min(390px, calc(90vw * 0.65))',
           position: 'relative',
           transformStyle: 'preserve-3d',
-          transition: 'transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94)',
+          transition: 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)',
           transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
@@ -267,11 +251,9 @@ function Flashcard({
             boxShadow: '0 28px 72px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.08)',
             display: 'flex', flexDirection: 'column',
             padding: '28px 36px',
-            transition: 'border-color 0.2s ease',
+            transition: 'border-color 0.15s ease',
           }}
         >
-
-          {/* Category badge */}
           <div className="flex items-center gap-2 mb-auto">
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
               style={{ background: `${catInfo.color}18`, border: `1px solid ${catInfo.color}35`, color: catInfo.color }}>
@@ -280,7 +262,6 @@ function Flashcard({
             </div>
           </div>
 
-          {/* Question */}
           <div className="flex-1 flex items-center justify-center py-4">
             <p className="text-white font-semibold leading-relaxed text-center"
               style={{ fontSize: 'clamp(16px, 3.5vw, 24px)', maxWidth: '480px' }}>
@@ -288,10 +269,9 @@ function Flashcard({
             </p>
           </div>
 
-          {/* Flip hint */}
-          <div className="flex items-center justify-center gap-2 mt-auto">
-            <span className="text-white/30 text-xs">Click to flip</span>
-            <span className="text-white/20" style={{ fontSize: '16px' }}>↻</span>
+          <div className="flex items-center justify-center gap-1.5 mt-auto">
+            <span className="text-white/25 text-xs">Tap to flip</span>
+            <span className="text-white/18" style={{ fontSize: '14px' }}>↻</span>
           </div>
         </div>
 
@@ -311,8 +291,6 @@ function Flashcard({
             overflow: 'hidden',
           }}
         >
-
-          {/* Answer */}
           <div className="flex-1 flex flex-col justify-center gap-3 overflow-auto">
             <div className="flex items-center gap-2 mb-1">
               <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
@@ -330,9 +308,8 @@ function Flashcard({
             )}
           </div>
 
-          {/* Flip hint */}
-          <div className="flex items-center justify-center gap-2 mt-3 shrink-0">
-            <span className="text-white/25 text-xs">Click to flip back</span>
+          <div className="flex items-center justify-center gap-1.5 mt-3 shrink-0">
+            <span className="text-white/20 text-xs">Tap to flip back</span>
           </div>
         </div>
       </div>
@@ -344,25 +321,23 @@ function Flashcard({
 export default function FlashcardsPage() {
   const [phase, setPhase] = useState<Phase>('setup')
   const [category, setCategory] = useState('all')
-  const [cards, setCards] = useState<Question[]>([])
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [queue, setQueue] = useState<Question[]>([])
+  const [totalCards, setTotalCards] = useState(0)
+  const [knowItCount, setKnowItCount] = useState(0)
+  const [studyMoreSwipes, setStudyMoreSwipes] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
-  const [knowIt, setKnowIt] = useState(0)
-  const [studyMore, setStudyMore] = useState(0)
-  const [studyMoreCards, setStudyMoreCards] = useState<Question[]>([])
   const [loading, setLoading] = useState(false)
   const [exiting, setExiting] = useState(false)
 
-  // Undo state
-  const [undoStack, setUndoStack] = useState<{ card: Question; wasKnow: boolean }[]>([])
+  // Undo: store the previous queue snapshot and what action was taken
+  const [lastAction, setLastAction] = useState<{ queue: Question[]; wasKnow: boolean } | null>(null)
 
-  // Drag state
   const [dragX, setDragX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const dragStartX = useRef(0)
   const didDrag = useRef(false)
 
-  const currentCard = cards[currentIndex] ?? null
+  const currentCard = queue[0] ?? null
 
   async function loadDeck(cat: string) {
     setLoading(true)
@@ -371,46 +346,47 @@ export default function FlashcardsPage() {
     if (cat !== 'all') params.set('category', cat)
     const res = await fetch(`/api/flashcards?${params}`)
     const data = await res.json()
-    setCards(data.cards || [])
-    setCurrentIndex(0)
+    const cards: Question[] = data.cards || []
+    setQueue(cards)
+    setTotalCards(cards.length)
+    setKnowItCount(0)
+    setStudyMoreSwipes(0)
     setIsFlipped(false)
-    setKnowIt(0)
-    setStudyMore(0)
-    setStudyMoreCards([])
-    setUndoStack([])
+    setLastAction(null)
+    setDragX(0)
+    setExiting(false)
     setPhase('study')
     setLoading(false)
   }
 
   const advance = useCallback((dir: 'left' | 'right') => {
-    if (exiting || !cards[currentIndex]) return
+    if (exiting || queue.length === 0) return
     setExiting(true)
-
     const isKnow = dir === 'right'
-    const exitX = isKnow ? 700 : -700
-
-    setDragX(exitX)
+    const isLastCard = isKnow && queue.length === 1
+    setDragX(isKnow ? 700 : -700)
     setIsDragging(false)
 
-    const cardBeingAdvanced = cards[currentIndex]
+    const prevQueue = queue
     setTimeout(() => {
-      setUndoStack(prev => [...prev.slice(-4), { card: cardBeingAdvanced, wasKnow: isKnow }])
+      setLastAction({ queue: prevQueue, wasKnow: isKnow })
       if (isKnow) {
-        setKnowIt(k => k + 1)
+        setKnowItCount(k => k + 1)
+        setQueue(q => q.slice(1))
+        if (isLastCard) setPhase('complete')
       } else {
-        setStudyMore(s => s + 1)
-        setStudyMoreCards(prev => [...prev, cardBeingAdvanced])
+        setStudyMoreSwipes(s => s + 1)
+        // Move front card to end of queue
+        setQueue(q => {
+          const [first, ...rest] = q
+          return [...rest, first]
+        })
       }
       setDragX(0)
       setIsFlipped(false)
       setExiting(false)
-      if (currentIndex + 1 >= cards.length) {
-        setPhase('complete')
-      } else {
-        setCurrentIndex(i => i + 1)
-      }
-    }, 380)
-  }, [exiting, cards, currentIndex])
+    }, 300)
+  }, [exiting, queue])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -425,7 +401,6 @@ export default function FlashcardsPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [phase, advance, exiting])
 
-  // Mouse drag handlers
   function onMouseDown(e: React.MouseEvent) {
     if (exiting) return
     dragStartX.current = e.clientX
@@ -441,20 +416,13 @@ export default function FlashcardsPage() {
   function onMouseUp() {
     if (!isDragging) return
     setIsDragging(false)
-    if (Math.abs(dragX) > 100) {
-      advance(dragX > 0 ? 'right' : 'left')
-    } else {
-      setDragX(0)
-    }
+    if (Math.abs(dragX) > 100) advance(dragX > 0 ? 'right' : 'left')
+    else setDragX(0)
   }
   function onMouseLeave() {
-    if (isDragging) {
-      setIsDragging(false)
-      setDragX(0)
-    }
+    if (isDragging) { setIsDragging(false); setDragX(0) }
   }
 
-  // Touch handlers
   function onTouchStart(e: React.TouchEvent) {
     if (exiting) return
     dragStartX.current = e.touches[0].clientX
@@ -468,9 +436,8 @@ export default function FlashcardsPage() {
   }
   function onTouchEnd() {
     setIsDragging(false)
-    if (Math.abs(dragX) > 80) {
-      advance(dragX > 0 ? 'right' : 'left')
-    } else {
+    if (Math.abs(dragX) > 80) advance(dragX > 0 ? 'right' : 'left')
+    else {
       setDragX(0)
       if (!didDrag.current) setIsFlipped(f => !f)
     }
@@ -482,41 +449,24 @@ export default function FlashcardsPage() {
   }
 
   function handleUndo() {
-    if (undoStack.length === 0 || exiting) return
-    const last = undoStack[undoStack.length - 1]
-    setUndoStack(prev => prev.slice(0, -1))
-    if (last.wasKnow) setKnowIt(k => Math.max(0, k - 1))
-    else {
-      setStudyMore(s => Math.max(0, s - 1))
-      setStudyMoreCards(prev => prev.slice(0, -1))
-    }
-    setCurrentIndex(i => i - 1)
+    if (!lastAction || exiting) return
+    setQueue(lastAction.queue)
+    if (lastAction.wasKnow) setKnowItCount(k => Math.max(0, k - 1))
+    else setStudyMoreSwipes(s => Math.max(0, s - 1))
+    setLastAction(null)
     setIsFlipped(false)
+    if (phase === 'complete') setPhase('study')
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────────────
   if (phase === 'setup') return <SetupScreen onStart={loadDeck} loading={loading} />
 
   if (phase === 'complete') {
     return (
       <CompleteScreen
-        knowIt={knowIt}
-        studyMore={studyMore}
-        studyMoreCards={studyMoreCards}
+        totalCards={totalCards}
+        studyMoreSwipes={studyMoreSwipes}
         category={category}
-        onRetryMissed={() => {
-          const missed = [...studyMoreCards]
-          setCards(missed)
-          setCurrentIndex(0)
-          setIsFlipped(false)
-          setKnowIt(0)
-          setStudyMore(0)
-          setStudyMoreCards([])
-          setUndoStack([])
-          setExiting(false)
-          setDragX(0)
-          setPhase('study')
-        }}
         onNewDeck={() => setPhase('setup')}
       />
     )
@@ -529,8 +479,8 @@ export default function FlashcardsPage() {
   )
 
   const catInfo = getCatInfo(category)
-  const progress = currentIndex / cards.length
-  const knowPct = (knowIt + studyMore) > 0 ? Math.round((knowIt / (knowIt + studyMore)) * 100) : 0
+  const remaining = queue.length
+  const progress = totalCards > 0 ? knowItCount / totalCards : 0
 
   return (
     <div className="min-h-screen flex flex-col p-4 md:p-6 max-w-3xl mx-auto animate-fade-in">
@@ -551,23 +501,28 @@ export default function FlashcardsPage() {
             <span className="text-white text-sm font-semibold">{catInfo.label}</span>
           </div>
         </div>
-        <span className="text-white/40 text-sm tabular-nums">{currentIndex + 1} / {cards.length}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-white/40 text-sm tabular-nums">{remaining} left</span>
+          {knowItCount > 0 && (
+            <span className="text-green-400 text-xs font-semibold tabular-nums">{knowItCount} known</span>
+          )}
+        </div>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar — fills as cards are cleared */}
       <div className="progress-bar mb-6 shrink-0">
         <div className="progress-fill" style={{
           width: `${progress * 100}%`,
           background: 'linear-gradient(90deg, #10B981, #34D399)',
           boxShadow: '0 0 8px rgba(16,185,129,0.4)',
+          transition: 'width 0.4s ease',
         }} />
       </div>
 
       {/* Card area */}
       <div className="flex-1 flex flex-col items-center justify-center">
-        {/* Stack layers behind card */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {/* Layer 2 (deepest) */}
+          {/* Stack layers */}
           <div style={{
             position: 'absolute',
             width: 'min(580px, 86vw)', height: 'min(370px, calc(86vw * 0.64))',
@@ -578,7 +533,6 @@ export default function FlashcardsPage() {
             boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
             pointerEvents: 'none',
           }} />
-          {/* Layer 1 */}
           <div style={{
             position: 'absolute',
             width: 'min(590px, 88vw)', height: 'min(380px, calc(88vw * 0.645))',
@@ -590,12 +544,12 @@ export default function FlashcardsPage() {
             pointerEvents: 'none',
           }} />
 
-          {/* Active card */}
           <Flashcard
             card={currentCard}
             isFlipped={isFlipped}
             dragX={dragX}
             isDragging={isDragging}
+            exiting={exiting}
             onFlip={handleFlip}
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}
@@ -607,14 +561,14 @@ export default function FlashcardsPage() {
           />
         </div>
 
-        {/* Swipe indicator labels */}
+        {/* Swipe labels */}
         <div className="flex items-center justify-between mt-4 w-full max-w-sm px-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold"
-            style={{ color: dragX < -40 ? '#FFB627' : 'rgba(255,255,255,0.18)', transition: 'color 0.15s' }}>
+            style={{ color: dragX < -40 ? '#FFB627' : 'rgba(255,255,255,0.18)', transition: 'color 0.1s' }}>
             <ArrowLeft className="w-3.5 h-3.5" /> Study More
           </div>
           <div className="flex items-center gap-1.5 text-xs font-semibold"
-            style={{ color: dragX > 40 ? '#10B981' : 'rgba(255,255,255,0.18)', transition: 'color 0.15s' }}>
+            style={{ color: dragX > 40 ? '#10B981' : 'rgba(255,255,255,0.18)', transition: 'color 0.1s' }}>
             Know It <ArrowRight className="w-3.5 h-3.5" />
           </div>
         </div>
@@ -626,13 +580,7 @@ export default function FlashcardsPage() {
           onClick={() => advance('left')}
           disabled={exiting}
           className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-50"
-          style={{
-            background: 'rgba(255,182,39,0.1)',
-            border: '1.5px solid rgba(255,182,39,0.3)',
-            color: '#FFB627',
-          }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-3px)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateX(0)' }}
+          style={{ background: 'rgba(255,182,39,0.1)', border: '1.5px solid rgba(255,182,39,0.3)', color: '#FFB627' }}
         >
           <ArrowLeft className="w-4 h-4" />
           Study More
@@ -643,19 +591,14 @@ export default function FlashcardsPage() {
             onClick={handleFlip}
             disabled={exiting}
             className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
-            style={{
-              background: 'rgba(62,146,204,0.1)',
-              border: '1.5px solid rgba(62,146,204,0.3)',
-              color: '#3E92CC',
-              minWidth: '72px',
-            }}
+            style={{ background: 'rgba(62,146,204,0.1)', border: '1.5px solid rgba(62,146,204,0.3)', color: '#3E92CC', minWidth: '72px' }}
           >
             <span style={{ fontSize: '15px', lineHeight: 1 }}>↻</span>
             Flip
           </button>
           <button
             onClick={handleUndo}
-            disabled={undoStack.length === 0 || exiting}
+            disabled={!lastAction || exiting}
             className="flex items-center justify-center gap-1 text-xs transition-all disabled:opacity-25"
             style={{ color: 'rgba(255,255,255,0.35)', padding: '2px 8px' }}
             title="Undo last card"
@@ -669,43 +612,36 @@ export default function FlashcardsPage() {
           onClick={() => advance('right')}
           disabled={exiting}
           className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-50"
-          style={{
-            background: 'rgba(16,185,129,0.1)',
-            border: '1.5px solid rgba(16,185,129,0.3)',
-            color: '#10B981',
-          }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateX(3px)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateX(0)' }}
+          style={{ background: 'rgba(16,185,129,0.1)', border: '1.5px solid rgba(16,185,129,0.3)', color: '#10B981' }}
         >
           Know It
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Session stats footer */}
+      {/* Session stats */}
       <div className="flex items-center justify-center gap-8 mt-5 py-3.5 rounded-xl shrink-0"
         style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="text-center">
-          <div className="text-lg font-bold text-green-400 tabular-nums">{knowIt}</div>
-          <div className="text-white/35 text-xs uppercase tracking-wide">Know It</div>
+          <div className="text-lg font-bold text-green-400 tabular-nums">{knowItCount}</div>
+          <div className="text-white/35 text-xs uppercase tracking-wide">Cleared</div>
         </div>
         <div className="w-px h-8 bg-white/10" />
         <div className="text-center">
-          <div className="text-lg font-bold text-[#FFB627] tabular-nums">{studyMore}</div>
-          <div className="text-white/35 text-xs uppercase tracking-wide">Study More</div>
+          <div className="text-lg font-bold text-[#FFB627] tabular-nums">{remaining}</div>
+          <div className="text-white/35 text-xs uppercase tracking-wide">Remaining</div>
         </div>
-        {(knowIt + studyMore) > 0 && (
+        {studyMoreSwipes > 0 && (
           <>
             <div className="w-px h-8 bg-white/10" />
             <div className="text-center">
-              <div className="text-lg font-bold text-white tabular-nums">{knowPct}%</div>
-              <div className="text-white/35 text-xs uppercase tracking-wide">Accuracy</div>
+              <div className="text-lg font-bold text-white/60 tabular-nums">{studyMoreSwipes}</div>
+              <div className="text-white/35 text-xs uppercase tracking-wide">Extra Reps</div>
             </div>
           </>
         )}
       </div>
 
-      {/* Keyboard hint */}
       <p className="text-center text-white/20 text-xs mt-3 shrink-0">
         Space to flip · ← Study More · → Know It
       </p>
