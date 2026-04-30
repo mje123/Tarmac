@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendTrialStartEmail } from '@/lib/email'
+import { sendTrialStartEmail, sendAdminTrialNotification } from '@/lib/email'
 import { SupabaseClient } from '@supabase/supabase-js'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
           updated_at: new Date().toISOString(),
         }).eq('id', userId)
 
-        // Send trial-start email
+        // Send trial-start email + admin notification
         if (subStatus === 'trialing') {
           const { data: userRow } = await supabase
             .from('users')
@@ -146,6 +146,11 @@ export async function POST(request: NextRequest) {
             sendTrialStartEmail({ to: userRow.email, userId, firstName }).catch(e =>
               console.error('Trial start email failed:', e)
             )
+            sendAdminTrialNotification({
+              userEmail: userRow.email,
+              firstName,
+              fullName: userRow.full_name || firstName,
+            }).catch(e => console.error('Admin trial notification failed:', e))
           }
         }
         break

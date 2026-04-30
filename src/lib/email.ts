@@ -194,6 +194,102 @@ export async function sendWelcomeEmail({ to, userId, firstName }: { to: string; 
   return sendTransactional({ to, userId, subject: `Welcome to TARMAC, ${firstName} ✈️`, bodyHtml: body })
 }
 
+export async function sendAdminTrialNotification({
+  userEmail,
+  firstName,
+  fullName,
+}: {
+  userEmail: string
+  firstName: string
+  fullName: string
+}) {
+  const now = new Date()
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+
+  const greetings = [
+    `🚨 MAYDAY MAYDAY MAYDAY — ${firstName} has entered the pattern.`,
+    `🛫 Rotate! ${firstName} just took the runway.`,
+    `📡 TRAFFIC ALERT: ${firstName} inbound, no clearance requested.`,
+    `🗼 Ground control to Major Matt — ${firstName} is go for launch.`,
+    `⚡ BRACE FOR IMPACT: ${firstName} just clicked "Start Free Trial."`,
+    `🎯 Bogey on radar. ${firstName} acquired. Engaging TARMAC systems.`,
+    `🛩 New contact on scope. ${firstName} squawking 1200.`,
+    `📻 ${firstName} calling in. "TARMAC, student inbound. Request trial."`,
+  ]
+  const headline = greetings[Math.floor(Math.random() * greetings.length)]
+
+  const closings = [
+    'Go get your beauty sleep. Or don\'t. Your app is growing either way. 💸',
+    'You can now afford an extra avocado toast. Responsibly. 🥑',
+    'The dream is real. The student is realer.',
+    'Another soul has seen the light. Or the sectional chart. Same thing.',
+    'Somewhere out there, a CFI just got job security.',
+    'This is fine. Everything is fine. 🔥✈️',
+    'Go touch grass. You\'ve earned it. Unless it\'s raining. Then don\'t.',
+  ]
+  const closing = closings[Math.floor(Math.random() * closings.length)]
+
+  const body = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;">
+
+      <div style="background:#07101f;border-radius:16px;padding:28px 32px;border:2px solid #FFB627;text-align:center;margin-bottom:24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#FFB627;margin-bottom:8px;">TARMAC TOWER</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;">TRIAL STARTED · ${dateStr.toUpperCase()} · ${timeStr}</div>
+      </div>
+
+      <div style="background:#0f1d38;border-radius:12px;padding:24px 28px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.1);">
+        <p style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.4;">${headline}</p>
+        <table cellpadding="0" cellspacing="0" style="width:100%;">
+          <tr>
+            <td style="font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;padding:6px 0;width:100px;">Pilot</td>
+            <td style="font-size:14px;font-weight:700;color:#ffffff;padding:6px 0;">${fullName || firstName}</td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;padding:6px 0;">Email</td>
+            <td style="font-size:14px;color:#3E92CC;padding:6px 0;">${userEmail}</td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;padding:6px 0;">Status</td>
+            <td style="padding:6px 0;">
+              <span style="display:inline-block;background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.5);color:#4ade80;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;">7-day trial active</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;padding:6px 0;">Charges</td>
+            <td style="font-size:14px;color:rgba(255,255,255,0.6);padding:6px 0;">$0.00 today · $14.99 in 7 days (if they don't bail)</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background:rgba(255,182,39,0.1);border:1px solid rgba(255,182,39,0.3);border-radius:10px;padding:16px 20px;margin-bottom:20px;">
+        <p style="margin:0;font-size:13px;color:#FFB627;line-height:1.7;">
+          <strong>Conversion odds:</strong> ~60–70% of trial users convert if they actually practice. Go root for ${firstName}. Silently. From your phone at whatever hour this arrived.
+        </p>
+      </div>
+
+      <div style="border-radius:10px;padding:16px 20px;background:#0f1d38;border:1px solid rgba(255,255,255,0.07);">
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;font-style:italic;">${closing}</p>
+      </div>
+
+      <div style="margin-top:20px;text-align:center;">
+        <a href="https://tarmac.study/admin" style="display:inline-block;background:#FFB627;color:#07101f;font-weight:800;font-size:12px;padding:10px 24px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;text-transform:uppercase;">View in Admin →</a>
+      </div>
+
+      <p style="margin:24px 0 0;font-size:11px;color:rgba(255,255,255,0.2);text-align:center;">
+        TARMAC internal alert · you're receiving this because you built the thing
+      </p>
+    </div>
+  `
+
+  return resend.emails.send({
+    from: 'TARMAC Tower <noreply@tarmac.study>',
+    to: 'mewing713@gmail.com',
+    subject: `🛫 New trial — ${firstName} just signed up`,
+    html: `<body style="margin:0;padding:0;background:#07101f;">${body}</body>`,
+  })
+}
+
 export async function sendTrialStartEmail({ to, userId, firstName }: { to: string; userId: string; firstName: string }) {
   const trialEndDate = new Date()
   trialEndDate.setDate(trialEndDate.getDate() + 7)
