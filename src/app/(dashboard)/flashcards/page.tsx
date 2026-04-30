@@ -261,21 +261,15 @@ function Flashcard({
             position: 'absolute', inset: 0,
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            background: 'linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.025) 100%)',
+            background: 'linear-gradient(160deg, #0f1e3a 0%, #0a1628 100%)',
             border: `1.5px solid ${swipeHint}`,
             borderRadius: '20px',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)',
+            boxShadow: '0 28px 72px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.08)',
             display: 'flex', flexDirection: 'column',
             padding: '28px 36px',
             transition: 'border-color 0.2s ease',
           }}
         >
-          {/* Corner fold */}
-          <div style={{
-            position: 'absolute', top: 0, right: 0, width: 28, height: 28,
-            background: `linear-gradient(135deg, transparent 50%, ${catInfo.color}25 50%)`,
-            borderRadius: '0 20px 0 0',
-          }} />
 
           {/* Category badge */}
           <div className="flex items-center gap-2 mb-auto">
@@ -308,21 +302,15 @@ function Flashcard({
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
-            background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.03) 100%)',
-            border: `1.5px solid rgba(255,255,255,0.09)`,
+            background: 'linear-gradient(160deg, #0d1e38 0%, #091525 100%)',
+            border: '1.5px solid rgba(16,185,129,0.25)',
             borderRadius: '20px',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)',
+            boxShadow: '0 28px 72px rgba(0,0,0,0.65), inset 0 1px 0 rgba(16,185,129,0.08)',
             display: 'flex', flexDirection: 'column',
             padding: '24px 32px',
             overflow: 'hidden',
           }}
         >
-          {/* Corner fold */}
-          <div style={{
-            position: 'absolute', top: 0, right: 0, width: 28, height: 28,
-            background: 'linear-gradient(135deg, transparent 50%, rgba(16,185,129,0.2) 50%)',
-            borderRadius: '0 20px 0 0',
-          }} />
 
           {/* Answer */}
           <div className="flex-1 flex flex-col justify-center gap-3 overflow-auto">
@@ -365,6 +353,9 @@ export default function FlashcardsPage() {
   const [loading, setLoading] = useState(false)
   const [exiting, setExiting] = useState(false)
 
+  // Undo state
+  const [undoStack, setUndoStack] = useState<{ card: Question; wasKnow: boolean }[]>([])
+
   // Drag state
   const [dragX, setDragX] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -386,6 +377,7 @@ export default function FlashcardsPage() {
     setKnowIt(0)
     setStudyMore(0)
     setStudyMoreCards([])
+    setUndoStack([])
     setPhase('study')
     setLoading(false)
   }
@@ -400,12 +392,14 @@ export default function FlashcardsPage() {
     setDragX(exitX)
     setIsDragging(false)
 
+    const cardBeingAdvanced = cards[currentIndex]
     setTimeout(() => {
+      setUndoStack(prev => [...prev.slice(-4), { card: cardBeingAdvanced, wasKnow: isKnow }])
       if (isKnow) {
         setKnowIt(k => k + 1)
       } else {
         setStudyMore(s => s + 1)
-        setStudyMoreCards(prev => [...prev, cards[currentIndex]])
+        setStudyMoreCards(prev => [...prev, cardBeingAdvanced])
       }
       setDragX(0)
       setIsFlipped(false)
@@ -487,6 +481,19 @@ export default function FlashcardsPage() {
     setIsFlipped(f => !f)
   }
 
+  function handleUndo() {
+    if (undoStack.length === 0 || exiting) return
+    const last = undoStack[undoStack.length - 1]
+    setUndoStack(prev => prev.slice(0, -1))
+    if (last.wasKnow) setKnowIt(k => Math.max(0, k - 1))
+    else {
+      setStudyMore(s => Math.max(0, s - 1))
+      setStudyMoreCards(prev => prev.slice(0, -1))
+    }
+    setCurrentIndex(i => i - 1)
+    setIsFlipped(false)
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   if (phase === 'setup') return <SetupScreen onStart={loadDeck} loading={loading} />
 
@@ -505,6 +512,7 @@ export default function FlashcardsPage() {
           setKnowIt(0)
           setStudyMore(0)
           setStudyMoreCards([])
+          setUndoStack([])
           setExiting(false)
           setDragX(0)
           setPhase('study')
@@ -563,22 +571,22 @@ export default function FlashcardsPage() {
           <div style={{
             position: 'absolute',
             width: 'min(580px, 86vw)', height: 'min(370px, calc(86vw * 0.64))',
-            background: 'rgba(255,255,255,0.015)',
-            border: '1px solid rgba(255,255,255,0.04)',
+            background: 'linear-gradient(160deg, #0b1830 0%, #080f1e 100%)',
+            border: '1px solid rgba(255,255,255,0.05)',
             borderRadius: '20px',
             transform: 'translateY(16px) scale(0.94)',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
             pointerEvents: 'none',
           }} />
           {/* Layer 1 */}
           <div style={{
             position: 'absolute',
             width: 'min(590px, 88vw)', height: 'min(380px, calc(88vw * 0.645))',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'linear-gradient(160deg, #0d1c36 0%, #090f22 100%)',
+            border: '1px solid rgba(255,255,255,0.07)',
             borderRadius: '20px',
             transform: 'translateY(8px) scale(0.97)',
-            boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.45)',
             pointerEvents: 'none',
           }} />
 
@@ -600,14 +608,13 @@ export default function FlashcardsPage() {
         </div>
 
         {/* Swipe indicator labels */}
-        <div className="flex items-center justify-between mt-5 w-full max-w-sm px-2">
+        <div className="flex items-center justify-between mt-4 w-full max-w-sm px-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold"
-            style={{ color: dragX < -40 ? '#FFB627' : 'rgba(255,255,255,0.2)', transition: 'color 0.15s' }}>
+            style={{ color: dragX < -40 ? '#FFB627' : 'rgba(255,255,255,0.18)', transition: 'color 0.15s' }}>
             <ArrowLeft className="w-3.5 h-3.5" /> Study More
           </div>
-          <div className="text-white/20 text-xs">swipe or use buttons</div>
           <div className="flex items-center gap-1.5 text-xs font-semibold"
-            style={{ color: dragX > 40 ? '#10B981' : 'rgba(255,255,255,0.2)', transition: 'color 0.15s' }}>
+            style={{ color: dragX > 40 ? '#10B981' : 'rgba(255,255,255,0.18)', transition: 'color 0.15s' }}>
             Know It <ArrowRight className="w-3.5 h-3.5" />
           </div>
         </div>
@@ -631,20 +638,32 @@ export default function FlashcardsPage() {
           Study More
         </button>
 
-        <button
-          onClick={handleFlip}
-          disabled={exiting}
-          className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-50"
-          style={{
-            background: 'rgba(62,146,204,0.1)',
-            border: '1.5px solid rgba(62,146,204,0.3)',
-            color: '#3E92CC',
-            minWidth: '90px',
-          }}
-        >
-          <span style={{ fontSize: '16px', lineHeight: 1 }}>↻</span>
-          Flip
-        </button>
+        <div className="flex flex-col items-center gap-1.5 shrink-0">
+          <button
+            onClick={handleFlip}
+            disabled={exiting}
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+            style={{
+              background: 'rgba(62,146,204,0.1)',
+              border: '1.5px solid rgba(62,146,204,0.3)',
+              color: '#3E92CC',
+              minWidth: '72px',
+            }}
+          >
+            <span style={{ fontSize: '15px', lineHeight: 1 }}>↻</span>
+            Flip
+          </button>
+          <button
+            onClick={handleUndo}
+            disabled={undoStack.length === 0 || exiting}
+            className="flex items-center justify-center gap-1 text-xs transition-all disabled:opacity-25"
+            style={{ color: 'rgba(255,255,255,0.35)', padding: '2px 8px' }}
+            title="Undo last card"
+          >
+            <RotateCcw className="w-3 h-3" />
+            undo
+          </button>
+        </div>
 
         <button
           onClick={() => advance('right')}
