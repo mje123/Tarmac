@@ -290,13 +290,15 @@ export default function PracticePage() {
       <div className="min-h-screen p-6 md:p-10 max-w-4xl mx-auto animate-fade-in">
         {/* Header */}
         <div className="mb-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3E92CC22, #3E92CC44)' }}>
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(62,146,204,0.15)', border: '1px solid rgba(62,146,204,0.2)' }}>
               <BookOpen className="w-5 h-5 text-[#3E92CC]" />
             </div>
-            <h1 className="text-3xl font-bold text-white">Practice Mode</h1>
+            <div>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">Practice Mode</h1>
+              <p className="text-white/45 text-sm mt-0.5">Answer questions, get instant AI feedback, and build real knowledge.</p>
+            </div>
           </div>
-          <p className="text-white/50 text-sm ml-13 pl-1">Answer questions, get instant AI feedback, and build real knowledge.</p>
         </div>
 
         {/* Resume banner */}
@@ -563,12 +565,13 @@ export default function PracticePage() {
       </div>
 
       {/* Progress bar */}
-      <div className="mb-5 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+      <div className="mb-5 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)' }}>
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full transition-all duration-700"
           style={{
             width: totalAnswered > 0 ? `${accuracy}%` : '0%',
             background: accuracy >= 70 ? 'linear-gradient(90deg, #10B981, #34D399)' : 'linear-gradient(90deg, #3E92CC, #60B4E8)',
+            boxShadow: accuracy >= 70 ? '0 0 8px rgba(16,185,129,0.5)' : '0 0 8px rgba(62,146,204,0.4)',
           }}
         />
       </div>
@@ -580,7 +583,7 @@ export default function PracticePage() {
       )}
 
       {/* Question card */}
-      <div className="glass-card p-6 flex-1 flex flex-col" style={{ borderRadius: '20px' }}>
+      <div className="glass-card p-6 flex-1 flex flex-col" style={{ borderRadius: '20px', boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)' }}>
         {/* Meta row */}
         <div className="flex items-center gap-2 mb-5 flex-wrap">
           {catInfo && (

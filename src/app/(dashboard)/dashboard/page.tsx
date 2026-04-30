@@ -13,17 +13,15 @@ import CheckoutSuccessBanner from '@/components/ui/CheckoutSuccessBanner'
 import UpgradeModal from '@/components/ui/UpgradeModal'
 
 function CategoryBar({ category, accuracy, attempted }: { category: string; accuracy: number; attempted: number }) {
-  const dot = accuracy >= 80 ? '🟢' : accuracy >= 60 ? '🟡' : '🔴'
   const color = accuracy >= 80 ? '#22c55e' : accuracy >= 60 ? '#FFB627' : '#ef4444'
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm shrink-0">{dot}</span>
-      <div className="w-20 sm:w-32 text-xs text-white/60 truncate">{category}</div>
+      <div className="w-24 sm:w-32 text-xs font-medium truncate" style={{ color: 'rgba(255,255,255,0.65)' }}>{category}</div>
       <div className="flex-1 progress-bar">
-        <div className="progress-fill" style={{ width: `${accuracy}%`, background: color }} />
+        <div className="progress-fill" style={{ width: `${accuracy}%`, background: color, boxShadow: `0 0 6px ${color}55` }} />
       </div>
-      <div className="text-sm font-medium text-white w-10 text-right">{Math.round(accuracy)}%</div>
-      <div className="text-xs text-white/40 w-16 text-right">{attempted} Q</div>
+      <div className="text-sm font-bold w-10 text-right tabular-nums" style={{ color }}>{Math.round(accuracy)}%</div>
+      <div className="text-xs text-white/35 w-12 text-right tabular-nums">{attempted}Q</div>
     </div>
   )
 }
@@ -167,10 +165,10 @@ export default async function DashboardPage() {
 
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-4xl font-extrabold text-white tracking-tight" style={{ letterSpacing: '-0.02em' }}>
           Welcome back, {firstName} ✈️
         </h1>
-        <p className="text-white/60 mt-1 text-sm">
+        <p className="text-white/50 mt-1.5 text-sm">
           {getSubscriptionLabel(user.subscription_status)}
           {isTrialing && trialDaysLeft !== null && (
             <span className="ml-2 text-white/40">· {trialDaysLeft} day{trialDaysLeft === 1 ? '' : 's'} remaining</span>
@@ -188,12 +186,12 @@ export default async function DashboardPage() {
 
       {/* ── Performance Snapshot (free users get comparison context) ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <div className="glass-card p-5">
+        <div className="glass-card glass-card-hover p-5 cursor-default">
           <div className="flex items-center gap-2 mb-2">
-            <Target className="w-5 h-5 text-[#3E92CC]" />
-            <span className="text-white/50 text-xs">Questions Practiced</span>
+            <Target className="w-4 h-4 text-[#3E92CC]" />
+            <span className="text-white/45 text-xs font-medium uppercase tracking-wide">Questions</span>
           </div>
-          <div className="text-3xl font-bold text-white">{totalAttempted.toLocaleString()}</div>
+          <div className="text-3xl font-bold text-white tabular-nums">{totalAttempted.toLocaleString()}</div>
           {totalAttempted === 0 && (
             <div className="text-xs mt-1 text-white/40">Start your first session</div>
           )}
@@ -207,13 +205,13 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="glass-card p-5">
+        <div className="glass-card glass-card-hover p-5 cursor-default">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-green-400" />
-            <span className="text-white/50 text-xs">Accuracy</span>
+            <TrendingUp className="w-4 h-4 text-green-400" />
+            <span className="text-white/45 text-xs font-medium uppercase tracking-wide">Accuracy</span>
           </div>
           <div
-            className="text-3xl font-bold"
+            className="text-3xl font-bold tabular-nums"
             style={{ color: totalAttempted === 0 ? 'white' : overallAccuracy >= 70 ? '#22c55e' : '#ef4444' }}
           >
             {totalAttempted > 0 ? `${overallAccuracy}%` : '—'}
@@ -231,12 +229,12 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="glass-card p-5">
+        <div className="glass-card glass-card-hover p-5 cursor-default">
           <div className="flex items-center gap-2 mb-2">
-            <BookOpen className="w-5 h-5 text-[#FFB627]" />
-            <span className="text-white/50 text-xs">Study Sessions</span>
+            <BookOpen className="w-4 h-4 text-[#FFB627]" />
+            <span className="text-white/45 text-xs font-medium uppercase tracking-wide">Sessions</span>
           </div>
-          <div className="text-3xl font-bold text-white">{practiceSessionCount}</div>
+          <div className="text-3xl font-bold text-white tabular-nums">{practiceSessionCount}</div>
           {isFree && practiceSessionCount > 0 && practiceSessionCount < 12 && (
             <div className="text-xs mt-1 text-white/40">
               Top students: 12+ sessions
@@ -244,12 +242,12 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="glass-card p-5">
+        <div className="glass-card glass-card-hover p-5 cursor-default">
           <div className="flex items-center gap-2 mb-2">
-            <ClipboardList className="w-5 h-5 text-purple-400" />
-            <span className="text-white/50 text-xs">Practice Exams</span>
+            <ClipboardList className="w-4 h-4 text-purple-400" />
+            <span className="text-white/45 text-xs font-medium uppercase tracking-wide">Practice Exams</span>
           </div>
-          <div className="text-3xl font-bold text-white">{examSessions.length}</div>
+          <div className="text-3xl font-bold text-white tabular-nums">{examSessions.length}</div>
           {examSessions.length > 0 && examSessions[0].score !== null ? (
             <div className={`text-xs mt-1 font-semibold ${(examSessions[0].score / 60) >= 0.7 ? 'text-green-400' : 'text-red-400'}`}>
               Last: {examSessions[0].score}/60 · {Math.round((examSessions[0].score / 60) * 100)}%
@@ -293,27 +291,27 @@ export default async function DashboardPage() {
       <div className="grid md:grid-cols-3 gap-4 mb-8">
         {/* Exam Readiness */}
         <div className="glass-card p-5">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative w-16 h-16 shrink-0">
-              <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+          <div className="flex items-center gap-5 mb-4">
+            <div className="relative w-20 h-20 shrink-0">
+              <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
                 <circle
-                  cx="32" cy="32" r="26" fill="none"
+                  cx="40" cy="40" r="32" fill="none"
                   stroke={readinessColor}
-                  strokeWidth="6"
+                  strokeWidth="8"
                   strokeLinecap="round"
-                  strokeDasharray={`${2 * Math.PI * 26}`}
-                  strokeDashoffset={`${2 * Math.PI * 26 * (1 - readiness / 100)}`}
-                  style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+                  strokeDasharray={`${2 * Math.PI * 32}`}
+                  strokeDashoffset={`${2 * Math.PI * 32 * (1 - readiness / 100)}`}
+                  style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)', filter: `drop-shadow(0 0 6px ${readinessColor}88)` }}
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-black text-white">{readiness}%</span>
+                <span className="text-base font-black text-white tabular-nums">{readiness}%</span>
               </div>
             </div>
             <div>
-              <div className="text-xs text-white/40 mb-0.5 uppercase tracking-wider">Exam Readiness</div>
-              <div className="text-lg font-bold" style={{ color: totalAttempted === 0 ? 'rgba(255,255,255,0.4)' : readinessColor }}>
+              <div className="text-[11px] text-white/40 mb-1 uppercase tracking-widest font-medium">Exam Readiness</div>
+              <div className="text-xl font-bold" style={{ color: totalAttempted === 0 ? 'rgba(255,255,255,0.4)' : readinessColor }}>
                 {totalAttempted === 0 ? 'Not started' : readinessLabel}
               </div>
               {totalAttempted > 0 && readiness < 70 && isFree && (
@@ -436,7 +434,7 @@ export default async function DashboardPage() {
       <div className="grid md:grid-cols-3 gap-6">
         {/* ── Quick actions / What to do now ──────────────────────── */}
         <div className="md:col-span-1 space-y-3">
-          <h2 className="text-lg font-semibold text-white mb-4">
+          <h2 className="text-lg font-bold text-white mb-4 tracking-tight">
             {isFree ? 'What You Should Do Now' : 'Quick Actions'}
           </h2>
 
@@ -518,37 +516,37 @@ export default async function DashboardPage() {
             </>
           ) : (
             <>
-              <Link href="/practice" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(62,146,204,0.2)' }}>
-                  <BookOpen className="w-6 h-6 text-[#3E92CC]" />
+              <Link href="/practice" className="glass-card glass-card-hover p-5 flex items-center gap-4 transition-all group block cursor-pointer">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(62,146,204,0.18)', border: '1px solid rgba(62,146,204,0.2)' }}>
+                  <BookOpen className="w-5 h-5 text-[#3E92CC]" />
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-white">Start Practice</div>
-                  <div className="text-white/50 text-sm">Drill weak areas</div>
+                  <div className="font-semibold text-white text-sm">Start Practice</div>
+                  <div className="text-white/45 text-xs mt-0.5">Drill weak areas</div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+                <ArrowRight className="w-4 h-4 text-white/25 group-hover:text-white/60 transition-colors" />
               </Link>
 
-              <a href="/exam-session" target="_blank" rel="noopener noreferrer" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,182,39,0.15)' }}>
-                  <ClipboardList className="w-6 h-6 text-[#FFB627]" />
+              <a href="/exam-session" target="_blank" rel="noopener noreferrer" className="glass-card glass-card-hover p-5 flex items-center gap-4 transition-all group block cursor-pointer">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,182,39,0.15)', border: '1px solid rgba(255,182,39,0.2)' }}>
+                  <ClipboardList className="w-5 h-5 text-[#FFB627]" />
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-white">Take Practice Exam</div>
-                  <div className="text-white/50 text-sm">60Q · 150 min · Opens in new tab</div>
+                  <div className="font-semibold text-white text-sm">Take Practice Exam</div>
+                  <div className="text-white/45 text-xs mt-0.5">60Q · 150 min · Opens in new tab</div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+                <ArrowRight className="w-4 h-4 text-white/25 group-hover:text-white/60 transition-colors" />
               </a>
 
-              <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer" className="glass-card p-5 flex items-center gap-4 hover:bg-white/10 transition-all group block">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(34,197,94,0.15)' }}>
-                  <FileText className="w-6 h-6 text-green-400" />
+              <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer" className="glass-card glass-card-hover p-5 flex items-center gap-4 transition-all group block cursor-pointer">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                  <FileText className="w-5 h-5 text-green-400" />
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-white">FAA Supplement</div>
-                  <div className="text-white/50 text-sm">Charts, figures &amp; tables</div>
+                  <div className="font-semibold text-white text-sm">FAA Supplement</div>
+                  <div className="text-white/45 text-xs mt-0.5">Charts, figures &amp; tables</div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white/60 transition-colors" />
+                <ArrowRight className="w-4 h-4 text-white/25 group-hover:text-white/60 transition-colors" />
               </a>
 
               {examSessions.length > 0 && examSessions[0].score !== null && (
@@ -590,8 +588,8 @@ export default async function DashboardPage() {
           {/* Progress by category */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Progress by Category</h2>
-              <span className="text-white/40 text-sm text-xs">🔴 &lt;60% · 🟡 60–79% · 🟢 80%+</span>
+              <h2 className="text-lg font-bold text-white tracking-tight">Progress by Category</h2>
+              <span className="text-white/35 text-xs">🔴 &lt;60% · 🟡 60–79% · 🟢 80%+</span>
             </div>
             <div className="glass-card p-6">
               {progress.length === 0 ? (
@@ -664,7 +662,7 @@ export default async function DashboardPage() {
           ) : (
             sessions.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold text-white mb-4">Recent Activity</h2>
+                <h2 className="text-lg font-bold text-white mb-4 tracking-tight">Recent Activity</h2>
                 <div className="space-y-2">
                   {sessions.slice(0, 4).map((session) => (
                     <div key={session.id} className="glass-card p-4 flex items-center gap-4">

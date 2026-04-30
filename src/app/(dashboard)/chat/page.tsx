@@ -71,13 +71,13 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-full max-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.15)' }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(62,146,204,0.3), rgba(62,146,204,0.15))', border: '1px solid rgba(62,146,204,0.3)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(62,146,204,0.25), rgba(62,146,204,0.1))', border: '1px solid rgba(62,146,204,0.25)' }}>
             <Bot className="w-5 h-5 text-[#3E92CC]" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">AI Tutor</h1>
+            <h1 className="text-lg font-bold text-white tracking-tight">AI Tutor</h1>
             <p className="text-xs text-white/40">Ask anything about aviation &amp; the FAA written exam</p>
           </div>
         </div>
@@ -109,11 +109,25 @@ export default function ChatPage() {
                 <button
                   key={label}
                   onClick={() => sendMessage(prompt)}
-                  className="text-left p-4 rounded-2xl transition-all hover:bg-white/8 group"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="text-left p-4 rounded-2xl transition-all group"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(62,146,204,0.1)'
+                    ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(62,146,204,0.25)'
+                    ;(e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'
+                    ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)'
+                    ;(e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
+                  }}
                 >
-                  <div className="text-white text-sm font-medium group-hover:text-[#3E92CC] transition-colors">{label}</div>
-                  <div className="text-white/40 text-xs mt-0.5 line-clamp-2">{prompt}</div>
+                  <div className="text-white text-sm font-semibold group-hover:text-[#3E92CC] transition-colors">{label}</div>
+                  <div className="text-white/40 text-xs mt-1 line-clamp-2 leading-relaxed">{prompt}</div>
                 </button>
               ))}
             </div>
@@ -130,8 +144,17 @@ export default function ChatPage() {
                 <div
                   className="max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap"
                   style={msg.role === 'assistant'
-                    ? { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.9)', border: '1px solid rgba(255,255,255,0.07)' }
-                    : { background: 'linear-gradient(135deg, #3E92CC, #2a7ab5)', color: 'white' }
+                    ? {
+                        background: 'rgba(255,255,255,0.06)',
+                        color: 'rgba(255,255,255,0.9)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      }
+                    : {
+                        background: 'linear-gradient(135deg, #3E92CC 0%, #2574b0 100%)',
+                        color: 'white',
+                        boxShadow: '0 4px 14px rgba(62,146,204,0.3)',
+                      }
                   }
                 >
                   {msg.content}
@@ -159,7 +182,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input bar */}
-      <div className="shrink-0 px-6 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="shrink-0 px-6 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.12)' }}>
         <form
           onSubmit={e => { e.preventDefault(); sendMessage() }}
           className="flex gap-3 max-w-3xl mx-auto"

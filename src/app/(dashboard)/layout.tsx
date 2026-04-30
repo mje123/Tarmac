@@ -45,7 +45,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen bg-[#0A2463] flex">
+    <div className="min-h-screen flex" style={{ background: 'linear-gradient(160deg, #06101e 0%, #0a1630 100%)' }}>
       <Sidebar user={userProfile as User} />
       <main className="flex-1 overflow-auto pt-14 md:pt-0">
         {children}

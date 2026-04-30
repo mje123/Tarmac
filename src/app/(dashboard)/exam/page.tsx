@@ -52,13 +52,13 @@ export default async function ExamHubPage() {
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(255,182,39,0.15)' }}>
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,182,39,0.15)', border: '1px solid rgba(255,182,39,0.2)' }}>
           <ClipboardList className="w-6 h-6 text-[#FFB627]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">Practice Exam</h1>
-          <p className="text-white/50 text-sm">FAA Private Pilot Written — full simulation</p>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">Practice Exam</h1>
+          <p className="text-white/45 text-sm mt-0.5">FAA Private Pilot Written — full simulation</p>
         </div>
       </div>
 
@@ -72,19 +72,19 @@ export default async function ExamHubPage() {
             { label: 'Pass Rate', value: `${passRate}%`, icon: CheckSquare, color: passRate >= 70 ? '#22c55e' : '#ef4444' },
           ].map(stat => (
             <div key={stat.label} className="glass-card p-4 text-center">
-              <stat.icon className="w-5 h-5 mx-auto mb-2" style={{ color: stat.color }} />
-              <div className="text-xl font-bold text-white">{stat.value}</div>
-              <div className="text-white/50 text-xs mt-0.5">{stat.label}</div>
+              <stat.icon className="w-4 h-4 mx-auto mb-2" style={{ color: stat.color }} />
+              <div className="text-xl font-bold text-white tabular-nums">{stat.value}</div>
+              <div className="text-white/40 text-xs mt-0.5 uppercase tracking-wide font-medium">{stat.label}</div>
             </div>
           ))}
         </div>
       )}
 
       {/* Start exam CTA */}
-      <div className="glass-card p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="glass-card p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ background: 'linear-gradient(135deg, rgba(255,182,39,0.07) 0%, rgba(255,182,39,0.02) 100%)', borderColor: 'rgba(255,182,39,0.2)' }}>
         <div>
-          <h2 className="text-lg font-semibold text-white mb-1">Ready to test yourself?</h2>
-          <p className="text-white/50 text-sm">60 questions · 2:30 time limit · 70% to pass</p>
+          <h2 className="text-lg font-bold text-white mb-1 tracking-tight">Ready to test yourself?</h2>
+          <p className="text-white/45 text-sm">60 questions · 2:30 time limit · 70% to pass</p>
         </div>
         <a href="/exam-session" target="_blank" rel="noopener noreferrer" className="btn-gold px-6 py-3 inline-flex items-center gap-2 whitespace-nowrap w-full sm:w-auto justify-center">
           <ClipboardList className="w-4 h-4" />

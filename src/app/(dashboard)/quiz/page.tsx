@@ -311,13 +311,15 @@ export default function QuizPage() {
       <div className="min-h-screen p-6 md:p-10 max-w-4xl mx-auto animate-fade-in">
         {/* Header */}
         <div className="mb-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #FFB62722, #FFB62744)' }}>
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,182,39,0.15)', border: '1px solid rgba(255,182,39,0.2)' }}>
               <ListChecks className="w-5 h-5 text-[#FFB627]" />
             </div>
-            <h1 className="text-3xl font-bold text-white">Quiz Mode</h1>
+            <div>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">Quiz Mode</h1>
+              <p className="text-white/45 text-sm mt-0.5">10 focused questions · instant feedback · emailed results</p>
+            </div>
           </div>
-          <p className="text-white/50 text-sm ml-13 pl-1">10 focused questions · instant feedback · emailed results</p>
         </div>
 
         {/* Topic selection */}

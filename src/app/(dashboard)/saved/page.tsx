@@ -19,11 +19,13 @@ export default async function SavedPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-3xl mx-auto animate-fade-in">
-      <div className="flex items-center gap-3 mb-8">
-        <Bookmark className="w-7 h-7 text-[#FFB627]" />
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,182,39,0.15)', border: '1px solid rgba(255,182,39,0.2)' }}>
+          <Bookmark className="w-6 h-6 text-[#FFB627]" />
+        </div>
         <div>
-          <h1 className="text-3xl font-bold text-white">Saved Questions</h1>
-          <p className="text-white/50 text-sm mt-0.5">{saved.length} question{saved.length !== 1 ? 's' : ''} saved for review</p>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">Saved Questions</h1>
+          <p className="text-white/45 text-sm mt-0.5">{saved.length} question{saved.length !== 1 ? 's' : ''} saved for review</p>
         </div>
       </div>
 
