@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/', '/login', '/signup', '/start', '/auth/callback', '/terms', '/privacy', '/partners', '/unsubscribed', '/checkout']
+const PUBLIC_PATHS = ['/', '/login', '/signup', '/start', '/auth/callback', '/terms', '/privacy', '/partners', '/unsubscribed', '/checkout', '/forgot-password', '/update-password']
 // Paths that require an active trial/subscription (free users redirect to /upgrade)
 const GATED_PATHS = ['/dashboard', '/practice', '/exam', '/quiz', '/saved', '/chat', '/admin']
 
