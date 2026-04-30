@@ -13,6 +13,7 @@ function UpgradeContent() {
   const [error, setError] = useState('')
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [trialEligible, setTrialEligible] = useState<boolean | null>(null)
+  const [billingAcknowledged, setBillingAcknowledged] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -136,10 +137,25 @@ function UpgradeContent() {
               ))}
           </ul>
 
+          {trialEligible && (
+            <label className="flex items-start gap-3 mb-5 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={billingAcknowledged}
+                onChange={e => setBillingAcknowledged(e.target.checked)}
+                className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627] cursor-pointer"
+              />
+              <span className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                I understand that after my 7-day free trial, <strong className="text-white/80">I will be automatically charged $14.99/month</strong> unless I cancel before the trial ends. Cancellations take effect immediately — no refunds for forgotten cancellations or partial periods. I have read and agree to the{' '}
+                <a href="/terms" target="_blank" className="text-[#3E92CC] underline">billing terms</a>.
+              </span>
+            </label>
+          )}
+
           <button
             onClick={() => handleSelect(BETA_PLAN.stripePlanKey)}
-            disabled={!!loadingPlan}
-            className="w-full py-4 rounded-xl text-base font-bold transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+            disabled={!!loadingPlan || (trialEligible === true && !billingAcknowledged)}
+            className="w-full py-4 rounded-xl text-base font-bold transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
             style={{ background: '#FFB627', color: '#0A1628', boxShadow: '0 4px 20px rgba(255,182,39,0.3)' }}
           >
             {loadingPlan
@@ -150,7 +166,7 @@ function UpgradeContent() {
 
           <p className="text-center text-xs text-white/25 mt-4">
             {trialEligible
-              ? "Cancel anytime before trial ends — you won't be charged"
+              ? 'Your card will be charged $14.99/mo after the trial. Cancel anytime before then.'
               : 'Cancel anytime from your account settings'}
           </p>
         </div>

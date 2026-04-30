@@ -18,6 +18,7 @@ export default function UpgradeModal({
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [billingAcknowledged, setBillingAcknowledged] = useState(false)
 
   async function handleUpgrade() {
     setLoading(true)
@@ -106,10 +107,23 @@ export default function UpgradeModal({
 
               {error && <p className="text-sm text-red-400 mb-3">{error}</p>}
 
+              <label className="flex items-start gap-2.5 mb-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={billingAcknowledged}
+                  onChange={e => setBillingAcknowledged(e.target.checked)}
+                  className="mt-0.5 shrink-0 w-4 h-4 accent-[#FFB627] cursor-pointer"
+                />
+                <span className="text-[11px] leading-relaxed text-white/45">
+                  I understand my card will be <strong className="text-white/70">charged $14.99/month after the 7-day trial</strong> unless I cancel before it ends. No refunds for forgotten cancellations. I agree to the{' '}
+                  <a href="/terms" target="_blank" className="text-[#3E92CC] underline">billing terms</a>.
+                </span>
+              </label>
+
               <button
                 onClick={handleUpgrade}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold tracking-wide transition-opacity disabled:opacity-60 mb-2"
+                disabled={loading || !billingAcknowledged}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold tracking-wide transition-opacity disabled:opacity-40 mb-2"
                 style={{ background: '#FFB627', color: '#0A1628', boxShadow: '0 4px 16px rgba(255,182,39,0.25)' }}
               >
                 {loading
@@ -118,7 +132,7 @@ export default function UpgradeModal({
               </button>
 
               <p className="text-center text-[10px] text-white/25 mt-2">
-                Cancel before trial ends and you won&apos;t be charged. $14.99/mo after.
+                $14.99/mo charged automatically after trial. Cancel anytime before then.
               </p>
             </div>
           </div>

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 }
 
 export default function TermsPage() {
-  const updated = 'April 28, 2026'
+  const updated = 'April 30, 2026'
 
   return (
     <div className="min-h-screen" style={{ background: '#f8fafc' }}>
@@ -81,13 +81,18 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">6. Free Trial</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">6. Free Trial and Automatic Billing</h2>
+            <div className="font-bold text-red-700 bg-red-50 border-2 border-red-300 rounded-lg px-4 py-4 text-sm mb-4">
+              BY STARTING A FREE TRIAL, YOU AUTHORIZE TARMAC TO AUTOMATICALLY CHARGE YOUR PAYMENT METHOD $14.99/MONTH WHEN THE TRIAL ENDS. IF YOU DO NOT CANCEL BEFORE THE TRIAL PERIOD EXPIRES, YOU WILL BE CHARGED. NO EXCEPTIONS.
+            </div>
             <p>TARMAC may offer a free trial period for new subscribers ("Free Trial"). By starting a Free Trial, you agree to the following:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>You must provide a valid payment method to start a Free Trial. Your payment method will be charged at the standard subscription rate when the Free Trial ends, unless you cancel before the trial period expires.</li>
+              <li><strong>Automatic charge:</strong> You must provide a valid payment method to start a Free Trial. If you do not cancel before the trial period expires, your payment method <strong>will be automatically charged</strong> at the standard subscription rate ($14.99/month as of the date these Terms were last updated) on the day the trial ends, and every month thereafter.</li>
+              <li><strong>Your responsibility to cancel:</strong> It is your sole responsibility to cancel your subscription before the trial ends if you do not wish to be charged. We do not send a separate reminder before charging. Forgetting to cancel is not grounds for a refund.</li>
+              <li><strong>No refund for trial conversion:</strong> If you are charged because you did not cancel before the trial ended, that charge is final and non-refundable under Section 8 of these Terms.</li>
               <li>Free Trials are available to new customers only — one per person and one per household. You may not start a new Free Trial if you have previously had a Free Trial under any account or email address.</li>
               <li>Creating multiple accounts to obtain additional Free Trials is prohibited and constitutes fraud. We reserve the right to immediately terminate any such account without refund and to seek damages.</li>
-              <li>If you cancel during a Free Trial, your access ends at the conclusion of the trial period. The no-refund policy applies if you do not cancel before the trial ends and are subsequently charged.</li>
+              <li>If you cancel during a Free Trial, your access continues until the trial period ends, at which point it terminates and you are not charged.</li>
               <li>We reserve the right to modify or discontinue the Free Trial offer at any time without notice.</li>
             </ul>
           </section>
