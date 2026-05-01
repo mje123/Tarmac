@@ -28,10 +28,34 @@ export async function GET(request: NextRequest) {
   if (!users || users.length === 0) return NextResponse.json({ sent: 0 })
 
   const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const { data: sessions } = await admin
+
+  // Count actual answered questions per user (total_questions is 0 for practice sessions)
+  const { data: recentAnswers } = await admin
+    .from('test_answers')
+    .select('session_id, test_sessions!inner(user_id)')
+    .gte('answered_at', oneWeekAgo)
+
+  const questionsPerUser: Record<string, number> = {}
+  for (const a of (recentAnswers || []) as Array<{ session_id: string; test_sessions: { user_id: string } }>) {
+    const userId = a.test_sessions?.user_id
+    if (userId) questionsPerUser[userId] = (questionsPerUser[userId] || 0) + 1
+  }
+
+  // Fetch exam sessions separately for best-score calculation
+  const { data: examSessions } = await admin
     .from('test_sessions')
-    .select('user_id, total_questions, score, session_type, started_at')
+    .select('user_id, score, total_questions')
+    .eq('session_type', 'real_exam')
     .gte('started_at', oneWeekAgo)
+    .not('score', 'is', null)
+
+  const bestScorePerUser: Record<string, number> = {}
+  for (const s of examSessions || []) {
+    const pct = Math.round((s.score / (s.total_questions || 60)) * 100)
+    if (bestScorePerUser[s.user_id] === undefined || pct > bestScorePerUser[s.user_id]) {
+      bestScorePerUser[s.user_id] = pct
+    }
+  }
 
   const quote = MOTIVATIONAL[Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000)) % MOTIVATIONAL.length]
 
@@ -39,13 +63,8 @@ export async function GET(request: NextRequest) {
   for (const user of users) {
     if (!user.email) continue
 
-    const userSessions = (sessions || []).filter(s => s.user_id === user.id)
-    const questionsThisWeek = userSessions.reduce((sum, s) => sum + (s.total_questions || 0), 0)
-    const examSessions = userSessions.filter(s => s.session_type === 'real_exam' && s.score !== null)
-    const bestScore = examSessions.length > 0
-      ? Math.max(...examSessions.map(s => Math.round((s.score / (s.total_questions || 60)) * 100)))
-      : null
-
+    const questionsThisWeek = questionsPerUser[user.id] || 0
+    const bestScore = bestScorePerUser[user.id] ?? null
     const firstName = user.full_name?.split(' ')[0] || 'there'
     const isPaid = user.subscription_status !== 'free'
 
@@ -86,11 +105,15 @@ export async function GET(request: NextRequest) {
       </div>` : ''}
     `
 
+    const subject = questionsThisWeek === 0
+      ? `Your TARMAC weekly check-in ✈️`
+      : `Your TARMAC week: ${questionsThisWeek} question${questionsThisWeek === 1 ? '' : 's'} answered`
+
     try {
       await sendTransactional({
         to: user.email,
         userId: user.id,
-        subject: `Your TARMAC week: ${questionsThisWeek} questions answered`,
+        subject,
         bodyHtml,
       })
       sent++
