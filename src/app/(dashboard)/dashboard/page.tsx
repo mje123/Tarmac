@@ -16,7 +16,7 @@ function CategoryBar({ category, accuracy, attempted }: { category: string; accu
   const color = accuracy >= 80 ? '#22c55e' : accuracy >= 60 ? '#FFB627' : '#ef4444'
   return (
     <div className="flex items-center gap-3">
-      <div className="w-24 sm:w-32 text-xs font-medium truncate" style={{ color: 'rgba(255,255,255,0.65)' }}>{category}</div>
+      <div className="w-24 sm:w-32 text-xs font-medium truncate text-white/65">{category}</div>
       <div className="flex-1 progress-bar">
         <div className="progress-fill" style={{ width: `${accuracy}%`, background: color, boxShadow: `0 0 6px ${color}55` }} />
       </div>
@@ -294,7 +294,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-5 mb-4">
             <div className="relative w-20 h-20 shrink-0">
               <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+                <circle cx="40" cy="40" r="32" fill="none" stroke="var(--ring-track)" strokeWidth="8" />
                 <circle
                   cx="40" cy="40" r="32" fill="none"
                   stroke={readinessColor}
@@ -311,7 +311,7 @@ export default async function DashboardPage() {
             </div>
             <div>
               <div className="text-[11px] text-white/40 mb-1 uppercase tracking-widest font-medium">Exam Readiness</div>
-              <div className="text-xl font-bold" style={{ color: totalAttempted === 0 ? 'rgba(255,255,255,0.4)' : readinessColor }}>
+              <div className="text-xl font-bold" style={{ color: totalAttempted === 0 ? 'var(--text-dim)' : readinessColor }}>
                 {totalAttempted === 0 ? 'Not started' : readinessLabel}
               </div>
               {totalAttempted > 0 && readiness < 70 && isFree && (
