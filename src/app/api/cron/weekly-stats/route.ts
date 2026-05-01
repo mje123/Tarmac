@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
     .gte('answered_at', oneWeekAgo)
 
   const questionsPerUser: Record<string, number> = {}
-  for (const a of (recentAnswers || []) as Array<{ session_id: string; test_sessions: { user_id: string } }>) {
-    const userId = a.test_sessions?.user_id
+  for (const a of (recentAnswers || []) as unknown as Array<{ session_id: string; test_sessions: { user_id: string }[] }>) {
+    const userId = a.test_sessions?.[0]?.user_id
     if (userId) questionsPerUser[userId] = (questionsPerUser[userId] || 0) + 1
   }
 
