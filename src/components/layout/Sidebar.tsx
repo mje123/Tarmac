@@ -9,10 +9,11 @@ import { User } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
-  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers,
+  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Sun, Moon,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
+import { useTheme } from '@/components/ThemeProvider'
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -46,6 +47,7 @@ export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const { theme, toggle } = useTheme()
 
   useEffect(() => { setOpen(false) }, [pathname])
 
@@ -152,6 +154,14 @@ export default function Sidebar({ user }: SidebarProps) {
         <BugReportButton />
 
         <button
+          onClick={toggle}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:text-white/90 hover:bg-white/5 transition-all"
+        >
+          {theme === 'dark' ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </button>
+
+        <button
           onClick={handleSignOut}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:text-red-400 hover:bg-red-400/5 transition-all"
         >
@@ -167,7 +177,7 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Mobile top bar */}
       <div
         className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3"
-        style={{ background: '#06101e', borderBottom: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(12px)' }}
+        style={{ background: 'var(--bg-sidebar)', borderBottom: '1px solid var(--border-sidebar)', backdropFilter: 'blur(12px)' }}
       >
         <button onClick={() => setOpen(true)} className="text-white/60 hover:text-white p-1 transition-colors">
           <Menu className="w-6 h-6" />
@@ -183,7 +193,7 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Mobile overlay */}
       {open && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="w-64 flex flex-col h-full" style={{ background: '#080f20', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="w-64 flex flex-col h-full" style={{ background: 'var(--bg-sidebar)', borderRight: '1px solid var(--border-sidebar)' }}>
             {navContent}
           </div>
           <div className="flex-1 bg-black/70 backdrop-blur-sm" onClick={() => setOpen(false)} />
@@ -193,7 +203,7 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Desktop sidebar */}
       <aside
         className="hidden md:flex w-64 flex-col h-full shrink-0"
-        style={{ background: '#080f20', borderRight: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ background: 'var(--bg-sidebar)', borderRight: '1px solid var(--border-sidebar)' }}
       >
         {navContent}
       </aside>
