@@ -33,6 +33,19 @@
   --ghost-hover-bg: rgba(255,255,255,0.06);
   --ghost-hover-border: rgba(255,255,255,0.3);
   --ghost-hover-color: rgba(255,255,255,0.9);
+
+  /* Surface/border/text tokens for inline styles */
+  --surface-1: rgba(255,255,255,0.04);
+  --surface-2: rgba(255,255,255,0.06);
+  --surface-3: rgba(255,255,255,0.08);
+  --border-1: rgba(255,255,255,0.08);
+  --border-2: rgba(255,255,255,0.10);
+  --border-3: rgba(255,255,255,0.12);
+  --border-4: rgba(255,255,255,0.15);
+  --text-pri: rgba(255,255,255,0.85);
+  --text-sec: rgba(255,255,255,0.50);
+  --text-ter: rgba(255,255,255,0.30);
+  --text-qua: rgba(255,255,255,0.20);
 }
 
 html.light {
@@ -62,6 +75,19 @@ html.light {
   --ghost-hover-bg: rgba(15,37,87,0.06);
   --ghost-hover-border: rgba(15,37,87,0.32);
   --ghost-hover-color: rgba(15,37,87,0.9);
+
+  /* Surface/border/text tokens for inline styles */
+  --surface-1: rgba(255,255,255,0.78);
+  --surface-2: rgba(255,255,255,0.88);
+  --surface-3: rgba(255,255,255,0.95);
+  --border-1: rgba(15,37,87,0.10);
+  --border-2: rgba(15,37,87,0.14);
+  --border-3: rgba(15,37,87,0.18);
+  --border-4: rgba(15,37,87,0.25);
+  --text-pri: #0d1f3c;
+  --text-sec: rgba(13,31,60,0.55);
+  --text-ter: rgba(13,31,60,0.38);
+  --text-qua: rgba(13,31,60,0.22);
 }
 
 /* ── Base ── */

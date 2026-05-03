@@ -311,7 +311,7 @@ export default function QuizPage() {
           <button
             onClick={() => reset(false)}
             className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)' }}
+            style={{ background: 'var(--surface-2)', border: '1px solid var(--border-3)', color: 'var(--text-pri)' }}
           >
             <ListChecks className="w-4 h-4" />
             New Quiz
@@ -347,8 +347,8 @@ export default function QuizPage() {
             onClick={() => setTopic('all')}
             className="w-full p-4 rounded-xl text-left mb-3 transition-all"
             style={{
-              background: topic === 'all' ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${topic === 'all' ? 'rgba(255,182,39,0.45)' : 'rgba(255,255,255,0.08)'}`,
+              background: topic === 'all' ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'var(--surface-1)',
+              border: `1px solid ${topic === 'all' ? 'rgba(255,182,39,0.45)' : 'var(--border-1)'}`,
             }}
           >
             <div className="flex items-center gap-3">
@@ -379,8 +379,8 @@ export default function QuizPage() {
                   onClick={() => setTopic(value)}
                   className="p-3 rounded-xl text-left transition-all relative"
                   style={{
-                    background: selected ? `linear-gradient(135deg, ${color}22, ${color}11)` : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${selected ? `${color}55` : 'rgba(255,255,255,0.08)'}`,
+                    background: selected ? `linear-gradient(135deg, ${color}22, ${color}11)` : 'var(--surface-1)',
+                    border: `1px solid ${selected ? `${color}55` : 'var(--border-1)'}`,
                   }}
                 >
                   <div className="flex items-center gap-2.5">
@@ -477,10 +477,10 @@ export default function QuizPage() {
                 className="h-2 flex-1 rounded-full transition-all duration-300"
                 style={{
                   background: isDone
-                    ? 'rgba(255,255,255,0.3)'
+                    ? 'var(--text-ter)'
                     : isCurrent
                     ? '#FFB627'
-                    : 'rgba(255,255,255,0.08)',
+                    : 'var(--surface-3)',
                 }}
               />
             )
@@ -502,7 +502,7 @@ export default function QuizPage() {
             </span>
           )}
           <span className="text-xs px-3 py-1.5 rounded-full font-medium capitalize"
-            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            style={{ background: 'var(--surface-2)', color: 'var(--text-sec)', border: '1px solid var(--border-1)' }}>
             {currentQuestion.difficulty}
           </span>
         </div>
@@ -514,23 +514,22 @@ export default function QuizPage() {
             const isCorrectOption = key === currentQuestion.correct_answer
             const isSelected = key === selectedAnswer
 
-            let bg = 'rgba(255,255,255,0.04)'
-            let border = 'rgba(255,255,255,0.09)'
-            let letterBg = 'rgba(255,255,255,0.08)'
-            let letterColor = 'rgba(255,255,255,0.5)'
-            let textColor = 'rgba(255,255,255,0.85)'
+            let bg = 'var(--surface-1)'
+            let border = 'var(--border-1)'
+            let letterBg = 'var(--surface-3)'
+            let letterColor = 'var(--text-sec)'
+            let textColor = 'var(--text-pri)'
 
             if (isAnswered) {
               if (isSelected) {
-                // Highlight selected answer neutrally — no correct/wrong revealed
                 bg = 'rgba(255,182,39,0.08)'
                 border = 'rgba(255,182,39,0.35)'
                 letterBg = 'rgba(255,182,39,0.2)'
                 letterColor = '#FFB627'
-                textColor = 'white'
+                textColor = 'var(--text-pri)'
               } else {
-                textColor = 'rgba(255,255,255,0.3)'
-                letterColor = 'rgba(255,255,255,0.2)'
+                textColor = 'var(--text-ter)'
+                letterColor = 'var(--text-qua)'
               }
             }
 

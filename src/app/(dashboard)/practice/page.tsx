@@ -380,8 +380,8 @@ export default function PracticePage() {
               onClick={() => selectSpecial('all')}
               className="p-3 rounded-xl text-left transition-all"
               style={{
-                background: isAll ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${isAll ? 'rgba(255,182,39,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                background: isAll ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'var(--surface-1)',
+                border: `1px solid ${isAll ? 'rgba(255,182,39,0.4)' : 'var(--border-1)'}`,
               }}
             >
               <div className="flex items-center gap-2">
@@ -398,8 +398,8 @@ export default function PracticePage() {
               onClick={() => selectSpecial('weak')}
               className="p-3 rounded-xl text-left transition-all"
               style={{
-                background: isWeak ? 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${isWeak ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                background: isWeak ? 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))' : 'var(--surface-1)',
+                border: `1px solid ${isWeak ? 'rgba(239,68,68,0.4)' : 'var(--border-1)'}`,
               }}
             >
               <div className="flex items-center gap-2">
@@ -416,8 +416,8 @@ export default function PracticePage() {
               onClick={() => selectSpecial('saved')}
               className="p-3 rounded-xl text-left transition-all"
               style={{
-                background: category === 'saved' && !isMulti ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${category === 'saved' && !isMulti ? 'rgba(255,182,39,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                background: category === 'saved' && !isMulti ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'var(--surface-1)',
+                border: `1px solid ${category === 'saved' && !isMulti ? 'rgba(255,182,39,0.4)' : 'var(--border-1)'}`,
               }}
             >
               <div className="flex items-center gap-2">
@@ -443,16 +443,16 @@ export default function PracticePage() {
                   onClick={() => toggleCategory(value)}
                   className="p-3 rounded-xl text-left transition-all relative"
                   style={{
-                    background: checked ? `linear-gradient(135deg, ${color}22, ${color}11)` : 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${checked ? `${color}55` : 'rgba(255,255,255,0.08)'}`,
+                    background: checked ? `linear-gradient(135deg, ${color}22, ${color}11)` : 'var(--surface-1)',
+                    border: `1px solid ${checked ? `${color}55` : 'var(--border-1)'}`,
                   }}
                 >
                   {/* Checkmark */}
                   <div
                     className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center transition-all"
                     style={{
-                      background: checked ? color : 'rgba(255,255,255,0.08)',
-                      border: `1px solid ${checked ? color : 'rgba(255,255,255,0.15)'}`,
+                      background: checked ? color : 'var(--surface-3)',
+                      border: `1px solid ${checked ? color : 'var(--border-4)'}`,
                     }}
                   >
                     {checked && (
@@ -552,7 +552,7 @@ export default function PracticePage() {
       <div className="mb-5 flex items-center gap-4">
         {/* Stats row */}
         <div className="flex items-center gap-3 flex-1">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)' }}>
             <TrendingUp className="w-3.5 h-3.5 text-[#3E92CC]" />
             <span className="text-white text-sm font-semibold">{correctCount}/{totalAnswered}</span>
           </div>
@@ -581,7 +581,7 @@ export default function PracticePage() {
       </div>
 
       {/* Progress bar */}
-      <div className="mb-5 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)' }}>
+      <div className="mb-5 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--progress-bg)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15)' }}>
         <div
           className="h-full rounded-full transition-all duration-700"
           style={{
@@ -610,7 +610,7 @@ export default function PracticePage() {
             </span>
           )}
           <span className="text-xs px-3 py-1.5 rounded-full font-medium capitalize"
-            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            style={{ background: 'var(--surface-2)', color: 'var(--text-sec)', border: '1px solid var(--border-1)' }}>
             {question.difficulty}
           </span>
           <button
@@ -618,9 +618,9 @@ export default function PracticePage() {
             title={isSaved ? 'Remove from Study Later' : 'Save to Study Later'}
             className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
             style={{
-              background: isSaved ? 'rgba(255,182,39,0.12)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${isSaved ? 'rgba(255,182,39,0.35)' : 'rgba(255,255,255,0.1)'}`,
-              color: isSaved ? '#FFB627' : 'rgba(255,255,255,0.3)',
+              background: isSaved ? 'rgba(255,182,39,0.12)' : 'var(--surface-1)',
+              border: `1px solid ${isSaved ? 'rgba(255,182,39,0.35)' : 'var(--border-2)'}`,
+              color: isSaved ? '#FFB627' : 'var(--text-ter)',
             }}
           >
             <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
@@ -636,11 +636,11 @@ export default function PracticePage() {
             const isSelected = key === selectedAnswer
             const revealed = phase !== 'question'
 
-            let bg = 'rgba(255,255,255,0.04)'
-            let border = 'rgba(255,255,255,0.09)'
-            let letterBg = 'rgba(255,255,255,0.08)'
-            let letterColor = 'rgba(255,255,255,0.5)'
-            let textColor = 'rgba(255,255,255,0.85)'
+            let bg = 'var(--surface-1)'
+            let border = 'var(--border-1)'
+            let letterBg = 'var(--surface-3)'
+            let letterColor = 'var(--text-sec)'
+            let textColor = 'var(--text-pri)'
             let hoverScale = phase === 'question' ? 'hover:scale-[1.005]' : ''
 
             if (revealed) {
@@ -649,16 +649,16 @@ export default function PracticePage() {
                 border = 'rgba(16,185,129,0.35)'
                 letterBg = 'rgba(16,185,129,0.2)'
                 letterColor = '#10B981'
-                textColor = 'white'
+                textColor = 'var(--text-pri)'
               } else if (isSelected && !isCorrect) {
                 bg = 'rgba(239,68,68,0.1)'
                 border = 'rgba(239,68,68,0.35)'
                 letterBg = 'rgba(239,68,68,0.2)'
                 letterColor = '#EF4444'
-                textColor = 'rgba(255,255,255,0.6)'
+                textColor = 'var(--text-sec)'
               } else {
-                textColor = 'rgba(255,255,255,0.3)'
-                letterColor = 'rgba(255,255,255,0.2)'
+                textColor = 'var(--text-ter)'
+                letterColor = 'var(--text-qua)'
               }
             }
 
