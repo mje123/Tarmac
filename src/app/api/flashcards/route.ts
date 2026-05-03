@@ -8,11 +8,13 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const category = searchParams.get('category')
+  const examType = searchParams.get('examType') || 'ppl'
 
   let query = supabase
     .from('questions')
     .select('id, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation, category, difficulty')
     .not('explanation', 'is', null)
+    .eq('exam_type', examType)
 
   if (category && category !== 'all') {
     query = query.eq('category', category)

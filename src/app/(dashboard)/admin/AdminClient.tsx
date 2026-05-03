@@ -82,6 +82,10 @@ function getReferralSource(u: Record<string, unknown>): string | null {
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
   const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact'>('overview')
+  const [ifrStats, setIfrStats] = useState<Record<string, number> | null>(null)
+  const [ifrMigrationSql, setIfrMigrationSql] = useState<string | null>(null)
+  const [ifrSeeding, setIfrSeeding] = useState<string | null>(null)
+  const [ifrSeedResult, setIfrSeedResult] = useState<string | null>(null)
   const [referralStats, setReferralStats] = useState<{ key: string; label: string; count: number; pct: number }[]>([])
   const [referralTotal, setReferralTotal] = useState(0)
   const [users, setUsers] = useState(initialUsers)
@@ -550,6 +554,113 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
       )}
 
       {tab === 'questions' && (
+        <>
+        {/* ── IFR Question Bank ───────────────────────────────────────────── */}
+        <div className="glass-card p-6 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5 text-[#FFB627]" />
+              <h3 className="font-semibold text-white text-lg">IFR Question Bank</h3>
+            </div>
+            <button
+              onClick={async () => {
+                const res = await fetch('/api/admin/ifr')
+                const d = await res.json()
+                setIfrStats(d.stats)
+                setIfrMigrationSql(d.migrationSql)
+              }}
+              className="text-xs text-white/40 hover:text-white/70 transition-colors"
+            >Refresh stats</button>
+          </div>
+
+          {ifrMigrationSql && (
+            <div className="mb-4 p-4 rounded-xl text-xs" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}>
+              <p className="text-red-400 font-bold mb-2">⚠ Migration required — run this SQL in Supabase:</p>
+              <pre className="text-white/70 whitespace-pre-wrap font-mono bg-black/30 p-3 rounded-lg overflow-x-auto">{ifrMigrationSql}</pre>
+            </div>
+          )}
+
+          {ifrStats ? (
+            <div className="space-y-2 mb-4">
+              {Object.entries(ifrStats).map(([cat, count]) => (
+                <div key={cat} className="flex items-center justify-between py-1.5 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                  <span className="text-sm text-white/70">{cat}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold" style={{ color: count > 0 ? '#22c55e' : '#ef4444' }}>{count} Qs</span>
+                    <button
+                      onClick={async () => {
+                        setIfrSeeding(cat)
+                        setIfrSeedResult(null)
+                        try {
+                          const res = await fetch('/api/admin/ifr', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ category: cat, count: 20 }),
+                          })
+                          const d = await res.json()
+                          const result = d.results?.[cat]
+                          setIfrSeedResult(`${cat}: +${result}`)
+                          // refresh stats
+                          const statsRes = await fetch('/api/admin/ifr')
+                          const statsD = await statsRes.json()
+                          setIfrStats(statsD.stats)
+                        } catch { setIfrSeedResult('Error seeding') }
+                        finally { setIfrSeeding(null) }
+                      }}
+                      disabled={!!ifrSeeding}
+                      className="text-xs px-2 py-1 rounded text-[#FFB627] hover:bg-yellow-400/10 transition-colors disabled:opacity-40"
+                    >
+                      {ifrSeeding === cat ? <Loader2 className="w-3 h-3 animate-spin inline" /> : '+ Seed 20'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <button
+              onClick={async () => {
+                const res = await fetch('/api/admin/ifr')
+                const d = await res.json()
+                setIfrStats(d.stats)
+                setIfrMigrationSql(d.migrationSql)
+              }}
+              className="w-full py-2.5 text-sm text-[#FFB627]/70 hover:text-[#FFB627] transition-colors"
+            >Load IFR stats →</button>
+          )}
+
+          {ifrSeedResult && (
+            <p className="text-xs text-green-400 mt-2">{ifrSeedResult}</p>
+          )}
+
+          <button
+            onClick={async () => {
+              if (!confirm('Seed 20 questions for ALL 9 IFR categories? This will take ~2 minutes.')) return
+              setIfrSeeding('all')
+              setIfrSeedResult(null)
+              try {
+                const res = await fetch('/api/admin/ifr', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ count: 20 }),
+                })
+                const d = await res.json()
+                const total = Object.values(d.results || {}).filter(v => typeof v === 'number').reduce((a: number, b) => a + (b as number), 0)
+                setIfrSeedResult(`Seeded ${total} questions across all IFR categories`)
+                const statsRes = await fetch('/api/admin/ifr')
+                const statsD = await statsRes.json()
+                setIfrStats(statsD.stats)
+              } catch { setIfrSeedResult('Error') }
+              finally { setIfrSeeding(null) }
+            }}
+            disabled={!!ifrSeeding}
+            className="mt-3 w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-40"
+            style={{ background: 'rgba(255,182,39,0.12)', border: '1px solid rgba(255,182,39,0.3)', color: '#FFB627' }}
+          >
+            {ifrSeeding === 'all' ? <><Loader2 className="w-4 h-4 animate-spin" /> Seeding all categories…</> : '⚡ Seed All IFR Categories (20 each)'}
+          </button>
+        </div>
+
+        {/* ── Manual Question Entry ───────────────────────────────────────── */}
         <div className="glass-card p-6">
           <div className="flex items-center gap-3 mb-6">
             <Plus className="w-5 h-5 text-[#3E92CC]" />
@@ -601,6 +712,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             </button>
           </form>
         </div>
+        </>
       )}
 
       {tab === 'users' && (

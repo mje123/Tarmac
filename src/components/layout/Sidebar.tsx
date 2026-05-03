@@ -14,6 +14,7 @@ import {
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
 import { useTheme } from '@/components/ThemeProvider'
+import { useExamType } from '@/components/ExamTypeProvider'
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -48,6 +49,7 @@ export default function Sidebar({ user }: SidebarProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const { theme, toggle } = useTheme()
+  const { examType, setExamType } = useExamType()
 
   useEffect(() => { setOpen(false) }, [pathname])
 
@@ -149,6 +151,25 @@ export default function Sidebar({ user }: SidebarProps) {
           <Settings className="w-[18px] h-[18px]" />
           Settings
         </Link>
+
+        {user.is_admin && (
+          <div className="flex rounded-lg overflow-hidden mb-1" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button
+              onClick={() => examType !== 'ppl' && setExamType('ppl')}
+              className="flex-1 py-1.5 text-xs font-bold transition-all"
+              style={examType === 'ppl'
+                ? { background: '#3E92CC', color: 'white' }
+                : { background: 'transparent', color: 'rgba(255,255,255,0.35)' }}
+            >PPL</button>
+            <button
+              onClick={() => examType !== 'ifr' && setExamType('ifr')}
+              className="flex-1 py-1.5 text-xs font-bold transition-all"
+              style={examType === 'ifr'
+                ? { background: '#FFB627', color: '#060e1c' }
+                : { background: 'transparent', color: 'rgba(255,255,255,0.35)' }}
+            >IFR</button>
+          </div>
+        )}
 
         <SuggestionButton />
         <BugReportButton />

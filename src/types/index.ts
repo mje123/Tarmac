@@ -1,6 +1,6 @@
 export type SubscriptionStatus = 'free' | 'trialing' | 'study_pass' | 'checkride_prep' | 'annual'
 
-export type QuestionCategory =
+export type PPLCategory =
   | 'Regulations'
   | 'Airspace'
   | 'Weather Theory'
@@ -10,6 +10,21 @@ export type QuestionCategory =
   | 'Aerodynamics'
   | 'Flight Instruments'
   | 'Navigation'
+
+export type IFRCategory =
+  | 'IFR Regulations'
+  | 'Instrument Navigation'
+  | 'Instrument Approaches'
+  | 'IFR Weather'
+  | 'IFR En Route'
+  | 'ATC & Communications'
+  | 'Instrument Systems'
+  | 'Departure & Arrivals'
+  | 'IFR Emergency Operations'
+
+export type QuestionCategory = PPLCategory | IFRCategory
+
+export type ExamType = 'ppl' | 'ifr'
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type AnswerOption = 'A' | 'B' | 'C' | 'D'
@@ -52,6 +67,7 @@ export interface Question {
   difficulty: Difficulty
   explanation: string
   reference: string | null
+  exam_type?: ExamType
   created_at: string
 }
 

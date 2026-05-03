@@ -5,11 +5,13 @@ import { Question } from '@/types'
 import {
   Layers, BookOpen, Compass, Cloud, Wind, Gauge, Scale,
   Plane, Radio, Map, Zap, Trophy, RotateCcw, CheckCircle,
-  ArrowLeft, ArrowRight, Loader2,
+  ArrowLeft, ArrowRight, Loader2, Navigation2, AlertTriangle,
+  MonitorCheck, Wifi, PlaneTakeoff, PlaneLanding, Siren,
 } from 'lucide-react'
+import { useExamType } from '@/components/ExamTypeProvider'
 
 // ── Categories ────────────────────────────────────────────────────────────────
-const CATEGORIES: { value: string; label: string; icon: React.ElementType; color: string }[] = [
+const PPL_CATEGORIES: { value: string; label: string; icon: React.ElementType; color: string }[] = [
   { value: 'all',                  label: 'Mixed Topics',       icon: Zap,      color: '#FFB627' },
   { value: 'Regulations',          label: 'Regulations',        icon: BookOpen, color: '#3E92CC' },
   { value: 'Airspace',             label: 'Airspace',           icon: Compass,  color: '#8B5CF6' },
@@ -22,6 +24,19 @@ const CATEGORIES: { value: string; label: string; icon: React.ElementType; color
   { value: 'Navigation',           label: 'Navigation',         icon: Map,      color: '#14B8A6' },
 ]
 
+const IFR_CATEGORIES: { value: string; label: string; icon: React.ElementType; color: string }[] = [
+  { value: 'all',                       label: 'Mixed Topics',         icon: Zap,           color: '#FFB627' },
+  { value: 'IFR Regulations',           label: 'IFR Regulations',      icon: BookOpen,      color: '#3E92CC' },
+  { value: 'Instrument Navigation',     label: 'Inst. Navigation',     icon: Navigation2,   color: '#8B5CF6' },
+  { value: 'Instrument Approaches',     label: 'Approaches',           icon: PlaneLanding,  color: '#06B6D4' },
+  { value: 'IFR Weather',               label: 'IFR Weather',          icon: Cloud,         color: '#10B981' },
+  { value: 'IFR En Route',              label: 'En Route',             icon: Map,           color: '#F59E0B' },
+  { value: 'ATC & Communications',      label: 'ATC & Comms',          icon: Wifi,          color: '#EF4444' },
+  { value: 'Instrument Systems',        label: 'Inst. Systems',        icon: MonitorCheck,  color: '#EC4899' },
+  { value: 'Departure & Arrivals',      label: 'Dep. & Arrivals',      icon: PlaneTakeoff,  color: '#6366F1' },
+  { value: 'IFR Emergency Operations',  label: 'IFR Emergencies',      icon: AlertTriangle, color: '#EF4444' },
+]
+
 type Phase = 'setup' | 'study' | 'complete'
 
 function getAnswerText(q: Question): string {
@@ -31,12 +46,12 @@ function getAnswerText(q: Question): string {
   return map[q.correct_answer] ?? ''
 }
 
-function getCatInfo(category: string) {
-  return CATEGORIES.find(c => c.value === category) ?? CATEGORIES[1]
+function getCatInfo(category: string, categories: typeof PPL_CATEGORIES) {
+  return categories.find(c => c.value === category) ?? categories[1]
 }
 
 // ── Setup Screen ──────────────────────────────────────────────────────────────
-function SetupScreen({ onStart, loading }: { onStart: (cat: string) => void; loading: boolean }) {
+function SetupScreen({ onStart, loading, categories }: { onStart: (cat: string) => void; loading: boolean; categories: typeof PPL_CATEGORIES }) {
   const [selected, setSelected] = useState('all')
 
   return (
@@ -55,7 +70,7 @@ function SetupScreen({ onStart, loading }: { onStart: (cat: string) => void; loa
       <h2 className="text-xs font-bold uppercase tracking-widest text-white/40 mb-3">Choose a Deck</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-8">
-        {CATEGORIES.map(({ value, label, icon: Icon, color }) => {
+        {categories.map(({ value, label, icon: Icon, color }) => {
           const active = selected === value
           return (
             <button
@@ -122,12 +137,13 @@ function SetupScreen({ onStart, loading }: { onStart: (cat: string) => void; loa
 
 // ── Complete Screen ───────────────────────────────────────────────────────────
 function CompleteScreen({
-  totalCards, studyMoreSwipes, category, onNewDeck,
+  totalCards, studyMoreSwipes, category, onNewDeck, categories,
 }: {
   totalCards: number; studyMoreSwipes: number
   category: string; onNewDeck: () => void
+  categories: typeof PPL_CATEGORIES
 }) {
-  const catInfo = getCatInfo(category)
+  const catInfo = getCatInfo(category, categories)
   const perfect = studyMoreSwipes === 0
 
   return (
@@ -188,7 +204,7 @@ function CompleteScreen({
 function Flashcard({
   card, isFlipped, dragX, isDragging, exiting, onFlip,
   onMouseDown, onMouseMove, onMouseUp, onMouseLeave,
-  onTouchStart, onTouchMove, onTouchEnd,
+  onTouchStart, onTouchMove, onTouchEnd, categories,
 }: {
   card: Question
   isFlipped: boolean
@@ -203,8 +219,9 @@ function Flashcard({
   onTouchStart: (e: React.TouchEvent) => void
   onTouchMove: (e: React.TouchEvent) => void
   onTouchEnd: () => void
+  categories: typeof PPL_CATEGORIES
 }) {
-  const catInfo = getCatInfo(card.category)
+  const catInfo = getCatInfo(card.category, categories)
   const answerText = getAnswerText(card)
   const swipeHint = Math.abs(dragX) > 40
     ? dragX > 0 ? 'rgba(16,185,129,0.5)' : 'rgba(255,182,39,0.5)'
@@ -319,6 +336,9 @@ function Flashcard({
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function FlashcardsPage() {
+  const { examType } = useExamType()
+  const CATEGORIES = examType === 'ifr' ? IFR_CATEGORIES : PPL_CATEGORIES
+
   const [phase, setPhase] = useState<Phase>('setup')
   const [category, setCategory] = useState('all')
   const [queue, setQueue] = useState<Question[]>([])
@@ -344,6 +364,7 @@ export default function FlashcardsPage() {
     setCategory(cat)
     const params = new URLSearchParams()
     if (cat !== 'all') params.set('category', cat)
+    params.set('examType', examType)
     const res = await fetch(`/api/flashcards?${params}`)
     const data = await res.json()
     const cards: Question[] = data.cards || []
@@ -459,7 +480,7 @@ export default function FlashcardsPage() {
   }
 
   // ── Render ──────────────────────────────────────────────────────────────────
-  if (phase === 'setup') return <SetupScreen onStart={loadDeck} loading={loading} />
+  if (phase === 'setup') return <SetupScreen onStart={loadDeck} loading={loading} categories={CATEGORIES} />
 
   if (phase === 'complete') {
     return (
@@ -468,6 +489,7 @@ export default function FlashcardsPage() {
         studyMoreSwipes={studyMoreSwipes}
         category={category}
         onNewDeck={() => setPhase('setup')}
+        categories={CATEGORIES}
       />
     )
   }
@@ -478,7 +500,7 @@ export default function FlashcardsPage() {
     </div>
   )
 
-  const catInfo = getCatInfo(category)
+  const catInfo = getCatInfo(category, CATEGORIES)
   const remaining = queue.length
   const progress = totalCards > 0 ? knowItCount / totalCards : 0
 
@@ -558,6 +580,7 @@ export default function FlashcardsPage() {
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
+            categories={CATEGORIES}
           />
         </div>
 

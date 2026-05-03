@@ -4,13 +4,14 @@ import React, { useState } from 'react'
 import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import GeneralChat from '@/components/ui/GeneralChat'
+import { useExamType } from '@/components/ExamTypeProvider'
 import {
   CheckCircle, XCircle, ChevronRight, Loader2, ListChecks,
   Trophy, RotateCcw, BookOpen, Compass, Cloud, Wind,
   Gauge, Scale, Plane, Radio, Map, Play, Zap,
 } from 'lucide-react'
 
-const CATEGORIES: { value: QuestionCategory; icon: React.ElementType; color: string; short: string }[] = [
+const PPL_CATEGORIES: { value: QuestionCategory; icon: React.ElementType; color: string; short: string }[] = [
   { value: 'Regulations', icon: BookOpen, color: '#3E92CC', short: 'Regs' },
   { value: 'Airspace', icon: Compass, color: '#8B5CF6', short: 'Airspace' },
   { value: 'Weather Theory', icon: Cloud, color: '#06B6D4', short: 'Wx Theory' },
@@ -20,6 +21,18 @@ const CATEGORIES: { value: QuestionCategory; icon: React.ElementType; color: str
   { value: 'Aerodynamics', icon: Plane, color: '#EC4899', short: 'Aero' },
   { value: 'Flight Instruments', icon: Radio, color: '#6366F1', short: 'Instruments' },
   { value: 'Navigation', icon: Map, color: '#14B8A6', short: 'Nav' },
+]
+
+const IFR_CATEGORY_LIST: { value: QuestionCategory; icon: React.ElementType; color: string; short: string }[] = [
+  { value: 'IFR Regulations', icon: BookOpen, color: '#3E92CC', short: 'Regs' },
+  { value: 'Instrument Navigation', icon: Compass, color: '#8B5CF6', short: 'Nav' },
+  { value: 'Instrument Approaches', icon: Zap, color: '#06B6D4', short: 'Approaches' },
+  { value: 'IFR Weather', icon: Cloud, color: '#10B981', short: 'Weather' },
+  { value: 'IFR En Route', icon: Map, color: '#F59E0B', short: 'En Route' },
+  { value: 'ATC & Communications', icon: Radio, color: '#EF4444', short: 'ATC' },
+  { value: 'Instrument Systems', icon: Gauge, color: '#6366F1', short: 'Systems' },
+  { value: 'Departure & Arrivals', icon: Plane, color: '#EC4899', short: 'Dep/Arr' },
+  { value: 'IFR Emergency Operations', icon: Wind, color: '#FF6B6B', short: 'Emergency' },
 ]
 
 type Phase = 'setup' | 'loading' | 'question' | 'answered' | 'submitting' | 'results'
@@ -33,6 +46,8 @@ interface QuizResult {
 const TOTAL = 10
 
 export default function QuizPage() {
+  const { examType } = useExamType()
+  const CATEGORIES = examType === 'ifr' ? IFR_CATEGORY_LIST : PPL_CATEGORIES
   const [phase, setPhase] = useState<Phase>('setup')
   const [topic, setTopic] = useState<QuestionCategory | 'all'>('all')
   const [questions, setQuestions] = useState<Question[]>([])
@@ -62,6 +77,7 @@ export default function QuizPage() {
         const params = new URLSearchParams()
         if (topic !== 'all') params.set('category', topic)
         excludeIds.forEach(id => params.append('exclude', id))
+        params.set('examType', examType)
         const res = await fetch(`/api/questions/random?${params}`)
         const data = await res.json()
         if (!data.question) break

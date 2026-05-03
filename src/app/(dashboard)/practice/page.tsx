@@ -5,6 +5,7 @@ import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
 import GeneralChat from '@/components/ui/GeneralChat'
+import { useExamType } from '@/components/ExamTypeProvider'
 import {
   CheckCircle,
   XCircle,
@@ -29,7 +30,7 @@ import {
   Flame,
 } from 'lucide-react'
 
-const CATEGORIES: { value: QuestionCategory; icon: React.ElementType; color: string }[] = [
+const PPL_CATEGORIES: { value: QuestionCategory; icon: React.ElementType; color: string }[] = [
   { value: 'Regulations', icon: BookOpen, color: '#3E92CC' },
   { value: 'Airspace', icon: Compass, color: '#8B5CF6' },
   { value: 'Weather Theory', icon: Cloud, color: '#06B6D4' },
@@ -39,6 +40,18 @@ const CATEGORIES: { value: QuestionCategory; icon: React.ElementType; color: str
   { value: 'Aerodynamics', icon: Plane, color: '#EC4899' },
   { value: 'Flight Instruments', icon: Radio, color: '#6366F1' },
   { value: 'Navigation', icon: Map, color: '#14B8A6' },
+]
+
+const IFR_CATEGORY_LIST: { value: QuestionCategory; icon: React.ElementType; color: string }[] = [
+  { value: 'IFR Regulations', icon: BookOpen, color: '#3E92CC' },
+  { value: 'Instrument Navigation', icon: Compass, color: '#8B5CF6' },
+  { value: 'Instrument Approaches', icon: Target, color: '#06B6D4' },
+  { value: 'IFR Weather', icon: Cloud, color: '#10B981' },
+  { value: 'IFR En Route', icon: Map, color: '#F59E0B' },
+  { value: 'ATC & Communications', icon: Radio, color: '#EF4444' },
+  { value: 'Instrument Systems', icon: Gauge, color: '#6366F1' },
+  { value: 'Departure & Arrivals', icon: Plane, color: '#EC4899' },
+  { value: 'IFR Emergency Operations', icon: Zap, color: '#FF6B6B' },
 ]
 
 const PRACTICE_KEY = 'tarmac_practice_state'
@@ -72,6 +85,8 @@ function loadPracticeState(): PracticeState | null {
 }
 
 export default function PracticePage() {
+  const { examType } = useExamType()
+  const CATEGORIES = examType === 'ifr' ? IFR_CATEGORY_LIST : PPL_CATEGORIES
   const [phase, setPhase] = useState<Phase>('setup')
   const [category, setCategory] = useState<QuestionCategory | 'all' | 'weak' | 'saved'>('all')
   const [selectedCategories, setSelectedCategories] = useState<Set<QuestionCategory>>(new Set())
@@ -171,6 +186,7 @@ export default function PracticePage() {
         params.set('weak', '1')
       }
       excludeIds.forEach(id => params.append('exclude', id))
+      params.set('examType', examType)
       const res = await fetch(`/api/questions/random?${params}`)
       const data = await res.json()
       if (!data.question) {

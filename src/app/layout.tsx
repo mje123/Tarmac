@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { ExamTypeProvider } from '@/components/ExamTypeProvider'
 
 export const metadata: Metadata = {
   title: {
@@ -69,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-full"><ThemeProvider>{children}</ThemeProvider></body>
+      <body className="min-h-full"><ThemeProvider><ExamTypeProvider>{children}</ExamTypeProvider></ThemeProvider></body>
     </html>
   )
 }

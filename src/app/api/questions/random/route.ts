@@ -41,9 +41,10 @@ async function runQuery(
   categories: string[],
   weak: string | null,
   savedOnly: boolean,
-  excludes: string[]
+  excludes: string[],
+  examType: string
 ): Promise<{ data: Record<string, unknown>[] | null; empty?: boolean; error?: unknown }> {
-  let query = supabase.from('questions').select('*')
+  let query = supabase.from('questions').select('*').eq('exam_type', examType)
 
   if (savedOnly) {
     const { data: saved } = await supabase
@@ -90,24 +91,27 @@ export async function GET(request: NextRequest) {
     const weak = searchParams.get('weak')
     const savedOnly = searchParams.get('saved') === '1'
     const excludeIds = searchParams.getAll('exclude')
+    const examType = searchParams.get('examType') || 'ppl'
 
-    // Trigger refill checks in background
-    if (categories.length > 0) categories.forEach(c => maybeRefillCategory(c))
-    else if (category) maybeRefillCategory(category)
+    // Trigger refill checks in background (PPL only for now)
+    if (examType === 'ppl') {
+      if (categories.length > 0) categories.forEach(c => maybeRefillCategory(c))
+      else if (category) maybeRefillCategory(category)
+    }
 
     // Get all question IDs this user has ever answered (cross-session dedup)
     const historyIds = await getHistoryIds(supabase, user.id)
     const fullExcludes = [...new Set([...excludeIds, ...historyIds])]
 
     // Try showing only unseen questions first
-    let result = await runQuery(supabase, user.id, category, categories, weak, savedOnly, fullExcludes)
+    let result = await runQuery(supabase, user.id, category, categories, weak, savedOnly, fullExcludes, examType)
 
     if (result.empty) return NextResponse.json({ question: null, empty: true })
     if (result.error) throw result.error
 
     // If user has seen every question in this pool, cycle through from scratch
     if (!result.data || result.data.length === 0) {
-      result = await runQuery(supabase, user.id, category, categories, weak, savedOnly, excludeIds)
+      result = await runQuery(supabase, user.id, category, categories, weak, savedOnly, excludeIds, examType)
       if (result.empty) return NextResponse.json({ question: null, empty: true })
       if (result.error) throw result.error
     }
