@@ -59,3 +59,15 @@ export const EXAM_QUESTION_DISTRIBUTION: Record<string, { min: number; max: numb
   'Flight Instruments': { min: 4, max: 5 },
   'Navigation': { min: 6, max: 7 },
 }
+
+export const IFR_EXAM_QUESTION_DISTRIBUTION: Record<string, { min: number; max: number }> = {
+  'IFR Regulations': { min: 10, max: 12 },
+  'Instrument Navigation': { min: 8, max: 10 },
+  'Instrument Approaches': { min: 8, max: 10 },
+  'IFR Weather': { min: 7, max: 9 },
+  'IFR En Route': { min: 6, max: 8 },
+  'ATC & Communications': { min: 5, max: 7 },
+  'Instrument Systems': { min: 5, max: 7 },
+  'Departure & Arrivals': { min: 4, max: 5 },
+  'IFR Emergency Operations': { min: 3, max: 4 },
+}

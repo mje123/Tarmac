@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import { ClipboardList, Trophy, TrendingUp, CheckSquare, Calendar } from 'lucide-react'
 
 interface ExamSession {
@@ -16,6 +17,10 @@ export default async function ExamHubPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
+
+  const cookieStore = await cookies()
+  const examType = cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+  const isIFR = examType === 'ifr'
 
   const { data: sessions } = await supabase
     .from('test_sessions')
@@ -58,7 +63,7 @@ export default async function ExamHubPage() {
         </div>
         <div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Practice Exam</h1>
-          <p className="text-white/45 text-sm mt-0.5">FAA Private Pilot Written — full simulation</p>
+          <p className="text-white/45 text-sm mt-0.5">{isIFR ? 'FAA Instrument Rating Written — full simulation' : 'FAA Private Pilot Written — full simulation'}</p>
         </div>
       </div>
 
@@ -84,7 +89,7 @@ export default async function ExamHubPage() {
       <div className="glass-card p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ background: 'linear-gradient(135deg, rgba(255,182,39,0.07) 0%, rgba(255,182,39,0.02) 100%)', borderColor: 'rgba(255,182,39,0.2)' }}>
         <div>
           <h2 className="text-lg font-bold text-white mb-1 tracking-tight">Ready to test yourself?</h2>
-          <p className="text-white/45 text-sm">60 questions · 2:30 time limit · 70% to pass</p>
+          <p className="text-white/45 text-sm">{isIFR ? 'IRA' : 'PAR'} · 60 questions · 2:30 time limit · 70% to pass</p>
         </div>
         <a href="/exam-session" target="_blank" rel="noopener noreferrer" className="btn-gold px-6 py-3 inline-flex items-center gap-2 whitespace-nowrap w-full sm:w-auto justify-center">
           <ClipboardList className="w-4 h-4" />

@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { canAccessExam, EXAM_QUESTION_DISTRIBUTION } from '@/lib/utils'
+import { canAccessExam, EXAM_QUESTION_DISTRIBUTION, IFR_EXAM_QUESTION_DISTRIBUTION } from '@/lib/utils'
+import { cookies } from 'next/headers'
 
 const TOTAL_QUESTIONS = 60
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -18,11 +19,15 @@ export async function POST() {
       return NextResponse.json({ error: 'ACCESS_DENIED' }, { status: 403 })
     }
 
+    const cookieStore = await cookies()
+    const examType = cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+    const distribution = examType === 'ifr' ? IFR_EXAM_QUESTION_DISTRIBUTION : EXAM_QUESTION_DISTRIBUTION
+
     // Fetch all questions by category in parallel
-    const categories = Object.keys(EXAM_QUESTION_DISTRIBUTION)
+    const categories = Object.keys(distribution)
     const categoryResults = await Promise.all(
       categories.map(cat =>
-        supabase.from('questions').select('*').eq('category', cat)
+        supabase.from('questions').select('*').eq('category', cat).eq('exam_type', examType)
       )
     )
 
@@ -36,7 +41,7 @@ export async function POST() {
     const selected: Record<string, unknown>[] = []
     const usedIds = new Set<string>()
 
-    for (const [cat, { min }] of Object.entries(EXAM_QUESTION_DISTRIBUTION)) {
+    for (const [cat, { min }] of Object.entries(distribution)) {
       const pool = pools[cat]
       const take = Math.min(min, pool.length)
       for (let i = 0; i < take; i++) {
@@ -48,7 +53,7 @@ export async function POST() {
     // Phase 2: fill up to TOTAL_QUESTIONS using remaining questions from any category
     if (selected.length < TOTAL_QUESTIONS) {
       const remaining: Record<string, unknown>[] = []
-      for (const [cat, { min, max }] of Object.entries(EXAM_QUESTION_DISTRIBUTION)) {
+      for (const [cat, { min, max }] of Object.entries(distribution)) {
         const pool = pools[cat]
         // Already took 'min', now offer up to 'max - min' more
         const alreadyTook = Math.min(min, pool.length)
