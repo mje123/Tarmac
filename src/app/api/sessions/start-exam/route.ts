@@ -19,8 +19,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'ACCESS_DENIED' }, { status: 403 })
     }
 
+    const { data: profile2 } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
+    const isAdmin = profile2?.is_admin ?? false
     const cookieStore = await cookies()
-    const examType = cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+    const examType = isAdmin && cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
     const distribution = examType === 'ifr' ? IFR_EXAM_QUESTION_DISTRIBUTION : EXAM_QUESTION_DISTRIBUTION
 
     // Fetch all questions by category in parallel

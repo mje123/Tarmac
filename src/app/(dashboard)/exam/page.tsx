@@ -18,8 +18,10 @@ export default async function ExamHubPage() {
 
   if (!user) redirect('/login')
 
+  const { data: profile } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
+  const isAdmin = profile?.is_admin ?? false
   const cookieStore = await cookies()
-  const examType = cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+  const examType = isAdmin && cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
   const isIFR = examType === 'ifr'
 
   const { data: sessions } = await supabase

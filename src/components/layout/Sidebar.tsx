@@ -9,11 +9,10 @@ import { User } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
-  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Sun, Moon,
+  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
-import { useTheme } from '@/components/ThemeProvider'
 import { useExamType } from '@/components/ExamTypeProvider'
 
 const navItems = [
@@ -48,7 +47,6 @@ export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const { theme, toggle } = useTheme()
   const { examType, setExamType } = useExamType()
 
   useEffect(() => { setOpen(false) }, [pathname])
@@ -173,14 +171,6 @@ export default function Sidebar({ user }: SidebarProps) {
 
         <SuggestionButton />
         <BugReportButton />
-
-        <button
-          onClick={toggle}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:text-white/90 hover:bg-white/5 transition-all"
-        >
-          {theme === 'dark' ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
-          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-        </button>
 
         <button
           onClick={handleSignOut}

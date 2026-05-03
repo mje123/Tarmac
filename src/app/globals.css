@@ -48,47 +48,6 @@
   --text-qua: rgba(255,255,255,0.20);
 }
 
-html.light {
-  --bg-page: linear-gradient(160deg, #aecef5 0%, #78abea 100%);
-  --bg-sidebar: #0f2557;
-  --border-sidebar: rgba(255,255,255,0.1);
-  --card-bg: linear-gradient(160deg, rgba(255,255,255,1) 0%, rgba(245,250,255,1) 100%);
-  --card-border: rgba(15,37,87,0.12);
-  --card-shadow: 0 4px 24px rgba(10,28,80,0.18), inset 0 1px 0 rgba(255,255,255,1);
-  --card-hover-border: rgba(15,37,87,0.22);
-  --card-hover-shadow: 0 8px 32px rgba(10,28,80,0.24), inset 0 1px 0 rgba(255,255,255,1);
-  --ring-track: rgba(15,37,87,0.1);
-  --text-dim: rgba(13,31,60,0.4);
-  --input-bg: rgba(255,255,255,0.75);
-  --input-border: rgba(15,37,87,0.15);
-  --input-text: #0d1f3c;
-  --input-placeholder: rgba(15,37,87,0.4);
-  --input-focus-border: rgba(62,146,204,0.55);
-  --input-focus-bg: rgba(255,255,255,0.92);
-  --input-focus-shadow: 0 0 0 3px rgba(62,146,204,0.15);
-  --select-option-bg: #eef4ff;
-  --progress-bg: rgba(15,37,87,0.1);
-  --divider: rgba(15,37,87,0.08);
-  --hover-surface: rgba(15,37,87,0.045);
-  --ghost-color: rgba(15,37,87,0.65);
-  --ghost-border: rgba(15,37,87,0.18);
-  --ghost-hover-bg: rgba(15,37,87,0.06);
-  --ghost-hover-border: rgba(15,37,87,0.32);
-  --ghost-hover-color: rgba(15,37,87,0.9);
-
-  /* Surface/border/text tokens for inline styles */
-  --surface-1: rgba(255,255,255,0.78);
-  --surface-2: rgba(255,255,255,0.88);
-  --surface-3: rgba(255,255,255,0.95);
-  --border-1: rgba(15,37,87,0.10);
-  --border-2: rgba(15,37,87,0.14);
-  --border-3: rgba(15,37,87,0.18);
-  --border-4: rgba(15,37,87,0.25);
-  --text-pri: #0d1f3c;
-  --text-sec: rgba(13,31,60,0.55);
-  --text-ter: rgba(13,31,60,0.38);
-  --text-qua: rgba(13,31,60,0.22);
-}
 
 /* ── Base ── */
 * { box-sizing: border-box; }
