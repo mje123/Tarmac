@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { RefreshCw, CheckCircle, XCircle, Brain, ChevronRight } from 'lucide-react'
 import { FEATURES } from '@/lib/features'
+import SupplementViewer from '@/components/ui/SupplementViewer'
 
 interface Question {
   id: string
@@ -62,6 +63,9 @@ export default function ReviewPage() {
   if (!FEATURES.SRS) return (
     <div className="p-6 text-white/50 text-center mt-20">Daily review is currently disabled.</div>
   )
+
+  const supplementRef = question?.question_text.match(/FAA-CT-8080-2H[,\s]+(Figure|Legend)\s+\d+/i)?.[0]
+    || question?.question_text.match(/\(Refer to (Figure|Legend)\s+\d+/i)?.[0]?.replace('(Refer to ', '')
 
   const options = [
     { letter: 'A', text: question?.option_a },
@@ -126,6 +130,13 @@ export default function ReviewPage() {
           <div className="glass-card p-5 mb-4">
             <p className="text-white font-medium leading-relaxed">{question.question_text}</p>
           </div>
+
+          {/* Figure supplement */}
+          {supplementRef && (
+            <div className="mb-4">
+              <SupplementViewer figureRef={supplementRef} />
+            </div>
+          )}
 
           {/* Options */}
           <div className="flex flex-col gap-2 mb-4">
