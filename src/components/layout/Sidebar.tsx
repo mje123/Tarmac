@@ -9,7 +9,7 @@ import { User } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
-  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers,
+  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Brain,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
@@ -22,6 +22,7 @@ const navItems = [
   { href: '/exam', icon: ClipboardList, label: 'Practice Exam' },
   { href: '/saved', icon: Bookmark, label: 'Saved Questions' },
   { href: '/flashcards', icon: Layers, label: 'Flashcards' },
+  { href: '/review', icon: Brain, label: 'Daily Review' },
   { href: '/chat', icon: Bot, label: 'AI Tutor' },
 ]
 

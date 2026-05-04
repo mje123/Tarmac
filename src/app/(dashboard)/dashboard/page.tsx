@@ -8,6 +8,7 @@ import {
   Plane, FileText, Bookmark, Zap, Star, Lock, ChevronRight,
 } from 'lucide-react'
 import StudyLaterWidget from '@/components/ui/StudyLaterWidget'
+import SRSWidget from '@/components/ui/SRSWidget'
 import { Suspense } from 'react'
 import CheckoutSuccessBanner from '@/components/ui/CheckoutSuccessBanner'
 import UpgradeModal from '@/components/ui/UpgradeModal'
@@ -114,6 +115,9 @@ export default async function DashboardPage() {
     <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in">
       <Suspense fallback={null}>
         <CheckoutSuccessBanner />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SRSWidget userId={user.id} />
       </Suspense>
 
       {/* ── No subscription — prompt to start trial ──────────────────── */}
