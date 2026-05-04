@@ -3,6 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateAndSaveQuestions, type Category } from '@/lib/questionGenerator'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { EXAM_QUESTION_DISTRIBUTION, IFR_EXAM_QUESTION_DISTRIBUTION } from '@/lib/utils'
+
+const PPL_CATEGORIES = new Set(Object.keys(EXAM_QUESTION_DISTRIBUTION))
+const IFR_CATEGORIES = new Set(Object.keys(IFR_EXAM_QUESTION_DISTRIBUTION))
 
 const LOW_POOL_THRESHOLD = 20
 
@@ -13,6 +17,7 @@ async function maybeRefillCategory(category: string) {
       .from('questions')
       .select('id', { count: 'exact', head: true })
       .eq('category', category)
+      .eq('exam_type', 'ppl')
 
     if ((count ?? 0) < LOW_POOL_THRESHOLD) {
       generateAndSaveQuestions(category as Category, 20).catch(() => {})
@@ -59,15 +64,20 @@ async function runQuery(
   } else if (category) {
     query = query.eq('category', category)
   } else if (weak) {
+    const validCategories = examType === 'ifr' ? IFR_CATEGORIES : PPL_CATEGORIES
     const { data: progress } = await supabase
       .from('user_progress')
       .select('category')
       .eq('user_id', userId)
       .lt('accuracy_percentage', 70)
       .order('accuracy_percentage', { ascending: true })
-      .limit(3)
-    if (progress && progress.length > 0) {
-      query = query.in('category', progress.map(p => p.category as string))
+      .limit(10)
+    const weakCats = (progress || [])
+      .map(p => p.category as string)
+      .filter(c => validCategories.has(c))
+      .slice(0, 3)
+    if (weakCats.length > 0) {
+      query = query.in('category', weakCats)
     }
   }
 

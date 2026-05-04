@@ -79,6 +79,7 @@ Return ONLY a valid JSON array, no markdown, no explanation:
     difficulty: q.difficulty || 'medium',
     explanation: q.explanation,
     reference: q.reference || null,
+    exam_type: 'ppl',
   }))
 
   const { error } = await admin.from('questions').insert(rows)
