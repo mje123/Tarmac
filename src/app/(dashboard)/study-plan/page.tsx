@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BookOpen, Eye, Brain, ClipboardList, Bookmark, Layers, Bot, CheckCircle, Zap, Target, TrendingUp, Clock, Award, ListChecks } from 'lucide-react'
+import { BookOpen, Eye, Brain, ClipboardList, Bookmark, Layers, Bot, CheckCircle, Zap, Target, TrendingUp, Clock, Award, ListChecks, PartyPopper } from 'lucide-react'
 
 const weeks = [
   {
@@ -89,9 +89,30 @@ const tips = [
   { icon: Award, text: 'Book your exam before Day 30. A real deadline makes the last week actually count.' },
 ]
 
-export default function StudyPlanPage() {
+export default async function StudyPlanPage({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
+  const params = await searchParams
+  const isWelcome = params.welcome === '1'
+
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-3xl mx-auto">
+
+      {/* Welcome banner for new subscribers */}
+      {isWelcome && (
+        <div className="mb-8 p-5 rounded-2xl flex items-start gap-4"
+          style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.06))', border: '1px solid rgba(16,185,129,0.25)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(16,185,129,0.15)' }}>
+            <PartyPopper className="w-5 h-5 text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-white font-bold text-base mb-0.5">You're in — welcome to Tarmac.</p>
+            <p className="text-white/55 text-sm leading-relaxed">
+              Before you dive in, read this page. It's the fastest path to a passing score. Takes 2 minutes.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-4 tracking-wider uppercase"

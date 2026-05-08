@@ -23,7 +23,7 @@ export default function CheckoutSuccessPage() {
           await fetch('/api/stripe/sync', { method: 'POST' })
         } catch { /* non-fatal — webhook will catch up */ }
         setStatus('redirect')
-        router.replace('/dashboard?checkout=success')
+        router.replace('/study-plan?welcome=1')
         return
       }
       attempts++
@@ -31,7 +31,7 @@ export default function CheckoutSuccessPage() {
         setTimeout(check, 600)
       } else {
         setStatus('login')
-        router.replace('/login?redirect=/dashboard?checkout=success')
+        router.replace('/login?redirect=/study-plan?welcome=1')
       }
     }
 
