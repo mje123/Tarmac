@@ -64,8 +64,8 @@ export default function ReviewPage() {
     <div className="p-6 text-white/50 text-center mt-20">Daily review is currently disabled.</div>
   )
 
-  const supplementRef = question?.question_text.match(/FAA-CT-8080-2H[,\s]+(Figure|Legend)\s+\d+/i)?.[0]
-    || question?.question_text.match(/\(Refer to (Figure|Legend)\s+\d+/i)?.[0]?.replace('(Refer to ', '')
+  const supplementRef = question?.question_text.match(/FAA-CT-8080-2H[,\s]+(Figures?|Legend)\s+\d+/i)?.[0]
+    || question?.question_text.match(/\(Refer to (Figures?|Legend)\s+\d+/i)?.[0]?.replace('(Refer to ', '')
 
   const options = [
     { letter: 'A', text: question?.option_a },

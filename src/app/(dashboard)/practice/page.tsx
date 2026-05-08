@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
@@ -10,6 +10,7 @@ import {
   CheckCircle,
   XCircle,
   ChevronRight,
+  ChevronLeft,
   RotateCcw,
   BookOpen,
   Loader2,
@@ -28,6 +29,7 @@ import {
   Play,
   Trophy,
   Flame,
+  Eye,
 } from 'lucide-react'
 
 const PPL_CATEGORIES: { value: QuestionCategory; icon: React.ElementType; color: string }[] = [
@@ -55,6 +57,7 @@ const IFR_CATEGORY_LIST: { value: QuestionCategory; icon: React.ElementType; col
 ]
 
 const PRACTICE_KEY = 'tarmac_practice_state'
+const MODE_KEY = 'tarmac_study_mode'
 const MAX_AGE_MS = 24 * 60 * 60 * 1000
 
 type Phase = 'setup' | 'question' | 'correct' | 'wrong' | 'summary'
@@ -87,6 +90,7 @@ function loadPracticeState(): PracticeState | null {
 export default function PracticePage() {
   const { examType } = useExamType()
   const CATEGORIES = examType === 'ifr' ? IFR_CATEGORY_LIST : PPL_CATEGORIES
+
   const [phase, setPhase] = useState<Phase>('setup')
   const [category, setCategory] = useState<QuestionCategory | 'all' | 'weak' | 'saved'>('all')
   const [selectedCategories, setSelectedCategories] = useState<Set<QuestionCategory>>(new Set())
@@ -102,9 +106,67 @@ export default function PracticePage() {
   const [resumeState, setResumeState] = useState<PracticeState | null>(null)
   const [streak, setStreak] = useState(0)
 
+  // Read-through mode state
+  const [memMode, setMemMode] = useState(false)
+  const [questionHistory, setQuestionHistory] = useState<Question[]>([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
+
+  // Refs so keyboard handler always sees latest state
+  const historyIndexRef = useRef(historyIndex)
+  const questionHistoryRef = useRef(questionHistory)
+  const loadingRef = useRef(loading)
+  const categoryRef = useRef(category)
+  const selectedCategoriesRef = useRef(selectedCategories)
+  const examTypeRef = useRef(examType)
+
+  historyIndexRef.current = historyIndex
+  questionHistoryRef.current = questionHistory
+  loadingRef.current = loading
+  categoryRef.current = category
+  selectedCategoriesRef.current = selectedCategories
+  examTypeRef.current = examType
+
   useEffect(() => {
     setResumeState(loadPracticeState())
+    const saved = localStorage.getItem(MODE_KEY)
+    if (saved === 'readthrough') setMemMode(true)
   }, [])
+
+  // Keyboard shortcuts in read-through mode
+  useEffect(() => {
+    if (!memMode || phase !== 'question') return
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault()
+        handleMemNext()
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        handleMemPrev()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [memMode, phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function buildParams(excludeIds: string[]): URLSearchParams {
+    const params = new URLSearchParams()
+    const multi = selectedCategoriesRef.current.size > 0 ? selectedCategoriesRef.current : null
+    const cat = categoryRef.current
+    if (cat === 'saved') {
+      params.set('saved', '1')
+    } else if (multi) {
+      multi.forEach(c => params.append('categories', c))
+    } else if (cat !== 'all' && cat !== 'weak') {
+      params.set('category', cat)
+    } else if (cat === 'weak') {
+      params.set('weak', '1')
+    }
+    excludeIds.forEach(id => params.append('exclude', id))
+    params.set('examType', examTypeRef.current)
+    return params
+  }
 
   function savePracticeProgress(
     sid: string,
@@ -144,6 +206,75 @@ export default function PracticePage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function startMemSession() {
+    setLoading(true)
+    try {
+      const savedRes = await fetch('/api/questions/save')
+      const savedData = await savedRes.json()
+      setSavedIds(new Set(savedData.savedIds || []))
+      setQuestionHistory([])
+      setHistoryIndex(-1)
+      setTotalAnswered(0)
+      setResumeState(null)
+      const params = buildParams([])
+      const res = await fetch(`/api/questions/random?${params}`)
+      const data = await res.json()
+      if (!data.question) {
+        setPhase('summary')
+        return
+      }
+      setQuestionHistory([data.question])
+      setHistoryIndex(0)
+      setQuestion(data.question)
+      setPhase('question')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleMemNext() {
+    if (loadingRef.current) return
+    const idx = historyIndexRef.current
+    const hist = questionHistoryRef.current
+    if (idx < hist.length - 1) {
+      const newIdx = idx + 1
+      setHistoryIndex(newIdx)
+      setQuestion(hist[newIdx])
+    } else {
+      setLoading(true)
+      try {
+        const excludeIds = hist.map(q => q.id)
+        const params = buildParams(excludeIds)
+        const res = await fetch(`/api/questions/random?${params}`)
+        const data = await res.json()
+        if (!data.question) {
+          setPhase('summary')
+          return
+        }
+        const newHistory = [...hist, data.question]
+        setQuestionHistory(newHistory)
+        setHistoryIndex(newHistory.length - 1)
+        setQuestion(data.question)
+        setTotalAnswered(t => t + 1)
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
+  function handleMemPrev() {
+    const idx = historyIndexRef.current
+    if (idx <= 0) return
+    const newIdx = idx - 1
+    setHistoryIndex(newIdx)
+    setQuestion(questionHistoryRef.current[newIdx])
+  }
+
+  function setMode(mode: 'practice' | 'readthrough') {
+    setMemMode(mode === 'readthrough')
+    localStorage.setItem(MODE_KEY, mode)
   }
 
   async function resumeSession(state: PracticeState) {
@@ -244,6 +375,8 @@ export default function PracticePage() {
     setSessionId(null)
     setQuestion(null)
     setStreak(0)
+    setQuestionHistory([])
+    setHistoryIndex(-1)
     setResumeState(loadPracticeState())
   }
 
@@ -279,7 +412,6 @@ export default function PracticePage() {
     const isMulti = selectedCategories.size > 0
     const isAll = !isMulti && category === 'all'
     const isWeak = !isMulti && category === 'weak'
-    const isSaved = !isMulti && category === 'saved'
 
     function toggleCategory(val: QuestionCategory) {
       setSelectedCategories(prev => {
@@ -288,7 +420,7 @@ export default function PracticePage() {
         else next.add(val)
         return next
       })
-      setCategory('all') // mode = multi when selectedCategories.size > 0
+      setCategory('all')
     }
 
     function selectSpecial(mode: 'all' | 'weak' | 'saved') {
@@ -297,15 +429,15 @@ export default function PracticePage() {
     }
 
     const startLabel = isMulti
-      ? `Start Practice — ${selectedCategories.size} topic${selectedCategories.size > 1 ? 's' : ''}`
-      : isWeak ? 'Start Practice — Weak Areas'
-      : isSaved ? 'Start Practice — Saved Questions'
-      : 'Start Practice — All Topics'
+      ? `Start — ${selectedCategories.size} topic${selectedCategories.size > 1 ? 's' : ''}`
+      : isWeak ? 'Start — Weak Areas'
+      : category === 'saved' ? 'Start — Saved Questions'
+      : 'Start — All Topics'
 
     return (
       <div className="min-h-screen p-6 md:p-10 max-w-4xl mx-auto animate-fade-in">
         {/* Header */}
-        <div className="mb-10">
+        <div className="mb-8">
           <div className="flex items-center gap-4 mb-2">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(62,146,204,0.15)', border: '1px solid rgba(62,146,204,0.2)' }}>
               <BookOpen className="w-5 h-5 text-[#3E92CC]" />
@@ -317,8 +449,42 @@ export default function PracticePage() {
           </div>
         </div>
 
-        {/* Resume banner */}
-        {resumeState && (
+        {/* Mode toggle */}
+        <div className="flex mb-8 p-1 rounded-2xl gap-1" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-1)' }}>
+          <button
+            onClick={() => setMode('practice')}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-semibold transition-all"
+            style={!memMode ? {
+              background: 'rgba(62,146,204,0.15)',
+              color: '#3E92CC',
+              border: '1px solid rgba(62,146,204,0.3)',
+            } : {
+              color: 'var(--text-ter)',
+            }}
+          >
+            <Target className="w-4 h-4 shrink-0" />
+            Practice
+            <span className="text-xs opacity-60 hidden sm:inline">{!memMode ? '— test yourself' : ''}</span>
+          </button>
+          <button
+            onClick={() => setMode('readthrough')}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-semibold transition-all"
+            style={memMode ? {
+              background: 'rgba(255,182,39,0.12)',
+              color: '#FFB627',
+              border: '1px solid rgba(255,182,39,0.3)',
+            } : {
+              color: 'var(--text-ter)',
+            }}
+          >
+            <Eye className="w-4 h-4 shrink-0" />
+            Read-Through
+            <span className="text-xs opacity-60 hidden sm:inline">{memMode ? '— see answers' : ''}</span>
+          </button>
+        </div>
+
+        {/* Resume banner (practice mode only) */}
+        {resumeState && !memMode && (
           <div className="mb-6 p-5 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(62,146,204,0.12), rgba(62,146,204,0.06))', border: '1px solid rgba(62,146,204,0.25)' }}>
             <div className="flex items-center gap-2 mb-3">
               <Play className="w-4 h-4 text-[#3E92CC]" />
@@ -360,6 +526,15 @@ export default function PracticePage() {
                 Discard
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Read-through mode description */}
+        {memMode && (
+          <div className="mb-6 p-4 rounded-2xl" style={{ background: 'rgba(255,182,39,0.06)', border: '1px solid rgba(255,182,39,0.15)' }}>
+            <p className="text-sm text-white/60 leading-relaxed">
+              <span className="text-[#FFB627] font-semibold">Read-Through mode</span> — questions and correct answers are shown together. Read them, absorb the pattern, and move on. No guessing required. Use <kbd className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>Space</kbd> or <kbd className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>→</kbd> to advance.
+            </p>
           </div>
         )}
 
@@ -432,7 +607,7 @@ export default function PracticePage() {
             </button>
           </div>
 
-          {/* Category grid — multi-select checkboxes */}
+          {/* Category grid */}
           <p className="text-white/30 text-xs mb-2">Or pick specific topics to combine:</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
             {CATEGORIES.map(({ value, icon: Icon, color }) => {
@@ -447,7 +622,6 @@ export default function PracticePage() {
                     border: `1px solid ${checked ? `${color}55` : 'var(--border-1)'}`,
                   }}
                 >
-                  {/* Checkmark */}
                   <div
                     className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center transition-all"
                     style={{
@@ -473,27 +647,45 @@ export default function PracticePage() {
 
         {/* Start button */}
         <button
-          onClick={startSession}
+          onClick={memMode ? startMemSession : startSession}
           disabled={loading}
           className="btn-gold w-full justify-center py-4 text-base font-bold gap-3"
           style={{ borderRadius: '16px' }}
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
+          ) : memMode ? (
+            <><Eye className="w-5 h-5" />{startLabel.replace('Start', 'Start Read-Through')}</>
           ) : (
-            <>
-              <Play className="w-5 h-5" />
-              {resumeState ? 'Start New Session' : startLabel}
-            </>
+            <><Play className="w-5 h-5" />{resumeState ? 'Start New Session' : startLabel}</>
           )}
         </button>
-
       </div>
     )
   }
 
   // ── Summary screen ────────────────────────────────────────────────────────────
   if (phase === 'summary') {
+    if (memMode) {
+      const reviewed = questionHistory.length
+      return (
+        <div className="flex items-center justify-center min-h-screen p-8">
+          <div className="glass-card p-8 max-w-md w-full text-center animate-fade-in">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: 'rgba(255,182,39,0.15)', border: '2px solid rgba(255,182,39,0.3)' }}>
+              <Eye className="w-9 h-9 text-[#FFB627]" />
+            </div>
+            <div className="text-5xl font-bold text-white mb-1">{reviewed}</div>
+            <div className="font-semibold text-[#FFB627] mb-1">Questions reviewed</div>
+            <div className="text-white/40 text-sm mb-8">All done — you've seen everything in this set.</div>
+            <button onClick={reset} className="btn-primary w-full justify-center py-3 gap-2">
+              <RotateCcw className="w-4 h-4" />
+              Back to Setup
+            </button>
+          </div>
+        </div>
+      )
+    }
+
     const grade = accuracy >= 90 ? 'Outstanding! You\'re killing it! 🔥' : accuracy >= 70 ? 'Solid work — you\'re on track! ✈️' : accuracy >= 50 ? 'Good effort — keep pushing! 💪' : 'Every question is progress — don\'t stop! 🛫'
     const gradeColor = accuracy >= 90 ? '#10B981' : accuracy >= 70 ? '#FFB627' : accuracy >= 50 ? '#3E92CC' : '#EF4444'
     return (
@@ -537,20 +729,193 @@ export default function PracticePage() {
     )
   }
 
-  const supplementRef = question.question_text.match(/FAA-CT-8080-2H[,\s]+(Figure|Legend)\s+\d+/i)?.[0]
-    || question.question_text.match(/\(Refer to (Figure|Legend)\s+\d+/i)?.[0]?.replace('(Refer to ', '')
+  const supplementRef = question.question_text.match(/FAA-CT-8080-2H[,\s]+(Figures?|Legend)\s+\d+/i)?.[0]
+    || question.question_text.match(/\(Refer to (Figures?|Legend)\s+\d+/i)?.[0]?.replace('(Refer to ', '')
 
   const isSaved = savedIds.has(question.id)
   const catInfo = CATEGORIES.find(c => c.value === question.category)
-
   const optionLetterColors: Record<string, string> = { A: '#3E92CC', B: '#8B5CF6', C: '#10B981', D: '#F59E0B' }
 
-  // ── Question screen ────────────────────────────────────────────────────────────
+  // ── Read-Through Mode Card ─────────────────────────────────────────────────────
+  if (memMode) {
+    const reviewed = questionHistory.length
+    const atFirst = historyIndex === 0
+
+    return (
+      <div className="min-h-screen p-4 md:p-6 flex flex-col max-w-3xl mx-auto animate-fade-in">
+        {/* Top bar */}
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,182,39,0.1)', border: '1px solid rgba(255,182,39,0.2)' }}>
+            <Eye className="w-3.5 h-3.5 text-[#FFB627]" />
+            <span className="text-[#FFB627] text-xs font-semibold">Read-Through</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)' }}>
+            <span className="text-white text-sm font-semibold">{reviewed} reviewed</span>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
+              Supplement ↗
+            </a>
+            <button onClick={reset} className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
+              End
+            </button>
+          </div>
+        </div>
+
+        {supplementRef && (
+          <div className="mb-4">
+            <SupplementViewer figureRef={supplementRef} />
+          </div>
+        )}
+
+        {/* Read-through card */}
+        <div className="glass-card flex flex-col animate-fade-in" style={{ borderRadius: '20px', boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)' }}>
+          {/* Meta row */}
+          <div className="flex items-center gap-2 p-5 pb-0 flex-wrap">
+            {catInfo && (
+              <span className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold"
+                style={{ background: `${catInfo.color}18`, color: catInfo.color, border: `1px solid ${catInfo.color}30` }}>
+                <catInfo.icon className="w-3 h-3" />
+                {question.category}
+              </span>
+            )}
+            <button
+              onClick={toggleSave}
+              title={isSaved ? 'Remove from Study Later' : 'Save to Study Later'}
+              className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+              style={{
+                background: isSaved ? 'rgba(255,182,39,0.12)' : 'var(--surface-1)',
+                border: `1px solid ${isSaved ? 'rgba(255,182,39,0.35)' : 'var(--border-2)'}`,
+                color: isSaved ? '#FFB627' : 'var(--text-ter)',
+              }}
+            >
+              <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+              {isSaved ? 'Saved' : 'Study Later'}
+            </button>
+          </div>
+
+          {/* Question text */}
+          <div className="p-5 pb-4">
+            <p className="text-white text-lg leading-relaxed font-medium">{question.question_text}</p>
+          </div>
+
+          {/* Answer divider */}
+          <div className="mx-5 flex items-center gap-3">
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,182,39,0.2)' }} />
+            <span className="text-xs font-bold tracking-widest" style={{ color: 'rgba(255,182,39,0.5)' }}>CORRECT ANSWER</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,182,39,0.2)' }} />
+          </div>
+
+          {/* Options — correct one highlighted, others dimmed */}
+          <div className="p-5 pt-4 space-y-2">
+            {optionKeys.map(key => {
+              const isCorrect = key === question.correct_answer
+              return (
+                <div
+                  key={key}
+                  className="flex items-center gap-3 p-3.5 rounded-2xl transition-all"
+                  style={isCorrect ? {
+                    background: 'rgba(255,182,39,0.1)',
+                    border: '1px solid rgba(255,182,39,0.35)',
+                  } : {
+                    background: 'var(--surface-1)',
+                    border: '1px solid var(--border-1)',
+                    opacity: 0.38,
+                  }}
+                >
+                  <span
+                    className="w-7 h-7 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
+                    style={isCorrect ? {
+                      background: 'rgba(255,182,39,0.25)',
+                      color: '#FFB627',
+                    } : {
+                      background: 'var(--surface-3)',
+                      color: 'var(--text-ter)',
+                    }}
+                  >
+                    {key}
+                  </span>
+                  <span
+                    className="text-sm leading-relaxed"
+                    style={{ color: isCorrect ? '#FFB627' : 'var(--text-ter)' }}
+                  >
+                    {optionValues[key]}
+                  </span>
+                  {isCorrect && <CheckCircle className="w-4 h-4 text-[#FFB627] shrink-0 ml-auto" />}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Explanation */}
+          {question.explanation && (
+            <div className="mx-5 mb-5 p-3.5 rounded-xl text-sm leading-relaxed"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: 'var(--text-sec)' }}>
+              {question.explanation}
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="p-5 pt-0 flex items-center gap-3">
+            <button
+              onClick={handleMemPrev}
+              disabled={atFirst}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all"
+              style={{
+                background: 'var(--surface-1)',
+                border: '1px solid var(--border-1)',
+                color: 'var(--text-sec)',
+                opacity: atFirst ? 0.3 : 1,
+                cursor: atFirst ? 'default' : 'pointer',
+              }}
+            >
+              <ChevronLeft className="w-4 h-4" /> Prev
+            </button>
+
+            <div className="flex-1 text-center">
+              <span className="text-white/30 text-sm">{historyIndex + 1} / {reviewed}</span>
+            </div>
+
+            <button
+              onClick={handleMemNext}
+              disabled={loading}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold transition-all hover:opacity-90"
+              style={{
+                background: 'linear-gradient(135deg, #FFB627, #e09e1a)',
+                color: '#0A2463',
+                boxShadow: '0 4px 20px rgba(255,182,39,0.3)',
+              }}
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Next <ChevronRight className="w-4 h-4" /></>}
+            </button>
+          </div>
+        </div>
+
+        <p className="text-center text-white/20 text-xs mt-4">
+          <kbd className="px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>Space</kbd>
+          {' '}or{' '}
+          <kbd className="px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>→</kbd>
+          {' '}to advance · '}
+          <kbd className="px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>←</kbd>
+          {' '}to go back
+        </p>
+
+        <GeneralChat
+          currentQuestionContext={question
+            ? `Category: ${question.category}\nQuestion: ${question.question_text}`
+            : undefined
+          }
+        />
+      </div>
+    )
+  }
+
+  // ── Practice Mode Question screen ─────────────────────────────────────────────
   return (
     <div className="min-h-screen p-4 md:p-6 flex flex-col max-w-3xl mx-auto animate-fade-in">
       {/* Top bar */}
       <div className="mb-5 flex items-center gap-4">
-        {/* Stats row */}
         <div className="flex items-center gap-3 flex-1">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)' }}>
             <TrendingUp className="w-3.5 h-3.5 text-[#3E92CC]" />
@@ -641,7 +1006,7 @@ export default function PracticePage() {
             let letterBg = 'var(--surface-3)'
             let letterColor = 'var(--text-sec)'
             let textColor = 'var(--text-pri)'
-            let hoverScale = phase === 'question' ? 'hover:scale-[1.005]' : ''
+            const hoverScale = phase === 'question' ? 'hover:scale-[1.005]' : ''
 
             if (revealed) {
               if (isCorrect) {

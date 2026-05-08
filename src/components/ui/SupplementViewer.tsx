@@ -20,6 +20,8 @@ const FIGURE_IMAGES: Record<string, string> = {
   'Figure 20': 'figure-20',
   'Figure 25': 'figure-25',
   'Figure 26': 'figure-26',
+  'Figure 32': 'figure-32',
+  'Figure 33': 'figure-33',
   'Figure 35': 'figure-35',
   'Figure 38': 'figure-38',
   'Figure 47': 'figure-47',
@@ -31,8 +33,9 @@ const FIGURE_IMAGES: Record<string, string> = {
 }
 
 function parseFigureKey(ref: string): string {
-  const match = ref.match(/(Figure|Legend)\s+\d+/i)
-  return match ? match[0].replace(/\s+/, ' ').trim() : ref
+  const match = ref.match(/(Figures?|Legend)\s+\d+/i)
+  if (!match) return ref
+  return match[0].replace(/\s+/g, ' ').replace(/^Figures\s/i, 'Figure ').trim()
 }
 
 interface Props {
