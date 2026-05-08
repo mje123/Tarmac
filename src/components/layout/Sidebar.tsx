@@ -15,16 +15,31 @@ import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
 import { useExamType } from '@/components/ExamTypeProvider'
 
-const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/practice', icon: BookOpen, label: 'Practice Mode' },
-  { href: '/quiz', icon: ListChecks, label: 'Quiz Mode' },
-  { href: '/exam', icon: ClipboardList, label: 'Practice Exam' },
-  { href: '/saved', icon: Bookmark, label: 'Saved Questions' },
-  { href: '/flashcards', icon: Layers, label: 'Flashcards' },
-  { href: '/review', icon: Brain, label: 'Daily Review' },
-  { href: '/chat', icon: Bot, label: 'AI Tutor' },
-  { href: '/study-plan', icon: Route, label: '30-Day Runway' },
+const navSections = [
+  {
+    label: null,
+    items: [
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    ],
+  },
+  {
+    label: 'Practice',
+    items: [
+      { href: '/practice', icon: BookOpen, label: 'Practice Mode' },
+      { href: '/quiz', icon: ListChecks, label: 'Quiz Mode' },
+      { href: '/exam', icon: ClipboardList, label: 'Practice Exam' },
+      { href: '/review', icon: Brain, label: 'Daily Review' },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { href: '/saved', icon: Bookmark, label: 'Saved Questions' },
+      { href: '/flashcards', icon: Layers, label: 'Flashcards' },
+      { href: '/chat', icon: Bot, label: 'AI Tutor' },
+      { href: '/study-plan', icon: Route, label: '30-Day Runway' },
+    ],
+  },
 ]
 
 interface SidebarProps { user: User }
@@ -73,29 +88,40 @@ export default function Sidebar({ user }: SidebarProps) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {navItems.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'flex items-center gap-3 py-2.5 rounded-lg text-sm font-medium transition-all relative',
-                active ? 'text-[#3E92CC] font-semibold' : 'text-white/55 hover:text-white/90 hover:bg-white/5'
-              )}
-              style={active ? {
-                background: 'linear-gradient(90deg, rgba(62,146,204,0.14) 0%, rgba(62,146,204,0.04) 100%)',
-                borderLeft: '3px solid #3E92CC',
-                paddingLeft: '13px',
-                paddingRight: '12px',
-              } : { paddingLeft: '16px', paddingRight: '12px' }}
-            >
-              <Icon className={cn('w-4.5 h-4.5 shrink-0', active ? 'text-[#3E92CC]' : '')} style={{ width: '18px', height: '18px' }} />
-              {label}
-            </Link>
-          )
-        })}
+      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+        {navSections.map((section, si) => (
+          <div key={si}>
+            {section.label && (
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-white/25">
+                {section.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {section.items.map(({ href, icon: Icon, label }) => {
+                const active = pathname === href || pathname.startsWith(href + '/')
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      'flex items-center gap-3 py-2.5 rounded-lg text-sm font-medium transition-all relative',
+                      active ? 'text-[#3E92CC] font-semibold' : 'text-white/55 hover:text-white/90 hover:bg-white/5'
+                    )}
+                    style={active ? {
+                      background: 'linear-gradient(90deg, rgba(62,146,204,0.14) 0%, rgba(62,146,204,0.04) 100%)',
+                      borderLeft: '3px solid #3E92CC',
+                      paddingLeft: '13px',
+                      paddingRight: '12px',
+                    } : { paddingLeft: '16px', paddingRight: '12px' }}
+                  >
+                    <Icon className={cn('shrink-0', active ? 'text-[#3E92CC]' : '')} style={{ width: '18px', height: '18px' }} />
+                    {label}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        ))}
 
         {user.is_admin && (
           <Link
