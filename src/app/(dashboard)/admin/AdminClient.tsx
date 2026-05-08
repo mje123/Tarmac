@@ -6,6 +6,7 @@ import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
   ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift, RefreshCw, MessageSquare,
+  Pin, ChevronDown, ChevronUp, ExternalLink,
 } from 'lucide-react'
 
 interface ReferralDetail {
@@ -81,7 +82,7 @@ function getReferralSource(u: Record<string, unknown>): string | null {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum'>('overview')
   const [ifrStats, setIfrStats] = useState<Record<string, number> | null>(null)
   const [ifrMigrationSql, setIfrMigrationSql] = useState<string | null>(null)
   const [ifrSeeding, setIfrSeeding] = useState<string | null>(null)
@@ -117,6 +118,11 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [contacts, setContacts] = useState<Record<string, unknown>[]>([])
   const [contactsLoaded, setContactsLoaded] = useState(false)
   const [contactLoading, setContactLoading] = useState<string | null>(null)
+  const [forumPosts, setForumPosts] = useState<Record<string, unknown>[]>([])
+  const [forumLoaded, setForumLoaded] = useState(false)
+  const [forumLoading, setForumLoading] = useState<string | null>(null)
+  const [expandedPost, setExpandedPost] = useState<string | null>(null)
+  const [postReplies, setPostReplies] = useState<Record<string, Record<string, unknown>[]>>({})
   const [syncingStripe, setSyncingStripe] = useState(false)
   const [syncResult, setSyncResult] = useState<{ fixed: number; results: { email: string; result: string }[] } | null>(null)
   const [emailForm, setEmailForm] = useState({ subject: '', body: '', recipient_group: 'all', specific_email: '' })
@@ -288,6 +294,57 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     if (t === 'email') loadEmailHistory()
     if (t === 'suggestions') loadSuggestions()
     if (t === 'contact') loadContacts()
+    if (t === 'forum') loadForum()
+  }
+
+  async function loadForum() {
+    if (forumLoaded) return
+    const res = await fetch('/api/forum/admin')
+    const data = await res.json()
+    setForumPosts(data.posts || [])
+    setForumLoaded(true)
+  }
+
+  async function forumAction(action: string, postId?: string, replyId?: string) {
+    const key = replyId || postId || action
+    setForumLoading(key)
+    try {
+      await fetch('/api/forum/admin', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action, postId, replyId }),
+      })
+      if (action === 'delete_post') {
+        setForumPosts(p => p.filter(post => post.id !== postId))
+      } else if (action === 'delete_reply') {
+        setPostReplies(r => {
+          const next = { ...r }
+          for (const pid of Object.keys(next)) {
+            next[pid] = next[pid].filter(reply => reply.id !== replyId)
+          }
+          return next
+        })
+        setForumPosts(p => p.map(post => post.id === postId
+          ? { ...post, reply_count: Math.max(0, (post.reply_count as number) - 1) }
+          : post
+        ))
+      } else if (action === 'pin' || action === 'unpin') {
+        setForumPosts(p => p.map(post => post.id === postId ? { ...post, is_pinned: action === 'pin' } : post))
+      } else if (action === 'resolve' || action === 'unresolve') {
+        setForumPosts(p => p.map(post => post.id === postId ? { ...post, is_resolved: action === 'resolve' } : post))
+      }
+    } finally { setForumLoading(null) }
+  }
+
+  async function loadPostReplies(postId: string) {
+    if (postReplies[postId]) return
+    const res = await fetch('/api/forum/admin', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'get_replies', postId }),
+    })
+    const data = await res.json()
+    setPostReplies(r => ({ ...r, [postId]: data.replies || [] }))
   }
 
   async function saveQuestion(e: React.FormEvent) {
@@ -404,14 +461,15 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
             {t === 'email' && <Mail className="w-3.5 h-3.5" />}
             {t === 'suggestions' && <Lightbulb className="w-3.5 h-3.5" />}
             {t === 'contact' && <MessageSquare className="w-3.5 h-3.5" />}
-            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t}
+            {t === 'forum' && <MessageSquare className="w-3.5 h-3.5" />}
+            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t}
             {t === 'bugs' && bugs.filter(b => b.status === 'open').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white">
                 {bugs.filter(b => b.status === 'open').length}
@@ -1242,6 +1300,136 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'forum' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-white">Forum Moderation</h2>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-white/40">{forumPosts.length} posts</span>
+              <a href="/forum" target="_blank" className="flex items-center gap-1.5 text-xs text-[#3E92CC] hover:text-[#5ab8f5] transition-colors">
+                <ExternalLink className="w-3.5 h-3.5" /> View Forum
+              </a>
+            </div>
+          </div>
+          {!forumLoaded ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-white/30 animate-spin" /></div>
+          ) : forumPosts.length === 0 ? (
+            <div className="glass-card p-10 text-center text-white/30">No posts yet.</div>
+          ) : (
+            <div className="space-y-3">
+              {forumPosts.map(post => {
+                const pid = post.id as string
+                const isExpanded = expandedPost === pid
+                const CAT_COLOR: Record<string, string> = { help: '#3E92CC', bugs: '#EF4444', general: '#8B5CF6', tips: '#10B981' }
+                const catColor = CAT_COLOR[post.category as string] || '#fff'
+                return (
+                  <div key={pid} className="glass-card overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                              style={{ background: `${catColor}20`, color: catColor }}>
+                              {post.category as string}
+                            </span>
+                            {post.is_pinned && <span className="flex items-center gap-1 text-xs text-[#FFB627]"><Pin className="w-3 h-3" />Pinned</span>}
+                            {post.is_resolved && <span className="text-xs text-emerald-400">✓ Resolved</span>}
+                          </div>
+                          <p className="text-white font-semibold text-sm mb-1 line-clamp-2">{post.title as string}</p>
+                          <div className="flex items-center gap-3 text-white/30 text-xs">
+                            <span>{post.author_name as string}</span>
+                            <span>{post.reply_count as number} replies</span>
+                            <span>{post.view_count as number} views</span>
+                            <span>{new Date(post.created_at as string).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                          <button
+                            onClick={() => forumAction(post.is_pinned ? 'unpin' : 'pin', pid)}
+                            disabled={forumLoading === pid}
+                            title={post.is_pinned ? 'Unpin' : 'Pin to top'}
+                            className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+                            style={{ color: post.is_pinned ? '#FFB627' : 'rgba(255,255,255,0.3)' }}
+                          >
+                            <Pin className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => forumAction(post.is_resolved ? 'unresolve' : 'resolve', pid)}
+                            disabled={forumLoading === pid}
+                            title={post.is_resolved ? 'Mark unresolved' : 'Mark resolved'}
+                            className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+                            style={{ color: post.is_resolved ? '#10B981' : 'rgba(255,255,255,0.3)' }}
+                          >
+                            <CheckSquare className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const expanded = expandedPost === pid
+                              setExpandedPost(expanded ? null : pid)
+                              if (!expanded) await loadPostReplies(pid)
+                            }}
+                            className="p-1.5 rounded-lg text-white/40 hover:text-white/70 hover:bg-white/10 transition-colors"
+                            title="View replies"
+                          >
+                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                          {forumLoading === pid ? (
+                            <Loader2 className="w-4 h-4 text-white/30 animate-spin" />
+                          ) : (
+                            <button
+                              onClick={() => { if (confirm(`Delete "${post.title}"?`)) forumAction('delete_post', pid) }}
+                              title="Delete post"
+                              className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/40 hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Replies section */}
+                    {isExpanded && (
+                      <div className="border-t" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
+                        {!postReplies[pid] ? (
+                          <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 text-white/30 animate-spin" /></div>
+                        ) : postReplies[pid].length === 0 ? (
+                          <p className="text-center text-white/25 text-xs py-4">No replies</p>
+                        ) : (
+                          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                            {postReplies[pid].map(reply => (
+                              <div key={reply.id as string} className="px-4 py-3 flex items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-white/60 text-xs font-semibold">{reply.author_name as string}</span>
+                                    <span className="text-white/25 text-xs">{new Date(reply.created_at as string).toLocaleDateString()}</span>
+                                  </div>
+                                  <p className="text-white/55 text-xs leading-relaxed line-clamp-3">{reply.body as string}</p>
+                                </div>
+                                {forumLoading === (reply.id as string) ? (
+                                  <Loader2 className="w-3.5 h-3.5 text-white/30 animate-spin shrink-0" />
+                                ) : (
+                                  <button
+                                    onClick={() => { if (confirm('Delete this reply?')) forumAction('delete_reply', pid, reply.id as string) }}
+                                    className="p-1 rounded hover:bg-red-400/10 text-red-400/40 hover:text-red-400 transition-colors shrink-0"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

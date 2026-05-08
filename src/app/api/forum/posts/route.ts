@@ -6,16 +6,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const category = searchParams.get('category')
   const search = searchParams.get('search')
+  const sort = searchParams.get('sort') || 'recent'
 
   let query = supabase
     .from('forum_posts')
-    .select('id, title, category, author_name, is_pinned, is_resolved, reply_count, upvotes, created_at')
-    .order('is_pinned', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(50)
+    .select('id, title, category, author_name, is_pinned, is_resolved, reply_count, upvotes, view_count, created_at')
+    .limit(100)
 
   if (category && category !== 'all') query = query.eq('category', category)
   if (search) query = query.ilike('title', `%${search}%`)
+  if (sort === 'unanswered') query = query.eq('reply_count', 0)
+
+  // Pinned always first, then sort
+  query = query.order('is_pinned', { ascending: false })
+  if (sort === 'popular') {
+    query = query.order('upvotes', { ascending: false }).order('reply_count', { ascending: false })
+  } else {
+    query = query.order('created_at', { ascending: false })
+  }
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
