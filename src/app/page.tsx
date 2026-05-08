@@ -274,6 +274,7 @@ export default function LandingPage() {
           <a href="#why" className="hover:text-white transition-colors">Why TARMAC</a>
           <a href="#demo" className="hover:text-white transition-colors">Try demo</a>
           <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <Link href="/forum" className="hover:text-white transition-colors">Community</Link>
           <a href="#contact" className="hover:text-white transition-colors">Contact</a>
         </div>
         <div className="flex items-center gap-2">
