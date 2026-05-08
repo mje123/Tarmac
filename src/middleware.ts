@@ -35,6 +35,13 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // Redirect password reset codes that land at root to the update-password page
+  if (pathname === '/' && request.nextUrl.searchParams.has('code')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/update-password'
+    return NextResponse.redirect(url)
+  }
+
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user && !isPublic) {
