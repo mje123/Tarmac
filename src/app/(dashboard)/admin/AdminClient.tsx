@@ -1337,8 +1337,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                               style={{ background: `${catColor}20`, color: catColor }}>
                               {post.category as string}
                             </span>
-                            {post.is_pinned && <span className="flex items-center gap-1 text-xs text-[#FFB627]"><Pin className="w-3 h-3" />Pinned</span>}
-                            {post.is_resolved && <span className="text-xs text-emerald-400">✓ Resolved</span>}
+                            {!!post.is_pinned && <span className="flex items-center gap-1 text-xs text-[#FFB627]"><Pin className="w-3 h-3" />Pinned</span>}
+                            {!!post.is_resolved && <span className="text-xs text-emerald-400">✓ Resolved</span>}
                           </div>
                           <p className="text-white font-semibold text-sm mb-1 line-clamp-2">{post.title as string}</p>
                           <div className="flex items-center gap-3 text-white/30 text-xs">
