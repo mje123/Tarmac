@@ -9,7 +9,7 @@ import { User } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
-  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Brain, Route,
+  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Brain, Route, Plane,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
@@ -38,6 +38,12 @@ const navSections = [
       { href: '/flashcards', icon: Layers, label: 'Flashcards' },
       { href: '/chat', icon: Bot, label: 'AI Tutor' },
       { href: '/study-plan', icon: Route, label: '30-Day Runway' },
+    ],
+  },
+  {
+    label: 'Limited Time',
+    items: [
+      { href: '/altitude', icon: Plane, label: 'Altitude', badge: 'NEW' },
     ],
   },
 ]
@@ -92,12 +98,13 @@ export default function Sidebar({ user }: SidebarProps) {
         {navSections.map((section, si) => (
           <div key={si}>
             {section.label && (
-              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-white/25">
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest"
+                style={{ color: section.label === 'Limited Time' ? 'rgba(62,146,204,0.6)' : 'rgba(255,255,255,0.25)' }}>
                 {section.label}
               </p>
             )}
             <div className="space-y-0.5">
-              {section.items.map(({ href, icon: Icon, label }) => {
+              {section.items.map(({ href, icon: Icon, label, badge }: { href: string; icon: React.ElementType; label: string; badge?: string }) => {
                 const active = pathname === href || pathname.startsWith(href + '/')
                 return (
                   <Link
@@ -116,6 +123,12 @@ export default function Sidebar({ user }: SidebarProps) {
                   >
                     <Icon className={cn('shrink-0', active ? 'text-[#3E92CC]' : '')} style={{ width: '18px', height: '18px' }} />
                     {label}
+                    {badge && (
+                      <span className="ml-auto text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'rgba(62,146,204,0.15)', color: '#3E92CC', border: '1px solid rgba(62,146,204,0.25)' }}>
+                        {badge}
+                      </span>
+                    )}
                   </Link>
                 )
               })}
