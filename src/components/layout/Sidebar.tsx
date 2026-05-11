@@ -9,7 +9,7 @@ import { User } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
-  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Brain, Route, Plane,
+  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Brain, Route, Plane, AlertTriangle,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
@@ -43,7 +43,8 @@ const navSections = [
   {
     label: 'Limited Time',
     items: [
-      { href: '/altitude', icon: Plane, label: 'Altitude', badge: 'NEW' },
+      { href: '/altitude',    icon: Plane,         label: 'Altitude',    badge: 'NEW' },
+      { href: '/situations',  icon: AlertTriangle, label: 'Situations',  badge: 'NEW' },
     ],
   },
 ]

@@ -197,27 +197,39 @@ export default async function DashboardPage() {
             NEW
           </span>
         </div>
-        <Link href="/altitude" className="group relative flex items-center gap-5 p-5 rounded-2xl overflow-hidden transition-all hover:brightness-110"
-          style={{ background: 'linear-gradient(135deg, rgba(62,146,204,0.12) 0%, rgba(62,146,204,0.04) 100%)', border: '1px solid rgba(62,146,204,0.25)' }}>
-          {/* Icon */}
-          <div className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{ background: 'rgba(62,146,204,0.15)', border: '1px solid rgba(62,146,204,0.25)' }}>
-            <Plane className="w-7 h-7 text-[#3E92CC]" />
-          </div>
-          {/* Text */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <p className="text-white font-black text-lg tracking-tight" style={{ letterSpacing: '-0.02em' }}>ALTITUDE</p>
-              <Zap className="w-4 h-4 text-[#FFB627]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Altitude */}
+          <Link href="/altitude" className="group relative flex items-center gap-4 p-5 rounded-2xl overflow-hidden transition-all hover:brightness-110"
+            style={{ background: 'linear-gradient(135deg, rgba(62,146,204,0.12) 0%, rgba(62,146,204,0.04) 100%)', border: '1px solid rgba(62,146,204,0.25)' }}>
+            <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(62,146,204,0.15)', border: '1px solid rgba(62,146,204,0.25)' }}>
+              <Plane className="w-6 h-6 text-[#3E92CC]" />
             </div>
-            <p className="text-white/50 text-sm">Race the clock. Build streaks. Study while you compete.</p>
-            <p className="text-[#3E92CC] text-xs font-bold mt-1.5 group-hover:underline">Play now →</p>
-          </div>
-          {/* Decoration */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-5xl select-none opacity-10 font-black text-[#3E92CC]">
-            10K
-          </div>
-        </Link>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <p className="text-white font-black tracking-tight" style={{ letterSpacing: '-0.02em' }}>ALTITUDE</p>
+                <Zap className="w-3.5 h-3.5 text-[#FFB627]" />
+              </div>
+              <p className="text-white/45 text-xs">Speed quiz · streaks · 20 questions</p>
+              <p className="text-[#3E92CC] text-xs font-bold mt-1 group-hover:underline">Play →</p>
+            </div>
+          </Link>
+          {/* Situations */}
+          <Link href="/situations" className="group relative flex items-center gap-4 p-5 rounded-2xl overflow-hidden transition-all hover:brightness-110"
+            style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.03) 100%)', border: '1px solid rgba(239,68,68,0.22)' }}>
+            <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
+              <Star className="w-6 h-6 text-red-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <p className="text-white font-black tracking-tight" style={{ letterSpacing: '-0.02em' }}>SITUATIONS</p>
+              </div>
+              <p className="text-white/45 text-xs">Write your response · AI grades you</p>
+              <p className="text-red-400 text-xs font-bold mt-1 group-hover:underline">Try it →</p>
+            </div>
+          </Link>
+        </div>
       </div>
 
       {/* ── Performance Snapshot (free users get comparison context) ── */}
