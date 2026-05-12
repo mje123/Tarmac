@@ -88,12 +88,22 @@ export async function POST(request: NextRequest) {
       overflow.sort(() => Math.random() - 0.5)
       for (const q of overflow) {
         if (selected.length >= TOTAL_QUESTIONS) break
-        selected.push(q)
-        usedIds.add(q.id as string)
+        if (!usedIds.has(q.id as string)) {
+          selected.push(q)
+          usedIds.add(q.id as string)
+        }
       }
     }
 
-    const finalQuestions = selected
+    // Final dedup guard in case any question slipped through twice
+    const seen = new Set<string>()
+    const deduped = selected.filter(q => {
+      if (seen.has(q.id as string)) return false
+      seen.add(q.id as string)
+      return true
+    })
+
+    const finalQuestions = deduped
       .sort(() => Math.random() - 0.5)
       .slice(0, TOTAL_QUESTIONS)
 
