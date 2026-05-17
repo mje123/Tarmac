@@ -82,7 +82,7 @@ function getReferralSource(u: Record<string, unknown>): string | null {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum' | 'qotd'>('overview')
   const [ifrStats, setIfrStats] = useState<Record<string, number> | null>(null)
   const [ifrMigrationSql, setIfrMigrationSql] = useState<string | null>(null)
   const [ifrSeeding, setIfrSeeding] = useState<string | null>(null)
@@ -123,6 +123,14 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [forumLoading, setForumLoading] = useState<string | null>(null)
   const [expandedPost, setExpandedPost] = useState<string | null>(null)
   const [postReplies, setPostReplies] = useState<Record<string, Record<string, unknown>[]>>({})
+  const [qotdPosts, setQotdPosts] = useState<Record<string, unknown>[]>([])
+  const [qotdLoaded, setQotdLoaded] = useState(false)
+  const [qotdSaving, setQotdSaving] = useState(false)
+  const [qotdDeleting, setQotdDeleting] = useState<string | null>(null)
+  const [qotdForm, setQotdForm] = useState({
+    question_text: '', question_type: 'situation', context: '',
+    active_date: new Date().toISOString().slice(0, 10),
+  })
   const [syncingStripe, setSyncingStripe] = useState(false)
   const [syncResult, setSyncResult] = useState<{ fixed: number; results: { email: string; result: string }[] } | null>(null)
   const [emailForm, setEmailForm] = useState({ subject: '', body: '', recipient_group: 'all', specific_email: '' })
@@ -295,6 +303,52 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     if (t === 'suggestions') loadSuggestions()
     if (t === 'contact') loadContacts()
     if (t === 'forum') loadForum()
+    if (t === 'qotd') loadQotd()
+  }
+
+  async function loadQotd() {
+    if (qotdLoaded) return
+    const res = await fetch('/api/admin/qotd')
+    const data = await res.json()
+    setQotdPosts(data.posts || [])
+    setQotdLoaded(true)
+  }
+
+  async function saveQotdPost(e: React.FormEvent) {
+    e.preventDefault()
+    setQotdSaving(true)
+    try {
+      const res = await fetch('/api/admin/qotd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(qotdForm),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setQotdPosts(prev => {
+          const filtered = prev.filter(p => p.active_date !== data.post.active_date)
+          return [data.post, ...filtered].sort((a, b) =>
+            (b.active_date as string).localeCompare(a.active_date as string)
+          )
+        })
+        setQotdForm(f => ({ ...f, question_text: '', context: '' }))
+      } else {
+        alert(data.error || 'Save failed')
+      }
+    } finally { setQotdSaving(false) }
+  }
+
+  async function deleteQotdPost(id: string) {
+    if (!confirm('Delete this QOTD post?')) return
+    setQotdDeleting(id)
+    try {
+      await fetch('/api/admin/qotd', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      setQotdPosts(prev => prev.filter(p => p.id !== id))
+    } finally { setQotdDeleting(null) }
   }
 
   async function loadForum() {
@@ -461,7 +515,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum', 'qotd'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
@@ -469,7 +523,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             {t === 'suggestions' && <Lightbulb className="w-3.5 h-3.5" />}
             {t === 'contact' && <MessageSquare className="w-3.5 h-3.5" />}
             {t === 'forum' && <MessageSquare className="w-3.5 h-3.5" />}
-            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t}
+            {t === 'qotd' && <Send className="w-3.5 h-3.5" />}
+            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t === 'qotd' ? 'QOTD' : t}
             {t === 'bugs' && bugs.filter(b => b.status === 'open').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white">
                 {bugs.filter(b => b.status === 'open').length}
@@ -1471,6 +1526,131 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {tab === 'qotd' && (
+        <div className="space-y-6">
+          <h2 className="text-lg font-semibold text-white">Question of the Day</h2>
+
+          {/* Create / upsert form */}
+          <form onSubmit={saveQotdPost} className="glass-card p-6 space-y-4">
+            <p className="text-sm font-semibold text-white/80">Post a new question</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-white/50">Date</label>
+                <input
+                  type="date"
+                  value={qotdForm.active_date}
+                  onChange={e => setQotdForm(f => ({ ...f, active_date: e.target.value }))}
+                  className="rounded-lg px-3 py-2 text-sm outline-none"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-white/50">Type</label>
+                <select
+                  value={qotdForm.question_type}
+                  onChange={e => setQotdForm(f => ({ ...f, question_type: e.target.value }))}
+                  className="rounded-lg px-3 py-2 text-sm outline-none"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                >
+                  <option value="situation">Situation</option>
+                  <option value="checkride">Checkride</option>
+                  <option value="written">Written</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-white/50">Scenario / Context (optional)</label>
+              <textarea
+                value={qotdForm.context}
+                onChange={e => setQotdForm(f => ({ ...f, context: e.target.value }))}
+                placeholder="e.g. You're flying VFR cross-country and encounter unexpected IMC…"
+                rows={3}
+                className="rounded-lg px-3 py-2 text-sm resize-none outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-white/50">Question *</label>
+              <textarea
+                value={qotdForm.question_text}
+                onChange={e => setQotdForm(f => ({ ...f, question_text: e.target.value }))}
+                placeholder="The question pilots need to answer…"
+                rows={4}
+                required
+                className="rounded-lg px-3 py-2 text-sm resize-none outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={qotdSaving || !qotdForm.question_text.trim()}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
+              style={{ background: '#FFB627', color: '#0a1530' }}
+            >
+              {qotdSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              Post QOTD
+            </button>
+          </form>
+
+          {/* Past posts */}
+          <div className="space-y-3">
+            <p className="text-xs font-semibold text-white/40 uppercase tracking-widest">History</p>
+            {!qotdLoaded ? (
+              <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 text-white/30 animate-spin" /></div>
+            ) : qotdPosts.length === 0 ? (
+              <div className="glass-card p-8 text-center text-white/30 text-sm">No posts yet.</div>
+            ) : (
+              qotdPosts.map(p => {
+                const typeColors: Record<string, string> = { situation: '#3E92CC', checkride: '#FFB627', written: '#a78bfa' }
+                const color = typeColors[p.question_type as string] || '#3E92CC'
+                return (
+                  <div key={p.id as string} className="glass-card p-4 flex gap-4 items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-xs font-bold text-white/40">{p.active_date as string}</span>
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize" style={{ background: `${color}20`, color }}>
+                          {p.question_type as string}
+                        </span>
+                      </div>
+                      {p.context && (
+                        <p className="text-xs text-white/40 mb-1 line-clamp-1">{p.context as string}</p>
+                      )}
+                      <p className="text-sm text-white/80 line-clamp-2">{p.question_text as string}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href="/qotd"
+                        target="_blank"
+                        className="p-1.5 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors"
+                        title="View live"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                      {qotdDeleting === (p.id as string) ? (
+                        <Loader2 className="w-4 h-4 text-white/30 animate-spin" />
+                      ) : (
+                        <button
+                          onClick={() => deleteQotdPost(p.id as string)}
+                          className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/40 hover:text-red-400 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
         </div>
       )}
     </div>
