@@ -20,11 +20,14 @@ function UpgradeContent() {
       if (!user) { setTrialEligible(true); return }
       supabase.from('users').select('stripe_customer_id, subscription_status').eq('id', user.id).single()
         .then(({ data }) => {
-          // Eligible for trial only if they've never been through Stripe checkout
+          if (data?.subscription_status && data.subscription_status !== 'free') {
+            router.replace('/dashboard')
+            return
+          }
           setTrialEligible(!data?.stripe_customer_id)
         })
     })
-  }, [])
+  }, [router])
 
   useEffect(() => {
     if (!plan) return
