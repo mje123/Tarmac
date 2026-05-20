@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     // Add 7-day free trial only if this customer has never had a subscription before
     if (isBeta && mode === 'subscription') {
-      const priorSubs = await stripe.subscriptions.list({ customer: customerId, limit: 1 })
+      const priorSubs = await stripe.subscriptions.list({ customer: customerId, limit: 1, status: 'all' })
       const hasPriorSubscription = priorSubs.data.length > 0
       if (!hasPriorSubscription) {
         sessionParams.subscription_data = { trial_period_days: 7 }
