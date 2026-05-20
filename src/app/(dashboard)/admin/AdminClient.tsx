@@ -6,7 +6,7 @@ import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
   ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift, RefreshCw, MessageSquare,
-  Pin, ChevronDown, ChevronUp, ExternalLink,
+  Pin, ChevronDown, ChevronUp, ExternalLink, Megaphone,
 } from 'lucide-react'
 
 interface ReferralDetail {
@@ -82,7 +82,7 @@ function getReferralSource(u: Record<string, unknown>): string | null {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum' | 'qotd'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum' | 'qotd' | 'announcements'>('overview')
   const [ifrStats, setIfrStats] = useState<Record<string, number> | null>(null)
   const [ifrMigrationSql, setIfrMigrationSql] = useState<string | null>(null)
   const [ifrSeeding, setIfrSeeding] = useState<string | null>(null)
@@ -123,6 +123,10 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [forumLoading, setForumLoading] = useState<string | null>(null)
   const [expandedPost, setExpandedPost] = useState<string | null>(null)
   const [postReplies, setPostReplies] = useState<Record<string, Record<string, unknown>[]>>({})
+  const [announcements, setAnnouncements] = useState<Record<string, unknown>[]>([])
+  const [announcementsLoaded, setAnnouncementsLoaded] = useState(false)
+  const [announcementSaving, setAnnouncementSaving] = useState(false)
+  const [announcementForm, setAnnouncementForm] = useState({ title: '', message: '', type: 'info' })
   const [qotdPosts, setQotdPosts] = useState<Record<string, unknown>[]>([])
   const [qotdLoaded, setQotdLoaded] = useState(false)
   const [qotdSaving, setQotdSaving] = useState(false)
@@ -304,6 +308,48 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     if (t === 'contact') loadContacts()
     if (t === 'forum') loadForum()
     if (t === 'qotd') loadQotd()
+    if (t === 'announcements') loadAnnouncements()
+  }
+
+  async function loadAnnouncements() {
+    if (announcementsLoaded) return
+    const res = await fetch('/api/admin/announcements')
+    const data = await res.json()
+    setAnnouncements(data.announcements || [])
+    setAnnouncementsLoaded(true)
+  }
+
+  async function saveAnnouncement(e: React.FormEvent) {
+    e.preventDefault()
+    setAnnouncementSaving(true)
+    try {
+      const res = await fetch('/api/admin/announcements', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(announcementForm),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setAnnouncements(prev => [data.announcement, ...prev])
+        setAnnouncementForm({ title: '', message: '', type: 'info' })
+      } else { alert(data.error || 'Failed') }
+    } finally { setAnnouncementSaving(false) }
+  }
+
+  async function toggleAnnouncement(id: string, active: boolean) {
+    await fetch('/api/admin/announcements', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, active }),
+    })
+    setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, active } : a))
+  }
+
+  async function deleteAnnouncement(id: string) {
+    if (!confirm('Delete this announcement?')) return
+    await fetch('/api/admin/announcements', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    setAnnouncements(prev => prev.filter(a => a.id !== id))
   }
 
   async function loadQotd() {
@@ -515,7 +561,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum', 'qotd'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum', 'qotd', 'announcements'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
@@ -524,7 +570,13 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             {t === 'contact' && <MessageSquare className="w-3.5 h-3.5" />}
             {t === 'forum' && <MessageSquare className="w-3.5 h-3.5" />}
             {t === 'qotd' && <Send className="w-3.5 h-3.5" />}
-            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t === 'qotd' ? 'QOTD' : t}
+            {t === 'announcements' && <Megaphone className="w-3.5 h-3.5" />}
+            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t === 'qotd' ? 'QOTD' : t === 'announcements' ? 'Announce' : t}
+            {t === 'announcements' && announcementsLoaded && announcements.filter(a => a.active).length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#3E92CC] text-white">
+                {announcements.filter(a => a.active).length}
+              </span>
+            )}
             {t === 'bugs' && bugs.filter(b => b.status === 'open').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white">
                 {bugs.filter(b => b.status === 'open').length}
@@ -1645,6 +1697,114 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+
+      {tab === 'announcements' && (
+        <div className="space-y-6">
+          <h2 className="text-lg font-semibold text-white">Announcements</h2>
+          <p className="text-xs text-white/40 -mt-4">Posts pop up on every user&apos;s dashboard with a sound. Dismissed per-user via localStorage.</p>
+
+          {/* Create form */}
+          <form onSubmit={saveAnnouncement} className="glass-card p-6 space-y-4">
+            <p className="text-sm font-semibold text-white/80">New announcement</p>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-white/50">Type</label>
+              <select
+                value={announcementForm.type}
+                onChange={e => setAnnouncementForm(f => ({ ...f, type: e.target.value }))}
+                className="rounded-lg px-3 py-2 text-sm outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+              >
+                <option value="info">📣 Info</option>
+                <option value="warning">⚠️ Warning</option>
+                <option value="celebration">🎉 Celebration</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-white/50">Title *</label>
+              <input
+                value={announcementForm.title}
+                onChange={e => setAnnouncementForm(f => ({ ...f, title: e.target.value }))}
+                placeholder="e.g. New feature just dropped"
+                required
+                className="rounded-lg px-3 py-2 text-sm outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-white/50">Message *</label>
+              <textarea
+                value={announcementForm.message}
+                onChange={e => setAnnouncementForm(f => ({ ...f, message: e.target.value }))}
+                placeholder="What do you want users to know?"
+                rows={3} required
+                className="rounded-lg px-3 py-2 text-sm resize-none outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+              />
+            </div>
+            <button
+              type="submit" disabled={announcementSaving}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
+              style={{ background: '#3E92CC', color: 'white' }}
+            >
+              {announcementSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}
+              Send to all users
+            </button>
+          </form>
+
+          {/* List */}
+          <div className="space-y-3">
+            <p className="text-xs font-semibold text-white/40 uppercase tracking-widest">Active & Past</p>
+            {!announcementsLoaded ? (
+              <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 text-white/30 animate-spin" /></div>
+            ) : announcements.length === 0 ? (
+              <div className="glass-card p-8 text-center text-white/30 text-sm">No announcements yet.</div>
+            ) : (
+              announcements.map(a => {
+                const typeColors: Record<string, string> = { info: '#3E92CC', warning: '#FFB627', celebration: '#22c55e' }
+                const color = typeColors[a.type as string] || '#3E92CC'
+                const isActive = a.active as boolean
+                return (
+                  <div key={a.id as string} className="glass-card p-4 flex gap-4 items-start"
+                    style={isActive ? { border: `1px solid ${color}33` } : {}}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize"
+                          style={{ background: `${color}20`, color }}>
+                          {a.type as string}
+                        </span>
+                        <span className={`text-xs font-bold ${isActive ? 'text-green-400' : 'text-white/25'}`}>
+                          {isActive ? '● Live' : '○ Off'}
+                        </span>
+                        <span className="text-xs text-white/25">{new Date(a.created_at as string).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-sm font-semibold text-white">{a.title as string}</p>
+                      <p className="text-xs text-white/50 mt-0.5 line-clamp-2">{a.message as string}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => toggleAnnouncement(a.id as string, !isActive)}
+                        className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                        style={isActive
+                          ? { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }
+                          : { background: 'rgba(34,197,94,0.1)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.2)' }}
+                      >
+                        {isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => deleteAnnouncement(a.id as string)}
+                        className="p-1.5 rounded-lg hover:bg-red-400/10 text-red-400/40 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 )
