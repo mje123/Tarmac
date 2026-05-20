@@ -287,7 +287,7 @@ export default function LandingPage() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background image */}
         <div className="absolute inset-0">
-          <Image src="/hero.png" alt="" fill className="object-cover object-center" priority />
+          <Image src="/hero-bg.png" alt="" fill className="object-cover object-center" priority />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(6,14,31,0.65) 0%, rgba(6,14,31,0.5) 40%, rgba(6,14,31,0.85) 85%, #060e1f 100%)' }} />
         </div>
 
