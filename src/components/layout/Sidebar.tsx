@@ -82,6 +82,9 @@ export default function Sidebar({ user }: SidebarProps) {
     router.refresh()
   }
 
+  const isPaid = user.subscription_status !== 'free'
+  const visibleSections = isPaid ? navSections : navSections.slice(0, 1)
+
   const navContent = (
     <>
       {/* Logo */}
@@ -96,7 +99,7 @@ export default function Sidebar({ user }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
-        {navSections.map((section, si) => (
+        {visibleSections.map((section, si) => (
           <div key={si}>
             {section.label && (
               <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest"
