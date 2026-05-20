@@ -12,6 +12,9 @@ import SRSWidget from '@/components/ui/SRSWidget'
 import { Suspense } from 'react'
 import CheckoutSuccessBanner from '@/components/ui/CheckoutSuccessBanner'
 import UpgradeModal from '@/components/ui/UpgradeModal'
+import GameOfWeekWidget from '@/components/ui/GameOfWeekWidget'
+import { getAutoGame, getCurrentWeekStart } from '@/app/api/game-of-week/route'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function CategoryBar({ category, accuracy, attempted }: { category: string; accuracy: number; attempted: number }) {
   const color = accuracy >= 80 ? '#22c55e' : accuracy >= 60 ? '#FFB627' : '#ef4444'
@@ -33,17 +36,28 @@ export default async function DashboardPage() {
 
   if (!authUser) redirect('/login')
 
+  const weekStart = getCurrentWeekStart()
+  const adminDb = createAdminClient()
+
   const [
     { data: userProfile },
     { data: progressData },
     { data: recentSessions },
     { data: savedData },
+    { data: gotwOverride },
   ] = await Promise.all([
     supabase.from('users').select('*').eq('id', authUser.id).single(),
     supabase.from('user_progress').select('*').eq('user_id', authUser.id).order('accuracy_percentage', { ascending: true }),
     supabase.from('test_sessions').select('*').eq('user_id', authUser.id).order('started_at', { ascending: false }).limit(5),
     supabase.from('saved_questions').select('question_id, saved_at, questions(*)').eq('user_id', authUser.id).order('saved_at', { ascending: false }).limit(5),
+    adminDb.from('game_of_week_overrides').select('game_slug').eq('week_start', weekStart).maybeSingle(),
   ])
+
+  const gotw = {
+    game: (gotwOverride?.game_slug as string) ?? getAutoGame(weekStart),
+    isOverride: !!gotwOverride,
+    weekStart,
+  }
 
   const user: User = userProfile ?? {
     id: authUser.id,
@@ -187,6 +201,9 @@ export default async function DashboardPage() {
           )}
         </p>
       </div>
+
+      {/* ── Game of the Week ─────────────────────────────────────────── */}
+      <GameOfWeekWidget data={gotw} />
 
       {/* ── Limited Time ─────────────────────────────────────────────── */}
       <div className="mb-7">

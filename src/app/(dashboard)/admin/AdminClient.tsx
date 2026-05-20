@@ -6,7 +6,7 @@ import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
   ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift, RefreshCw, MessageSquare,
-  Pin, ChevronDown, ChevronUp, ExternalLink, Megaphone,
+  Pin, ChevronDown, ChevronUp, ExternalLink, Megaphone, Trophy,
 } from 'lucide-react'
 
 interface ReferralDetail {
@@ -82,7 +82,7 @@ function getReferralSource(u: Record<string, unknown>): string | null {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum' | 'qotd' | 'announcements'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum' | 'qotd' | 'announcements' | 'gotw'>('overview')
   const [ifrStats, setIfrStats] = useState<Record<string, number> | null>(null)
   const [ifrMigrationSql, setIfrMigrationSql] = useState<string | null>(null)
   const [ifrSeeding, setIfrSeeding] = useState<string | null>(null)
@@ -127,6 +127,10 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [announcementsLoaded, setAnnouncementsLoaded] = useState(false)
   const [announcementSaving, setAnnouncementSaving] = useState(false)
   const [announcementForm, setAnnouncementForm] = useState({ title: '', message: '', type: 'info' })
+  const [gotwWeeks, setGotwWeeks] = useState<{ weekStart: string; autoGame: string; override: string | null; game: string }[]>([])
+  const [gotwLoaded, setGotwLoaded] = useState(false)
+  const [gotwSaving, setGotwSaving] = useState(false)
+  const [gotwOverrideGame, setGotwOverrideGame] = useState('')
   const [qotdPosts, setQotdPosts] = useState<Record<string, unknown>[]>([])
   const [qotdLoaded, setQotdLoaded] = useState(false)
   const [qotdSaving, setQotdSaving] = useState(false)
@@ -309,6 +313,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     if (t === 'forum') loadForum()
     if (t === 'qotd') loadQotd()
     if (t === 'announcements') loadAnnouncements()
+    if (t === 'gotw') loadGotw()
   }
 
   async function loadAnnouncements() {
@@ -317,6 +322,36 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
     const data = await res.json()
     setAnnouncements(data.announcements || [])
     setAnnouncementsLoaded(true)
+  }
+
+  async function loadGotw() {
+    const res = await fetch('/api/admin/game-of-week')
+    const data = await res.json()
+    setGotwWeeks(data.weeks || [])
+    if (data.weeks?.[0]) setGotwOverrideGame(data.weeks[0].override || data.weeks[0].autoGame)
+    setGotwLoaded(true)
+  }
+
+  async function saveGotwOverride(weekStart: string, gameSlug: string) {
+    setGotwSaving(true)
+    try {
+      await fetch('/api/admin/game-of-week', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ week_start: weekStart, game_slug: gameSlug }),
+      })
+      await loadGotw()
+    } finally { setGotwSaving(false) }
+  }
+
+  async function clearGotwOverride(weekStart: string) {
+    setGotwSaving(true)
+    try {
+      await fetch('/api/admin/game-of-week', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ week_start: weekStart }),
+      })
+      await loadGotw()
+    } finally { setGotwSaving(false) }
   }
 
   async function saveAnnouncement(e: React.FormEvent) {
@@ -561,7 +596,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum', 'qotd', 'announcements'] as const).map(t => (
+        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum', 'qotd', 'announcements', 'gotw'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
@@ -571,7 +606,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             {t === 'forum' && <MessageSquare className="w-3.5 h-3.5" />}
             {t === 'qotd' && <Send className="w-3.5 h-3.5" />}
             {t === 'announcements' && <Megaphone className="w-3.5 h-3.5" />}
-            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t === 'qotd' ? 'QOTD' : t === 'announcements' ? 'Announce' : t}
+            {t === 'gotw' && <Trophy className="w-3.5 h-3.5" />}
+            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t === 'qotd' ? 'QOTD' : t === 'announcements' ? 'Announce' : t === 'gotw' ? 'Game of Week' : t}
             {t === 'announcements' && announcementsLoaded && announcements.filter(a => a.active).length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#3E92CC] text-white">
                 {announcements.filter(a => a.active).length}
@@ -1705,7 +1741,6 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
           </div>
         </div>
       )}
-    </div>
 
       {tab === 'announcements' && (
         <div className="space-y-6">
@@ -1811,6 +1846,104 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
               })
             )}
           </div>
+        </div>
+      )}
+
+      {tab === 'gotw' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Game of the Week</h2>
+            <p className="text-xs text-white/40 mt-1">Rotates automatically every Monday. Override to feature a specific game this week.</p>
+          </div>
+
+          {!gotwLoaded ? (
+            <div className="flex items-center gap-2 text-white/40 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
+          ) : (
+            <div className="space-y-4">
+              {gotwWeeks.map((week, i) => {
+                const isCurrentWeek = i === 0
+                const gameLabels: Record<string, string> = {
+                  altitude: 'ALTITUDE — Speed Quiz',
+                  situations: 'SITUATIONS — Emergency Scenarios',
+                  qotd: 'QUESTION OF THE DAY — Community',
+                  quiz: 'QUIZ BLITZ — Quick Fire',
+                }
+                return (
+                  <div
+                    key={week.weekStart}
+                    className="glass-card p-5"
+                    style={isCurrentWeek ? { border: '1px solid rgba(255,182,39,0.35)', background: 'rgba(255,182,39,0.04)' } : {}}
+                  >
+                    <div className="flex items-center justify-between gap-4 mb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-white">
+                            Week of {new Date(week.weekStart + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          {isCurrentWeek && (
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>
+                              THIS WEEK
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-white/40 mt-0.5">
+                          Auto: <span className="text-white/60">{gameLabels[week.autoGame] ?? week.autoGame}</span>
+                          {week.override && <span className="ml-2 text-[#FFB627]">· Override: {gameLabels[week.override] ?? week.override}</span>}
+                        </div>
+                      </div>
+                      <div className="shrink-0 flex items-center gap-2">
+                        <span
+                          className="text-xs font-bold px-3 py-1 rounded-full"
+                          style={{
+                            background: week.override ? 'rgba(255,182,39,0.15)' : 'rgba(62,146,204,0.15)',
+                            color: week.override ? '#FFB627' : '#3E92CC',
+                            border: `1px solid ${week.override ? 'rgba(255,182,39,0.3)' : 'rgba(62,146,204,0.25)'}`,
+                          }}
+                        >
+                          {week.override ? 'Manual' : 'Auto'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {isCurrentWeek && (
+                      <div className="flex items-center gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <select
+                          value={gotwOverrideGame}
+                          onChange={e => setGotwOverrideGame(e.target.value)}
+                          className="flex-1 rounded-lg px-3 py-2 text-sm outline-none"
+                          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                        >
+                          <option value="altitude">ALTITUDE — Speed Quiz</option>
+                          <option value="situations">SITUATIONS — Emergency Scenarios</option>
+                          <option value="qotd">QUESTION OF THE DAY — Community</option>
+                          <option value="quiz">QUIZ BLITZ — Quick Fire</option>
+                        </select>
+                        <button
+                          onClick={() => saveGotwOverride(week.weekStart, gotwOverrideGame)}
+                          disabled={gotwSaving}
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-40"
+                          style={{ background: '#FFB627', color: '#0a1530' }}
+                        >
+                          {gotwSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
+                          Set
+                        </button>
+                        {week.override && (
+                          <button
+                            onClick={() => clearGotwOverride(week.weekStart)}
+                            disabled={gotwSaving}
+                            className="px-4 py-2 rounded-lg text-sm font-medium text-white/50 hover:text-white transition-colors disabled:opacity-40"
+                            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+                          >
+                            Reset to Auto
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

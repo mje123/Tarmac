@@ -71,7 +71,15 @@ export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [gotwGame, setGotwGame] = useState<string | null>(null)
   const { examType, setExamType } = useExamType()
+
+  useEffect(() => {
+    fetch('/api/game-of-week')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.game) setGotwGame(d.game) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => { setOpen(false) }, [pathname])
 
@@ -110,6 +118,8 @@ export default function Sidebar({ user }: SidebarProps) {
             <div className="space-y-0.5">
               {section.items.map(({ href, icon: Icon, label, badge }: { href: string; icon: React.ElementType; label: string; badge?: string }) => {
                 const active = pathname === href || pathname.startsWith(href + '/')
+                const slug = href.replace('/', '')
+                const isGotw = gotwGame === slug
                 return (
                   <Link
                     key={href}
@@ -127,7 +137,13 @@ export default function Sidebar({ user }: SidebarProps) {
                   >
                     <Icon className={cn('shrink-0', active ? 'text-[#3E92CC]' : '')} style={{ width: '18px', height: '18px' }} />
                     {label}
-                    {badge && (
+                    {isGotw && (
+                      <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'rgba(255,182,39,0.18)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.35)' }}>
+                        GOTW
+                      </span>
+                    )}
+                    {!isGotw && badge && (
                       <span className="ml-auto text-[10px] font-black px-1.5 py-0.5 rounded-full"
                         style={{ background: 'rgba(62,146,204,0.15)', color: '#3E92CC', border: '1px solid rgba(62,146,204,0.25)' }}>
                         {badge}
