@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Plane, AlertTriangle, ListChecks, Trophy, ChevronRight } from 'lucide-react'
+import { Plane, AlertTriangle, Trophy, ChevronRight } from 'lucide-react'
 
 export interface GameOfWeekData {
   game: string
@@ -42,17 +42,6 @@ const GAME_META: Record<string, {
     border: 'rgba(239,68,68,0.3)',
     glow: 'rgba(239,68,68,0.2)',
     icon: AlertTriangle,
-  },
-  quiz: {
-    name: 'QUIZ BLITZ',
-    href: '/quiz',
-    tagline: 'Quick-fire questions · all categories',
-    description: 'Fast-paced quiz across all 9 FAA knowledge areas. How many can you nail back-to-back without breaking your streak?',
-    color: '#22c55e',
-    bg: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%)',
-    border: 'rgba(34,197,94,0.3)',
-    glow: 'rgba(34,197,94,0.2)',
-    icon: ListChecks,
   },
 }
 

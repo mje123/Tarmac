@@ -1866,7 +1866,6 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                   altitude: 'ALTITUDE — Speed Quiz',
                   situations: 'SITUATIONS — Emergency Scenarios',
                   qotd: 'QUESTION OF THE DAY — Community',
-                  quiz: 'QUIZ BLITZ — Quick Fire',
                 }
                 return (
                   <div
@@ -1916,7 +1915,6 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                           <option value="altitude">ALTITUDE — Speed Quiz</option>
                           <option value="situations">SITUATIONS — Emergency Scenarios</option>
                           <option value="qotd">QUESTION OF THE DAY — Community</option>
-                          <option value="quiz">QUIZ BLITZ — Quick Fire</option>
                         </select>
                         <button
                           onClick={() => saveGotwOverride(week.weekStart, gotwOverrideGame)}
