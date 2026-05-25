@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Plane, AlertTriangle, ListChecks, MessageCircle, Trophy, ChevronRight } from 'lucide-react'
+import { Plane, AlertTriangle, ListChecks, Trophy, ChevronRight } from 'lucide-react'
 
 export interface GameOfWeekData {
   game: string
@@ -42,17 +42,6 @@ const GAME_META: Record<string, {
     border: 'rgba(239,68,68,0.3)',
     glow: 'rgba(239,68,68,0.2)',
     icon: AlertTriangle,
-  },
-  qotd: {
-    name: 'QUESTION OF THE DAY',
-    href: '/qotd',
-    tagline: 'Community discussion · detailed scenarios',
-    description: 'One deep question every day. Share your approach anonymously and read how other student pilots think through it.',
-    color: '#a855f7',
-    bg: 'linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(168,85,247,0.05) 100%)',
-    border: 'rgba(168,85,247,0.3)',
-    glow: 'rgba(168,85,247,0.2)',
-    icon: MessageCircle,
   },
   quiz: {
     name: 'QUIZ BLITZ',

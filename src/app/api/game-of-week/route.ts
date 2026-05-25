@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export const GAME_ROTATION = ['altitude', 'situations', 'qotd', 'quiz'] as const
+export const GAME_ROTATION = ['altitude', 'situations', 'quiz'] as const
 export type GameSlug = typeof GAME_ROTATION[number]
 
 // Returns the Monday (UTC) of the current week as a YYYY-MM-DD string

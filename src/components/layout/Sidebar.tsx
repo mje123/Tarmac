@@ -9,7 +9,7 @@ import { User } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
-  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Brain, Route, Plane, AlertTriangle,
+  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Brain, Route, Plane, AlertTriangle, MessageCircle, Users,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
@@ -41,7 +41,14 @@ const navSections = [
     ],
   },
   {
-    label: 'Limited Time',
+    label: 'Community',
+    items: [
+      { href: '/qotd', icon: MessageCircle, label: 'Daily Question' },
+      { href: '/qotw', icon: Users,         label: 'Weekly Challenge' },
+    ],
+  },
+  {
+    label: 'Games',
     items: [
       { href: '/altitude',    icon: Plane,         label: 'Altitude',    badge: 'NEW' },
       { href: '/situations',  icon: AlertTriangle, label: 'Situations',  badge: 'NEW' },
