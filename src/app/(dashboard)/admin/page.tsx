@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AdminClient from './AdminClient'
 
+export const dynamic = 'force-dynamic'
+
 const STUDY_PASS_PRICE = 9 // USD/month estimate
 
 export default async function AdminPage() {
@@ -27,7 +29,7 @@ export default async function AdminPage() {
     supabase.from('test_sessions').select('id', { count: 'exact', head: true }),
     supabase.from('users').select('subscription_status').neq('subscription_status', 'free'),
     supabase.from('users').select('*').order('created_at', { ascending: false }).limit(1000),
-    supabase.from('test_sessions').select('*, users(email, full_name)').order('started_at', { ascending: false }).limit(10),
+    supabase.from('test_sessions').select('*, users(email, full_name)').order('started_at', { ascending: false }).limit(50),
     supabase.from('test_sessions').select('score, total_questions').eq('session_type', 'real_exam').not('score', 'is', null).limit(500),
     supabase.from('test_sessions').select('user_id, total_questions').not('total_questions', 'is', null),
   ])
