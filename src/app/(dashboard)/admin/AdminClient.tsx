@@ -104,6 +104,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
   const [infLoading, setInfLoading] = useState<string | null>(null)
   const [addingInf, setAddingInf] = useState(false)
   const [usersRefreshing, setUsersRefreshing] = useState(false)
+  const [userSearch, setUserSearch] = useState('')
 
   const [bugs, setBugs] = useState<Record<string, unknown>[]>([])
   const [bugsLoaded, setBugsLoaded] = useState(false)
@@ -918,14 +919,23 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {tab === 'users' && (
         <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white">All Users ({users.length})</h3>
-            <div className="flex items-center gap-3">
-              <button onClick={syncStripe} disabled={syncingStripe} className="flex items-center gap-1.5 text-xs text-[#3E92CC]/70 hover:text-[#3E92CC] transition-colors disabled:opacity-40">
+          <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
+            <h3 className="font-semibold text-white shrink-0">
+              All Users ({userSearch ? `${users.filter(u => { const q = userSearch.toLowerCase(); return (u.full_name as string || '').toLowerCase().includes(q) || (u.email as string || '').toLowerCase().includes(q) }).length} of ` : ''}{users.length})
+            </h3>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <input
+                value={userSearch}
+                onChange={e => setUserSearch(e.target.value)}
+                placeholder="Search by name or email…"
+                className="flex-1 min-w-0 rounded-lg px-3 py-1.5 text-sm outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+              />
+              <button onClick={syncStripe} disabled={syncingStripe} className="flex items-center gap-1.5 text-xs text-[#3E92CC]/70 hover:text-[#3E92CC] transition-colors disabled:opacity-40 shrink-0">
                 <RefreshCw className={`w-3.5 h-3.5 ${syncingStripe ? 'animate-spin' : ''}`} />
-                {syncingStripe ? 'Syncing Stripe…' : 'Sync Stripe'}
+                {syncingStripe ? 'Syncing…' : 'Sync Stripe'}
               </button>
-              <button onClick={refreshUsers} disabled={usersRefreshing} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-40">
+              <button onClick={refreshUsers} disabled={usersRefreshing} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors disabled:opacity-40 shrink-0">
                 <RefreshCw className={`w-3.5 h-3.5 ${usersRefreshing ? 'animate-spin' : ''}`} />
                 {usersRefreshing ? 'Refreshing…' : 'Refresh'}
               </button>
@@ -953,7 +963,11 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {users.map((u: Record<string, unknown>) => {
+                {users.filter((u: Record<string, unknown>) => {
+                  if (!userSearch) return true
+                  const q = userSearch.toLowerCase()
+                  return (u.full_name as string || '').toLowerCase().includes(q) || (u.email as string || '').toLowerCase().includes(q)
+                }).map((u: Record<string, unknown>) => {
                   const isLoading = actionLoading === u.id
                   const isAdmin = u.is_admin as boolean
                   const isFree = (u.subscription_status as string) === 'free'
