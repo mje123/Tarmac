@@ -334,7 +334,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-white/80">
               At <span className="font-bold text-red-400">{overallAccuracy}% accuracy</span>, your estimated pass probability is{' '}
               <span className="font-bold text-red-400">~{readiness}%</span> — below the FAA{`'`}s 70% passing threshold.
-              {' '}<span className="text-white/60">Students who upgrade and hit 70%+ accuracy pass on their first attempt at a <span className="text-green-400 font-semibold">91% rate</span>.</span>
+              {' '}<span className="text-white/60">Students who reach 70%+ accuracy are significantly more prepared on test day.</span>
             </p>
           </div>
           <UpgradeModal
@@ -488,8 +488,7 @@ export default async function DashboardPage() {
             <p className="text-white/70 text-sm leading-relaxed">{todayTip}</p>
             {isFree && (
               <p className="text-xs mt-2 text-white/40">
-                TARMAC&apos;s AI tutor breaks down every question like this — explaining the why, not just the answer. That&apos;s why students who use it pass at a{' '}
-                <span className="text-green-400 font-semibold">91% rate</span>.
+                TARMAC&apos;s AI tutor breaks down every question like this — explaining the why, not just the answer. Students who understand the material, not just memorize it, walk into test day confident.
               </p>
             )}
           </div>
@@ -688,8 +687,8 @@ export default async function DashboardPage() {
               >
                 <p className="text-xs text-white/50">
                   <span className="text-[#FFB627] font-semibold">{criticalCategories.length} critical gap{criticalCategories.length !== 1 ? 's' : ''}</span>
-                  {' '}found. Students who fix these before test day pass at a <span className="text-green-400 font-semibold">91% rate</span>.
-                  You are <span className="font-semibold text-white/70">{questionsToReady} questions</span> away from being competitive.
+                  {' '}found. Fixing weak areas before test day makes a real difference.
+                  You are <span className="font-semibold text-white/70">{questionsToReady} questions</span> away from solid coverage.
                 </p>
                 <UpgradeModal
                   readiness={readiness}
@@ -722,7 +721,7 @@ export default async function DashboardPage() {
                 Start 7-Day Free Trial
                 <ChevronRight className="w-4 h-4" />
               </Link>
-              <p className="text-xs text-white/30 mt-3">91% of students who practice 200+ questions pass on their first attempt</p>
+              <p className="text-xs text-white/30 mt-3">Students who practice 200+ questions walk into test day significantly more prepared</p>
             </div>
           ) : (
             sessions.length > 0 && (

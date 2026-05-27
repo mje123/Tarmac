@@ -99,7 +99,7 @@ export default function UpgradeModal({
                   <span className="text-[#FFB627] text-sm shrink-0">⚡</span>
                   <p className="text-sm text-white/65">
                     You&apos;re at <strong className="text-white">{readiness}%</strong> readiness.
-                    Students who use the full question bank pass at 91%.
+                    Students who use the full question bank walk into test day well prepared.
                   </p>
                 </div>
               )}

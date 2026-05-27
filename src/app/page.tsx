@@ -871,7 +871,7 @@ export default function LandingPage() {
               Instagram
             </a>
           </div>
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.18)' }}>Legion Systems LLC · Not affiliated with the FAA.</p>
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.18)' }}>Legion Systems LLC · Not affiliated with the FAA. Results not guaranteed.</p>
         </div>
       </footer>
     </div>

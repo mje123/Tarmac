@@ -212,7 +212,7 @@ function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
   }
 
   if (previous_tools === 'failed_with_them') {
-    reasons.push("TARMAC builds genuine understanding — students who switch pass at a 91% rate")
+    reasons.push("TARMAC builds genuine understanding — not just memorization")
   }
 
   return {
@@ -649,8 +649,8 @@ function StartPageInner() {
                   transition={{ delay: 0.3, type: 'spring', damping: 24 }}
                 >
                   {[
-                    { stat: '91%', label: 'first-attempt pass rate' },
                     { stat: '1,400+', label: 'practice questions' },
+                    { stat: '9', label: 'knowledge areas covered' },
                     { stat: '~3 wks', label: 'avg time to ready' },
                   ].map(s => (
                     <div key={s.stat}
