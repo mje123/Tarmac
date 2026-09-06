@@ -5,6 +5,12 @@ import { Question, AnswerOption } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import { formatTime } from '@/lib/utils'
 import { Clock, CheckCircle, Flag, ChevronLeft, ChevronRight, Loader2, BookOpen, Lock, Bookmark, ArrowLeft, AlertTriangle } from 'lucide-react'
+import { useExamType } from '@/components/ExamTypeProvider'
+
+const EXAM_TITLES: Record<string, { title: string; abbr: string }> = {
+  ppl: { title: 'Private Pilot — Airplane', abbr: 'PAR' },
+  ifr: { title: 'Instrument Rating — Airplane', abbr: 'IRA' },
+}
 
 type ExamPhase = 'start' | 'exam' | 'submitting'
 
@@ -16,6 +22,8 @@ interface ExamAnswer {
 }
 
 export default function ExamSessionPage() {
+  const { examType } = useExamType()
+  const examTitle = EXAM_TITLES[examType] ?? EXAM_TITLES.ppl
   const [phase, setPhase] = useState<ExamPhase>('start')
   const [questions, setQuestions] = useState<Question[]>([])
   const [answers, setAnswers] = useState<ExamAnswer[]>([])
@@ -147,8 +155,8 @@ export default function ExamSessionPage() {
             {/* Header stripe */}
             <div className="px-8 py-5 text-center" style={{ background: 'linear-gradient(135deg, #0a2463, #0d2070)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="text-xs font-bold tracking-widest text-[#FFB627] uppercase mb-1">FAA Knowledge Test Simulation</div>
-              <h1 className="text-2xl font-bold text-white">Private Pilot — Airplane</h1>
-              <p className="text-white/50 text-sm mt-1">PAR</p>
+              <h1 className="text-2xl font-bold text-white">{examTitle.title}</h1>
+              <p className="text-white/50 text-sm mt-1">{examTitle.abbr}</p>
             </div>
 
             <div className="p-8">

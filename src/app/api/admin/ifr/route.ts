@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { generateAndSaveIFRQuestions, IFR_CATEGORIES, type IFRCategory } from '@/lib/ifrQuestionGenerator'
+import { generateAndSaveLegacyQuestions, IFR_CATEGORIES, type IFRCategory } from '@/lib/generation/legacy'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
   for (const cat of targets) {
     try {
-      const n = await generateAndSaveIFRQuestions(cat, count)
+      const n = await generateAndSaveLegacyQuestions('ifr', cat, count)
       results[cat] = n
     } catch (e) {
       results[cat] = `error: ${e instanceof Error ? e.message : String(e)}`

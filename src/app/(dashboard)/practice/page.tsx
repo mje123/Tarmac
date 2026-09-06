@@ -6,6 +6,7 @@ import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
 import GeneralChat from '@/components/ui/GeneralChat'
 import { useExamType } from '@/components/ExamTypeProvider'
+import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
 import {
   CheckCircle,
   XCircle,
@@ -96,6 +97,7 @@ export default function PracticePage() {
   const [selectedCategories, setSelectedCategories] = useState<Set<QuestionCategory>>(new Set())
   const [question, setQuestion] = useState<Question | null>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerOption | null>(null)
+  const [pendingAnswer, setPendingAnswer] = useState<AnswerOption | null>(null)
   const [correctCount, setCorrectCount] = useState(0)
   const [totalAnswered, setTotalAnswered] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -326,15 +328,17 @@ export default function PracticePage() {
       }
       setQuestion(data.question)
       setSelectedAnswer(null)
+      setPendingAnswer(null)
       setPhase('question')
     } finally {
       setLoading(false)
     }
   }
 
-  async function submitAnswer(answer: AnswerOption) {
+  async function submitAnswer(answer: AnswerOption, confidence: ConfidenceLevel | null) {
     if (!question || !sessionId) return
     setSelectedAnswer(answer)
+    setPendingAnswer(null)
     const isCorrect = answer === question.correct_answer
     const newCorrect = correctCount + (isCorrect ? 1 : 0)
     const newTotal = totalAnswered + 1
@@ -348,7 +352,7 @@ export default function PracticePage() {
     await fetch('/api/sessions/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect }),
+      body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect, confidence }),
     })
     savePracticeProgress(sessionId, category, newCorrect, newTotal, askedIds, [...selectedCategories])
     if (isCorrect) setPhase('correct')
@@ -358,6 +362,7 @@ export default function PracticePage() {
   async function nextQuestion() {
     const newIds = [...askedIds, question!.id]
     setAskedIds(newIds)
+    setPendingAnswer(null)
     await fetchQuestion(sessionId!, newIds, category, selectedCategories)
   }
 
@@ -999,14 +1004,15 @@ export default function PracticePage() {
           {optionKeys.map(key => {
             const isCorrect = key === question.correct_answer
             const isSelected = key === selectedAnswer
+            const isPending = key === pendingAnswer
             const revealed = phase !== 'question'
 
-            let bg = 'var(--surface-1)'
-            let border = 'var(--border-1)'
-            let letterBg = 'var(--surface-3)'
-            let letterColor = 'var(--text-sec)'
+            let bg = isPending ? 'rgba(255,182,39,0.08)' : 'var(--surface-1)'
+            let border = isPending ? 'rgba(255,182,39,0.45)' : 'var(--border-1)'
+            let letterBg = isPending ? 'rgba(255,182,39,0.2)' : 'var(--surface-3)'
+            let letterColor = isPending ? '#FFB627' : 'var(--text-sec)'
             let textColor = 'var(--text-pri)'
-            const hoverScale = phase === 'question' ? 'hover:scale-[1.005]' : ''
+            const hoverScale = phase === 'question' && !pendingAnswer ? 'hover:scale-[1.005]' : ''
 
             if (revealed) {
               if (isCorrect) {
@@ -1030,9 +1036,9 @@ export default function PracticePage() {
             return (
               <button
                 key={key}
-                onClick={() => phase === 'question' && submitAnswer(key)}
+                onClick={() => phase === 'question' && !pendingAnswer && setPendingAnswer(key)}
                 className={`w-full text-left p-4 flex items-center gap-3 transition-all duration-150 rounded-2xl ${hoverScale}`}
-                style={{ background: bg, border: `1px solid ${border}`, cursor: phase === 'question' ? 'pointer' : 'default' }}
+                style={{ background: bg, border: `1px solid ${border}`, cursor: phase === 'question' && !pendingAnswer ? 'pointer' : 'default' }}
               >
                 <span className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-colors"
                   style={{ background: letterBg, color: letterColor }}>
@@ -1045,6 +1051,25 @@ export default function PracticePage() {
             )
           })}
         </div>
+
+        {/* Confidence check — appears once an answer is tentatively picked, before it's submitted/revealed */}
+        {phase === 'question' && pendingAnswer && (
+          <div className="mt-5 animate-fade-in">
+            <p className="text-xs text-white/40 mb-2.5 font-medium uppercase tracking-wide">How confident are you?</p>
+            <div className="grid grid-cols-2 gap-2">
+              {CONFIDENCE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => submitAnswer(pendingAnswer, opt.value)}
+                  className="py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-1)', color: 'var(--text-sec)' }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Correct feedback */}
         {phase === 'correct' && (

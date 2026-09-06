@@ -5,6 +5,7 @@ import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import GeneralChat from '@/components/ui/GeneralChat'
 import { useExamType } from '@/components/ExamTypeProvider'
+import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
 import {
   CheckCircle, XCircle, ChevronRight, Loader2, ListChecks,
   Trophy, RotateCcw, BookOpen, Compass, Cloud, Wind,
@@ -53,6 +54,7 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerOption | null>(null)
+  const [confidence, setConfidence] = useState<ConfidenceLevel | null>(null)
   const [results, setResults] = useState<QuizResult[]>([])
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [showAI, setShowAI] = useState(false)
@@ -100,35 +102,44 @@ export default function QuizPage() {
     }
   }
 
-  async function submitAnswer(answer: AnswerOption) {
-    if (!currentQuestion || !sessionId || phase !== 'question') return
+  function selectAnswer(answer: AnswerOption) {
+    if (phase !== 'question') return
     setSelectedAnswer(answer)
+    setConfidence(null)
+  }
+
+  async function next() {
+    if (!currentQuestion || !sessionId || !selectedAnswer) return
+    const answer = selectedAnswer
     const isCorrect = answer === currentQuestion.correct_answer
 
     fetch('/api/sessions/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, questionId: currentQuestion.id, answer, isCorrect }),
+      body: JSON.stringify({ sessionId, questionId: currentQuestion.id, answer, isCorrect, confidence }),
     })
 
-    setResults(prev => [...prev, { question: currentQuestion, userAnswer: answer, isCorrect }])
-    setPhase('answered')
-  }
+    const newResults = [...results, { question: currentQuestion, userAnswer: answer, isCorrect }]
+    setResults(newResults)
 
-  async function next() {
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex(i => i + 1)
       setSelectedAnswer(null)
+      setConfidence(null)
       setShowAI(false)
       setPhase('question')
     } else {
-      await finishQuiz()
+      await finishQuizWithResults(newResults)
     }
   }
 
-  async function finishQuiz() {
+  async function finishQuizWithResults(finalResults: QuizResult[]) {
     setPhase('submitting')
-    const finalResults = results
+    await finishQuiz(finalResults)
+  }
+
+  async function finishQuiz(finalResults: QuizResult[] = results) {
+    setPhase('submitting')
     const score = finalResults.filter(r => r.isCorrect).length
 
     const missedQuestions = finalResults
@@ -441,7 +452,7 @@ export default function QuizPage() {
   const questionNumber = currentIndex + 1
   const progressPct = (questionNumber / questions.length) * 100
   const catInfo = CATEGORIES.find(c => c.value === currentQuestion.category)
-  const isAnswered = phase === 'answered'
+  const isAnswered = false // answers are no longer locked until Next is clicked
 
   const optionKeys = (['A', 'B', 'C', 'D'] as AnswerOption[]).filter(k =>
     k !== 'D' || !!currentQuestion.option_d
@@ -514,56 +525,61 @@ export default function QuizPage() {
             const isCorrectOption = key === currentQuestion.correct_answer
             const isSelected = key === selectedAnswer
 
-            let bg = 'var(--surface-1)'
-            let border = 'var(--border-1)'
-            let letterBg = 'var(--surface-3)'
-            let letterColor = 'var(--text-sec)'
+            let bg = isSelected ? 'rgba(255,182,39,0.08)' : 'var(--surface-1)'
+            let border = isSelected ? 'rgba(255,182,39,0.45)' : 'var(--border-1)'
+            let letterBg = isSelected ? 'rgba(255,182,39,0.2)' : 'var(--surface-3)'
+            let letterColor = isSelected ? '#FFB627' : 'var(--text-sec)'
             let textColor = 'var(--text-pri)'
-
-            if (isAnswered) {
-              if (isSelected) {
-                bg = 'rgba(255,182,39,0.08)'
-                border = 'rgba(255,182,39,0.35)'
-                letterBg = 'rgba(255,182,39,0.2)'
-                letterColor = '#FFB627'
-                textColor = 'var(--text-pri)'
-              } else {
-                textColor = 'var(--text-ter)'
-                letterColor = 'var(--text-qua)'
-              }
-            }
 
             return (
               <button
                 key={key}
-                onClick={() => !isAnswered && submitAnswer(key)}
-                className={`w-full text-left p-4 flex items-center gap-3 transition-all duration-150 rounded-2xl ${!isAnswered ? 'hover:scale-[1.005]' : ''}`}
-                style={{ background: bg, border: `1px solid ${border}`, cursor: !isAnswered ? 'pointer' : 'default' }}
+                onClick={() => selectAnswer(key)}
+                className="w-full text-left p-4 flex items-center gap-3 transition-all duration-150 rounded-2xl hover:scale-[1.005]"
+                style={{ background: bg, border: `1px solid ${border}`, cursor: 'pointer' }}
               >
                 <span className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
                   style={{ background: letterBg, color: letterColor }}>
                   {key}
                 </span>
                 <span className="leading-relaxed text-sm" style={{ color: textColor }}>{optionValues[key]}</span>
-                {isAnswered && isSelected && <ChevronRight className="w-4 h-4 text-[#FFB627] shrink-0 ml-auto" />}
+                {isSelected && <ChevronRight className="w-4 h-4 text-[#FFB627] shrink-0 ml-auto" />}
               </button>
             )
           })}
         </div>
 
-        {/* Next button — appears after selection, no feedback shown until results */}
-        {isAnswered && (
-          <div className="mt-5 animate-fade-in">
-            <button
-              onClick={next}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-bold transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.35)' }}
-            >
-              {isLastQuestion ? 'See Results' : 'Next Question'}
-              <ChevronRight className="w-5 h-5" />
-            </button>
+        {/* Confidence check — appears once an answer is selected, before Next unlocks */}
+        {selectedAnswer && !confidence && (
+          <div className="mt-5">
+            <p className="text-xs text-white/40 mb-2.5 font-medium uppercase tracking-wide">How confident are you?</p>
+            <div className="grid grid-cols-2 gap-2">
+              {CONFIDENCE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setConfidence(opt.value)}
+                  className="py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-1)', color: 'var(--text-sec)' }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
+
+        {/* Next button — appears once an answer + confidence are selected; user can still change answer before clicking */}
+        <div className={`mt-5 transition-all duration-200 ${selectedAnswer && confidence ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <button
+            onClick={next}
+            disabled={!selectedAnswer || !confidence}
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-bold transition-all hover:opacity-90 disabled:opacity-0"
+            style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.35)' }}
+          >
+            {isLastQuestion ? 'See Results' : 'Next Question'}
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       <GeneralChat
@@ -576,7 +592,7 @@ export default function QuizPage() {
           userAnswer={selectedAnswer}
           correctAnswer={currentQuestion.correct_answer}
           onClose={() => setShowAI(false)}
-          onContinue={() => { setShowAI(false); next() }}
+          onContinue={() => { setShowAI(false) }}
         />
       )}
     </div>

@@ -3,15 +3,15 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
 import {
-  CheckCircle, Brain, BarChart3, Smartphone, Target,
-  ChevronDown, ChevronUp, ArrowRight, Plane, MessageSquare,
-  Zap, TrendingUp, AlertTriangle, Send, Loader2,
+  CheckCircle, ChevronDown, ChevronUp, ArrowRight, Plane,
+  Sparkles, RefreshCw, Brain, Clock, Layers, Send, Loader2,
 } from 'lucide-react'
-import { isBeta, BETA_PLAN } from '@/lib/pricing'
+import { TARMAC_PLAN } from '@/lib/pricing'
+import MarketingNav from '@/components/layout/MarketingNav'
+import MarketingFooter from '@/components/layout/MarketingFooter'
 
-// ─── ANIMATION HELPERS ───────────────────────────────────────────────────────
 function FadeUp({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
@@ -28,45 +28,56 @@ function FadeUp({ children, delay = 0, className = '' }: { children: React.React
   )
 }
 
-// ─── DEMO ────────────────────────────────────────────────────────────────────
 const DEMO_QUESTION = {
-  text: 'What is the minimum fuel requirement for a day VFR flight?',
+  text: 'What is the minimum flight visibility required for VFR flight in Class G airspace below 1,200 ft AGL during the day?',
   options: [
-    { key: 'A', text: 'Enough fuel to reach the destination only' },
-    { key: 'B', text: 'Enough fuel to reach destination plus 30 minutes at normal cruise' },
-    { key: 'C', text: 'Enough fuel to reach destination plus 45 minutes at normal cruise' },
+    { key: 'A', text: '3 statute miles' },
+    { key: 'B', text: '1 statute mile' },
+    { key: 'C', text: '5 statute miles' },
   ],
   correct: 'B',
-  explanation: `✅ Correct!\n\n14 CFR 91.151 requires that you carry enough fuel to reach your first intended landing point, plus at least 30 minutes of fuel at normal cruise speed — for day VFR flights.\n\nThe 45-minute reserve applies to night VFR. Think of it this way: more darkness = more buffer. Day = 30 min, Night = 45 min.\n\nMemory trick: "30 by day, 45 at night — more darkness, fuel it right." ✈️`,
+  explanation: `Correct. 14 CFR 91.155 — In Class G airspace below 1,200 ft AGL during the day, VFR minimums are 1 SM visibility and clear of clouds. Above 1,200 ft AGL (but below 10,000 ft MSL), it becomes 1 SM with 500/1000/2000 cloud clearances. This is one of the most-tested airspace minimums on the FAA written.`,
   wrongExplanation: (picked: string) =>
-    `❌ Not quite — but this one trips up a lot of students!\n\nYou chose ${picked}. The correct answer is B.\n\n14 CFR 91.151 requires fuel to reach your destination PLUS 30 minutes at normal cruise speed for day VFR. The 45-minute rule is for night VFR.\n\nThink of it: "30 by day, 45 at night." The extra buffer at night accounts for reduced visibility and higher risk.\n\nMake sense? This is exactly how TARMAC teaches — not just "B is correct," but WHY.`,
+    `Not quite. You chose ${picked}. The correct answer is B — 1 statute mile.\n\n14 CFR 91.155 sets VFR minimums by airspace class. In Class G below 1,200 ft AGL during the day, only 1 SM and clear of clouds is required. The 3 SM rule applies in Class E and above. This is a common trap — memorize minimums by airspace class, not by feel.`,
 }
 
-// ─── FAQ ─────────────────────────────────────────────────────────────────────
+const VARIANT_EXAMPLES = [
+  { label: 'Direct recall', text: 'What is the minimum flight visibility for VFR flight in Class G airspace below 1,200 ft AGL during the day?' },
+  { label: 'Scenario application', text: 'You depart a non-towered airport at dusk in Class G airspace, 800 ft AGL, with 2 SM visibility. Are you legal to continue VFR?' },
+  { label: 'Comparison', text: 'Airspace A is Class G below 1,200 ft AGL. Airspace B is Class E starting at 700 ft AGL. Which requires greater visibility at 500 ft AGL, and why?' },
+]
+
 const FAQ_ITEMS = [
   {
-    q: 'Are these the actual FAA test questions?',
-    a: 'No — and that\'s intentional. The FAA changes question wording. If you memorize exact questions, you\'re gambling. TARMAC teaches you the underlying concepts across all 9 ACS knowledge areas so you can answer any version of a question, even one you\'ve never seen.',
+    q: 'Who is TARMAC for?',
+    a: 'Student pilots working toward their Private Pilot or Instrument Rating written test. Whether you\'re just starting ground school or a week from test day, the product adapts to where you are right now.',
   },
   {
-    q: 'How is this different from other test prep tools?',
-    a: 'Other tools show you a question, tell you the right answer, and move on. TARMAC gives you an AI that explains exactly WHY the answer is correct, what makes the other choices wrong, and lets you ask follow-up questions until you genuinely understand. It\'s a conversation — not a flashcard.',
+    q: 'Why does TARMAC generate questions instead of using a fixed bank?',
+    a: 'FAA testing is moving toward more dynamic, scenario-based questions, digitally presented and less reliant on a static, memorizable set. A fixed bank teaches you to recognize questions you\'ve already seen. TARMAC generates new scenarios, numbers, and wording from the same underlying knowledge, so you build the understanding to handle a question you\'ve never seen — because that\'s increasingly what the real test looks like.',
   },
   {
-    q: 'How long until I\'m test-ready?',
-    a: 'Most students are test-ready in 3–6 weeks with 20–30 questions per day. The best signal: when you\'re consistently 80%+ across all categories and you can explain WHY each answer is correct — not just which letter it is.\n\nNote: TARMAC is designed to work alongside your flight training, not replace it. You still need a CFI endorsement to take the FAA written.',
+    q: 'Is TARMAC affiliated with the FAA?',
+    a: 'No. TARMAC is not affiliated with, endorsed by, or approved by the FAA. Practice questions are FAA-style and built around current ACS standards and FAA source material — they are not official FAA test questions, and TARMAC cannot guarantee a passing score.',
   },
   {
-    q: 'Do you offer refunds?',
-    a: 'All purchases are final and non-refundable. We\'re confident TARMAC works — that\'s why we offer a 7-day free trial with full access before you\'re charged. Try it first, then decide.',
+    q: 'What\'s included in the membership?',
+    a: 'Private Pilot and Instrument Rating written test prep — AI-generated practice questions, novel-question mode, adaptive difficulty, spaced repetition, the 30-Day Runway, and full timed exam simulations. One membership, both exams.',
   },
   {
-    q: 'Can I cancel anytime?',
-    a: 'Yes. Cancel from Settings at any time. You keep access through the end of your billing period. No hoops, no fees.',
+    q: 'What happens after the 7-day free trial?',
+    a: "You're charged $29.99/month when the trial ends. Cancel any time before that in Settings — no charge, no questions asked.",
+  },
+  {
+    q: 'How do I cancel?',
+    a: 'Settings → Subscription & Billing → Manage Billing. That opens the Stripe portal where you can cancel instantly. You keep access through the end of your paid period.',
+  },
+  {
+    q: 'Does this replace ground school?',
+    a: "TARMAC covers the knowledge areas tested on the FAA Private Pilot and Instrument written exams, with AI explanations on every question. Most members use it as their primary written-test prep. You'll still need a CFI endorsement before taking the FAA test.",
   },
 ]
 
-// ─── COMPONENTS ──────────────────────────────────────────────────────────────
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false)
   return (
@@ -108,7 +119,7 @@ function DemoWidget() {
           <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />
           <span className="w-2.5 h-2.5 rounded-full bg-green-400/70" />
         </div>
-        <span className="text-xs text-white/30 font-mono">tarmac.study — live demo</span>
+        <span className="text-xs text-white/30 font-mono">tarmac.study — practice mode</span>
         <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(62,146,204,0.15)', color: '#5ab8f5' }}>Regulations</span>
       </div>
       <div className="p-6">
@@ -126,27 +137,31 @@ function DemoWidget() {
               <button key={opt.key} disabled={!!picked} onClick={() => setPicked(opt.key)}
                 className="w-full text-left p-3.5 rounded-xl flex items-start gap-3 transition-all hover:bg-white/8 disabled:cursor-default"
                 style={{ background: bg, border }}>
-                <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>{opt.key}</span>
+                <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
+                  style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>{opt.key}</span>
                 <span className="text-sm leading-relaxed transition-colors" style={{ color: textColor }}>{opt.text}</span>
                 {picked && opt.key === DEMO_QUESTION.correct && <CheckCircle className="w-4 h-4 text-green-400 ml-auto shrink-0 mt-0.5" />}
               </button>
             )
           })}
         </div>
-        {picked && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4 p-4 rounded-xl text-sm leading-relaxed whitespace-pre-line"
-            style={{
-              background: isCorrect ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
-              border: isCorrect ? '1px solid rgba(34,197,94,0.25)' : '1px solid rgba(239,68,68,0.25)',
-              color: 'rgba(255,255,255,0.8)'
-            }}>
-            {isCorrect ? DEMO_QUESTION.explanation : DEMO_QUESTION.wrongExplanation(picked)}
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {picked && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4 p-4 rounded-xl text-sm leading-relaxed whitespace-pre-line"
+              style={{
+                background: isCorrect ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+                border: isCorrect ? '1px solid rgba(34,197,94,0.25)' : '1px solid rgba(239,68,68,0.25)',
+                color: 'rgba(255,255,255,0.8)',
+              }}
+            >
+              {isCorrect ? DEMO_QUESTION.explanation : DEMO_QUESTION.wrongExplanation(picked)}
+            </motion.div>
+          )}
+        </AnimatePresence>
         {picked && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -155,16 +170,18 @@ function DemoWidget() {
             className="mt-5 text-center"
           >
             <Link href="/start" className="btn-gold inline-flex px-6 py-2.5 text-sm">
-              Get more questions free <ArrowRight className="w-4 h-4" />
+              Get full access free <ArrowRight className="w-4 h-4" />
             </Link>
           </motion.div>
+        )}
+        {!picked && (
+          <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.2)' }}>Pick an answer above</p>
         )}
       </div>
     </div>
   )
 }
 
-// ─── CONTACT FORM ─────────────────────────────────────────────────────────────
 function ContactForm() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
@@ -178,15 +195,9 @@ function ContactForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      if (res.ok) {
-        setStatus('sent')
-        setForm({ name: '', email: '', message: '' })
-      } else {
-        setStatus('error')
-      }
-    } catch {
-      setStatus('error')
-    }
+      if (res.ok) { setStatus('sent'); setForm({ name: '', email: '', message: '' }) }
+      else setStatus('error')
+    } catch { setStatus('error') }
   }
 
   return (
@@ -194,62 +205,38 @@ function ContactForm() {
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-white/50 mb-1.5">Name</label>
-          <input
-            type="text"
-            value={form.name}
-            onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-            placeholder="Your name"
-            required
+          <input type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+            placeholder="Your name" required
             className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:ring-1 focus:ring-[#5ab8f5]/50 transition-all"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-          />
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
         </div>
         <div>
           <label className="block text-xs font-medium text-white/50 mb-1.5">Email</label>
-          <input
-            type="email"
-            value={form.email}
-            onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-            placeholder="you@example.com"
-            required
+          <input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+            placeholder="you@example.com" required
             className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:ring-1 focus:ring-[#5ab8f5]/50 transition-all"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-          />
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
         </div>
       </div>
       <div>
         <label className="block text-xs font-medium text-white/50 mb-1.5">Message</label>
-        <textarea
-          value={form.message}
-          onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
-          placeholder="What's on your mind?"
-          required
-          rows={5}
+        <textarea value={form.message} onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
+          placeholder="What's on your mind?" required rows={5}
           className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:ring-1 focus:ring-[#5ab8f5]/50 transition-all resize-none"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-        />
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
       </div>
-      {status === 'error' && (
-        <p className="text-sm text-red-400">Something went wrong — try again or email us directly.</p>
-      )}
+      {status === 'error' && <p className="text-sm text-red-400">Something went wrong — try again or email us directly.</p>}
       {status === 'sent' ? (
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-green-400 font-medium"
-          style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}
-        >
+          style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
           <CheckCircle className="w-4 h-4 shrink-0" />
-          Got it — we&apos;ll be in touch soon.
+          Got it — we'll be in touch soon.
         </motion.div>
       ) : (
-        <button
-          type="submit"
-          disabled={status === 'sending'}
-          className="btn-gold px-7 py-3 text-sm font-bold disabled:opacity-60"
-        >
+        <button type="submit" disabled={status === 'sending'} className="btn-gold px-7 py-3 text-sm font-bold disabled:opacity-60">
           {status === 'sending'
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</>
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</>
             : <><Send className="w-4 h-4" /> Send Message</>}
         </button>
       )}
@@ -257,105 +244,111 @@ function ContactForm() {
   )
 }
 
-// ─── PAGE ─────────────────────────────────────────────────────────────────────
+const FEATURES = [
+  {
+    icon: <Sparkles className="w-5 h-5" />,
+    color: '#3E92CC',
+    label: 'AI-Generated Practice',
+    body: 'Every session pulls from the same verified FAA knowledge but generates new wording, numbers, and scenarios — not a fixed bank you can memorize your way through.',
+  },
+  {
+    icon: <RefreshCw className="w-5 h-5" />,
+    color: '#2ECC71',
+    label: 'New Questions, Every Session',
+    body: 'Come back tomorrow and the concept is the same — the question isn\'t. That\'s the difference between recognizing an answer and actually knowing the material.',
+  },
+  {
+    icon: <Brain className="w-5 h-5" />,
+    color: '#F39C12',
+    label: 'Understand Why',
+    body: 'Get one wrong and the AI breaks down the concept, the trap, and the source — not just which letter was correct.',
+  },
+  {
+    icon: <Layers className="w-5 h-5" />,
+    color: '#9B59B6',
+    label: 'Remember What You Learn',
+    body: 'Spaced repetition brings weak concepts back before you forget them, and lets the ones you\'ve mastered fade from rotation.',
+  },
+  {
+    icon: <Clock className="w-5 h-5" />,
+    color: '#E8593C',
+    label: 'Simulate the Test',
+    body: 'Full-length, timed exam simulations with fresh questions every attempt — so you walk in on test day having already handled the pressure.',
+  },
+  {
+    icon: <Plane className="w-5 h-5" />,
+    color: '#3E92CC',
+    label: 'The 30-Day Runway',
+    body: 'A structured arc from diagnostic to test-ready: build the foundation, apply it under pressure, then prove you can handle questions you\'ve never seen.',
+  },
+]
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: '#060e1f' }}>
+      <MarketingNav />
 
-      {/* ── Nav ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-10 py-4"
-        style={{ background: 'rgba(6,14,31,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <Image src="/logo-white.png" alt="TARMAC" width={30} height={30} />
-          <span className="text-base font-bold text-white tracking-tight">TARMAC</span>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full tracking-wider" style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>BETA</span>
-        </Link>
-        <div className="hidden md:flex items-center gap-8 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-          <a href="#why" className="hover:text-white transition-colors">Why TARMAC</a>
-          <a href="#demo" className="hover:text-white transition-colors">Try demo</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-          <Link href="/forum" className="hover:text-white transition-colors">Community</Link>
-          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/login" className="text-sm px-4 py-2 transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Log in</Link>
-          <Link href="/start" className="btn-gold text-sm px-4 py-2">Start Free</Link>
-        </div>
-      </nav>
-
-      {/* ── Hero ── */}
+      {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background image */}
         <div className="absolute inset-0">
-          <Image src="/hero-bg.png" alt="" fill className="object-cover object-center" priority />
+          <Image src="/formation.png" alt="" fill className="object-cover object-center" priority />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(6,14,31,0.65) 0%, rgba(6,14,31,0.5) 40%, rgba(6,14,31,0.85) 85%, #060e1f 100%)' }} />
         </div>
 
-        {/* Subtle grid overlay */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
-          backgroundSize: '80px 80px'
+          backgroundSize: '80px 80px',
         }} />
 
         <div className="relative max-w-4xl mx-auto px-6 pt-28 pb-20 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-xs font-semibold uppercase tracking-widest" style={{ background: 'rgba(255,182,39,0.12)', border: '1px solid rgba(255,182,39,0.25)', color: '#FFB627' }}>
-              FAA Private Pilot Written Test Prep
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-xs font-semibold uppercase tracking-widest"
+              style={{ background: 'rgba(255,182,39,0.12)', border: '1px solid rgba(255,182,39,0.25)', color: '#FFB627' }}>
+              Built for Private Pilot + Instrument Rating
             </div>
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight"
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-[1.08] mb-6 tracking-tight"
           >
-            Pass Your Written<br />
-            <span style={{ color: '#5ab8f5' }}>With Flying Colors.</span>
+            The FAA test is changing.<br />
+            <span style={{ color: '#5ab8f5' }}>Your study method should too.</span>
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-lg sm:text-xl max-w-xl mx-auto mb-10 leading-relaxed"
+            className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
             style={{ color: 'rgba(255,255,255,0.65)' }}
           >
-            1,400+ FAA questions. Get one wrong — AI explains exactly why, not just which letter is correct.
+            Static question banks train you to recognize answers you've already seen. TARMAC uses AI-generated practice questions and scenarios to train you for the ones you haven't.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6"
           >
             <Link href="/start" className="btn-gold text-base px-8 py-4 rounded-xl w-full sm:w-auto text-center justify-center font-bold">
-              Start 7-Day Free Trial
+              Start Training Free
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <a href="#demo"
+            <Link href="/how-it-works"
               className="text-sm px-8 py-4 rounded-xl font-semibold w-full sm:w-auto text-center transition-all"
               style={{ color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)' }}>
-              See how it works ↓
-            </a>
+              See how it works
+            </Link>
           </motion.div>
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            style={{ color: 'rgba(255,255,255,0.3)' }}
-            className="text-xs tracking-wide"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+            style={{ color: 'rgba(255,255,255,0.3)' }} className="text-xs tracking-wide"
           >
-            Cancel anytime
+            Cancel anytime · Not affiliated with the FAA
           </motion.p>
         </div>
 
-        {/* Scroll indicator */}
         <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
           animate={{ y: [0, 6, 0] }}
@@ -365,13 +358,13 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ── Stats bar ── */}
+      {/* Stats bar */}
       <section style={{ background: '#0d1a38', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <FadeUp>
           <div className="max-w-4xl mx-auto px-6 py-8 grid grid-cols-3 gap-6 text-center">
             {[
-              { value: '1,400+', label: 'Practice questions' },
-              { value: '9', label: 'ACS knowledge areas' },
+              { value: '2', label: 'Private + Instrument' },
+              { value: 'New', label: 'Questions every session' },
               { value: '$175', label: 'Cost of one FAA retake' },
             ].map(s => (
               <div key={s.label}>
@@ -383,208 +376,49 @@ export default function LandingPage() {
         </FadeUp>
       </section>
 
-      {/* ── Question bank + AI ── */}
+      {/* The problem */}
       <section className="py-24 px-6" style={{ background: '#060e1f' }}>
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto text-center">
+          <FadeUp>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>The old way</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-snug mb-5">
+              Built around memorization.
+            </h2>
+            <p className="text-base leading-relaxed mb-3" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              Traditional written-test prep teaches you to recognize a fixed question, remember the answer, and repeat it until test day.
+            </p>
+            <p className="text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              But if the wording changes, the numbers change, or the scenario changes — recognition isn't enough. That's the problem TARMAC is built to solve.
+            </p>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-24 px-6" style={{ background: '#0d1a38' }}>
+        <div className="max-w-5xl mx-auto">
           <FadeUp>
             <div className="text-center mb-14">
-              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>How it works</p>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>How TARMAC trains you</p>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-snug mb-4">
-                A question bank that<br />
-                <span style={{ color: '#5ab8f5' }}>explains your mistakes.</span>
+                Train the concept.<br />
+                <span style={{ color: '#5ab8f5' }}>Not the question.</span>
               </h2>
               <p className="text-base max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                Most question banks show you the right answer and move on. TARMAC gives you an AI that breaks down exactly what you got wrong — the concept, the trap, and what to remember.
+                Everything built around one goal — being ready for a question you've never seen.
               </p>
             </div>
           </FadeUp>
-
-          <div className="grid md:grid-cols-3 gap-4 mb-10">
-            {[
-              {
-                step: '01',
-                icon: <Target className="w-5 h-5" />,
-                color: '#FFB627',
-                title: 'Answer a question',
-                body: '1,400+ FAA-style questions across every knowledge area — regulations, weather, airspace, weight & balance, and more.',
-              },
-              {
-                step: '02',
-                icon: <AlertTriangle className="w-5 h-5" />,
-                color: '#ef4444',
-                title: 'Miss one',
-                body: 'Wrong answers are flagged and tracked. Your accuracy by category updates live — you always know exactly where your gaps are.',
-              },
-              {
-                step: '03',
-                icon: <MessageSquare className="w-5 h-5" />,
-                color: '#5ab8f5',
-                title: 'AI breaks it down',
-                body: 'Not "the answer is B." A full explanation: why you were wrong, what makes the right answer correct, and the memory hook to make it stick.',
-              },
-            ].map((s, i) => (
-              <FadeUp key={s.step} delay={i * 0.1}>
-                <div className="rounded-2xl p-6 h-full" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: s.color + '18', color: s.color }}>
-                      {s.icon}
-                    </div>
-                    <span className="text-2xl font-extrabold" style={{ color: 'rgba(255,255,255,0.07)' }}>{s.step}</span>
-                  </div>
-                  <h3 className="font-bold text-white mb-2 text-sm">{s.title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>{s.body}</p>
-                </div>
-              </FadeUp>
-            ))}
-          </div>
-
-          <FadeUp delay={0.35}>
-            <div className="rounded-2xl p-6 md:p-8" style={{ background: 'rgba(90,184,245,0.05)', border: '1px solid rgba(90,184,245,0.15)' }}>
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-5">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(90,184,245,0.12)', color: '#5ab8f5' }}>
-                  <MessageSquare className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-white mb-1">Then ask follow-up questions.</p>
-                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                    &ldquo;Why 30 minutes and not 45?&rdquo; &ldquo;What changes at night?&rdquo; &ldquo;Can you give me an example?&rdquo; — The AI tutor doesn&apos;t move on until you actually understand it.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ── The one difference ── */}
-      <section style={{ background: '#060e1f' }} className="py-24 px-6">
-        <FadeUp>
-          <div className="max-w-3xl mx-auto text-center">
-            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: '#FFB627' }}>The TARMAC difference</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-snug mb-6">
-              Most practice tools expose you to questions.
-              <br />
-              <span style={{ color: '#5ab8f5' }}>TARMAC makes sure you&apos;re ready for all of them.</span>
-            </h2>
-            <p className="text-base leading-relaxed max-w-2xl mx-auto mb-5" style={{ color: 'rgba(255,255,255,0.55)' }}>
-              Random question banks don&apos;t know what you don&apos;t know. TARMAC does. It tracks your accuracy across every ACS knowledge area, finds exactly where your gaps are, and routes you back to those concepts — repeatedly — until they stop being gaps.
-            </p>
-            <p className="text-base leading-relaxed max-w-2xl mx-auto mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              By the time you sit for the FAA written, you&apos;ve already encountered every concept that can appear on it — multiple times, from multiple angles, in the areas where you were weakest. The exam doesn&apos;t feel new. It feels familiar. That&apos;s not luck. That&apos;s what a structured training system produces.
-            </p>
-            <p className="text-sm font-semibold tracking-wide" style={{ color: '#FFB627' }}>
-              Walk in knowing you&apos;ve already beaten the hard parts.
-            </p>
-          </div>
-        </FadeUp>
-      </section>
-
-      {/* ── Why students fail ── */}
-      <section id="why" className="py-24 px-6" style={{ background: '#0d1a38' }}>
-        <div className="max-w-5xl mx-auto">
-          <FadeUp>
-            <div className="text-center mb-16">
-              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Why most students fail</p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white">The written test has a 20% failure rate.<br className="hidden sm:block" /> Here's the real reason.</h2>
-            </div>
-          </FadeUp>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <FadeUp delay={0.1}>
-              <div className="rounded-2xl p-7 h-full" style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                <div className="flex items-center gap-2.5 mb-6">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>
-                    <AlertTriangle className="w-4 h-4 text-red-400" />
-                  </div>
-                  <span className="font-bold text-white text-sm">How most students study</span>
-                </div>
-                <ul className="space-y-4">
-                  {[
-                    'See a question → pick an answer → move on',
-                    'Get it wrong → see "Correct answer: B" → move on',
-                    'Practice 200 questions, understand maybe 60 of them',
-                    'Test day: question is worded differently → panic',
-                    'Fail. Pay $175 to retake. Repeat.',
-                  ].map(t => (
-                    <li key={t} className="flex items-start gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                      <span className="text-red-400 font-bold shrink-0 mt-0.5 text-base leading-none">✗</span>{t}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </FadeUp>
-
-            <FadeUp delay={0.2}>
-              <div className="rounded-2xl p-7 h-full" style={{ background: 'rgba(62,146,204,0.06)', border: '1px solid rgba(62,146,204,0.2)' }}>
-                <div className="flex items-center gap-2.5 mb-6">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(62,146,204,0.15)' }}>
-                    <Brain className="w-4 h-4 text-[#5ab8f5]" />
-                  </div>
-                  <span className="font-bold text-white text-sm">How TARMAC students study</span>
-                </div>
-                <ul className="space-y-4">
-                  {[
-                    'Answer a question → AI explains the full concept',
-                    'Ask "why 30 minutes and not 45?" → get a real answer',
-                    'Practice 200 questions, understand all 200 of them',
-                    'Test day: question is worded differently → no problem',
-                    'Pass. Done. On to the ramp.',
-                  ].map(t => (
-                    <li key={t} className="flex items-start gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                      <CheckCircle className="w-4 h-4 text-[#5ab8f5] shrink-0 mt-0.5" />{t}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </FadeUp>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features ── */}
-      <section className="py-24 px-6" style={{ background: '#060e1f' }}>
-        <div className="max-w-5xl mx-auto">
-          <FadeUp>
-            <div className="text-center mb-16">
-              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>What you get</p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Everything built around one goal</h2>
-              <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>You walk out of that test with a passing score.</p>
-            </div>
-          </FadeUp>
-
-          <div className="grid md:grid-cols-2 gap-px rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-            {[
-              {
-                icon: <MessageSquare className="w-5 h-5" />,
-                color: '#5ab8f5',
-                title: 'An AI you can actually talk to',
-                body: 'Not a tooltip. Not a paragraph. A real back-and-forth conversation about every question. Ask follow-ups. Challenge the answer. Keep going until the concept clicks. Like a patient tutor who never gets frustrated.',
-              },
-              {
-                icon: <TrendingUp className="w-5 h-5" />,
-                color: '#FFB627',
-                title: 'Knows exactly where you\'re weak',
-                body: 'TARMAC tracks your accuracy across all 9 ACS knowledge areas in real time. When Weather Theory is at 54%, you see it. Your next session routes you back there automatically. No more studying what you already know.',
-              },
-              {
-                icon: <Target className="w-5 h-5" />,
-                color: '#5ab8f5',
-                title: '1,400+ questions — never run dry',
-                body: 'A massive bank of FAA-style questions across every topic the test can throw at you. Regulations, airspace, weather, weight & balance, navigation — all of it. You\'ll never run out of material before test day.',
-              },
-              {
-                icon: <Zap className="w-5 h-5" />,
-                color: '#FFB627',
-                title: 'Full exam simulation',
-                body: '60 questions. 2.5-hour timer. No AI assist during the exam — just like the real thing. Then review every answer with the AI afterward. By test day, you\'ve already sat through the experience a dozen times.',
-              },
-            ].map((f, i) => (
-              <FadeUp key={f.title} delay={i * 0.08}>
-                <div className="p-8 h-full" style={{ background: '#060e1f' }}>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-5" style={{ background: f.color + '18', color: f.color }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-y rounded-2xl overflow-hidden"
+            style={{ border: '1px solid rgba(255,255,255,0.07)', divideColor: 'rgba(255,255,255,0.07)' }}>
+            {FEATURES.map((f, i) => (
+              <FadeUp key={f.label} delay={i * 0.07}>
+                <div className="p-8 h-full" style={{ background: '#0d1a38' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-5"
+                    style={{ background: f.color + '18', color: f.color }}>
                     {f.icon}
                   </div>
-                  <h3 className="font-bold text-white mb-2 text-base">{f.title}</h3>
+                  <h3 className="font-bold text-white mb-2 text-base">{f.label}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>{f.body}</p>
                 </div>
               </FadeUp>
@@ -593,203 +427,125 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Live Demo ── */}
-      <section id="demo" className="py-24 px-6 relative overflow-hidden" style={{ background: '#0d1a38' }}>
+      {/* Demo */}
+      <section id="demo" className="py-24 px-6 relative overflow-hidden" style={{ background: '#060e1f' }}>
         <div className="absolute inset-0">
           <Image src="/aerial-view.jpeg" alt="" fill className="object-cover object-center opacity-20" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #0d1a38, rgba(13,26,56,0.7), #0d1a38)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #060e1f, rgba(6,14,31,0.7), #060e1f)' }} />
         </div>
         <div className="max-w-2xl mx-auto relative">
           <FadeUp>
             <div className="text-center mb-10">
-              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Live demo</p>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Same concept. Different question.</p>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Try it right now</h2>
-              <p className="text-base" style={{ color: 'rgba(255,255,255,0.45)' }}>Answer a real question. See exactly how the AI explains it. No signup.</p>
+              <p className="text-base" style={{ color: 'rgba(255,255,255,0.45)' }}>Answer a real FAA-style question. See exactly how the AI explains it. No signup.</p>
             </div>
           </FadeUp>
+
+          <FadeUp delay={0.1} className="mb-8">
+            <div className="grid sm:grid-cols-3 gap-3">
+              {VARIANT_EXAMPLES.map(v => (
+                <div key={v.label} className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: '#5ab8f5' }}>{v.label}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{v.text}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              All three test the same regulation — 14 CFR 91.155 — from a different angle. None of them reward memorizing the first one.
+            </p>
+          </FadeUp>
+
           <FadeUp delay={0.15}>
             <DemoWidget />
           </FadeUp>
         </div>
       </section>
 
-      {/* ── Pricing ── */}
+      {/* What TARMAC does */}
+      <section className="py-24 px-6" style={{ background: '#0d1a38' }}>
+        <div className="max-w-4xl mx-auto">
+          <FadeUp>
+            <div className="text-center mb-14">
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Why this works</p>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-snug mb-4">
+                Train the way<br />
+                <span style={{ color: '#5ab8f5' }}>you'll be tested.</span>
+              </h2>
+              <p className="text-base max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                Built on retrieval practice, spaced review, and variable practice — not passive reading.
+              </p>
+            </div>
+          </FadeUp>
+          <div className="grid grid-cols-1 sm:grid-cols-3 divide-x rounded-2xl overflow-hidden"
+            style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+            {[
+              { icon: <Brain className="w-5 h-5" />, color: '#3E92CC', title: 'Retrieval, not rereading', body: "You don't learn by rereading a question. TARMAC makes you pull the answer from memory every time, then explains the concept, the trap, and the source when you miss it." },
+              { icon: <RefreshCw className="w-5 h-5" />, color: '#2ECC71', title: 'Spaced, not crammed', body: 'Concepts you\'re shaky on come back on a schedule instead of all at once. The ones you\'ve locked in fade out of rotation automatically.' },
+              { icon: <Clock className="w-5 h-5" />, color: '#FFB627', title: 'Full timed simulations', body: 'Simulate the real FAA test with a fresh question set every attempt — timer, full coverage, no repeats to memorize.' },
+            ].map((f, i) => (
+              <FadeUp key={f.title} delay={i * 0.07}>
+                <div className="p-8 h-full" style={{ background: '#0d1a38' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-5"
+                    style={{ background: f.color + '18', color: f.color }}>
+                    {f.icon}
+                  </div>
+                  <h3 className="font-bold text-white mb-2 text-sm">{f.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>{f.body}</p>
+                </div>
+              </FadeUp>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
       <section id="pricing" className="py-24 px-6" style={{ background: '#060e1f' }}>
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-lg mx-auto">
           <FadeUp>
             <div className="text-center mb-14">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Pricing</p>
-              {isBeta ? (
-                <>
-                  <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Try it free for 7 days.</h2>
-                  <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                    No charge until your trial ends. Cancel anytime before then.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Less than one failed retake.</h2>
-                  <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                    The FAA charges $175 every time you retake the written. Pick a plan once.
-                  </p>
-                </>
-              )}
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Private + Instrument included.</h2>
+              <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                One membership. No tiers. Both written tests.
+              </p>
             </div>
           </FadeUp>
-
-          {isBeta ? (
-            /* ── Beta: single plan ── */
-            <FadeUp delay={0.1}>
-              <div className="max-w-md mx-auto">
-                <div className="rounded-2xl p-8 relative" style={{ background: 'rgba(255,182,39,0.06)', border: '2px solid rgba(255,182,39,0.5)' }}>
-                  <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
-                    <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: '#FFB627', color: '#0A1628' }}>
-                      BETA — Limited Offer
-                    </span>
-                  </div>
-                  <div className="text-center mt-2 mb-6">
-                    <div className="text-xs font-bold uppercase tracking-widest text-[#FFB627] mb-3">{BETA_PLAN.name}</div>
-                    <div className="flex items-end justify-center gap-1 mb-1">
-                      <span className="text-5xl font-extrabold text-white">{BETA_PLAN.price}</span>
-                      <span className="text-white/40 text-lg mb-1">{BETA_PLAN.period}</span>
-                    </div>
-                    <p className="text-sm text-green-400 font-semibold mt-1">7 days free — no charge until trial ends</p>
-                  </div>
-                  <ul className="space-y-3 mb-8">
-                    {BETA_PLAN.features.map(f => (
-                      <li key={f} className="flex items-start gap-3 text-sm text-white/75">
-                        <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/start" className="btn-gold block w-full text-center py-4 rounded-xl font-bold text-base">
-                    Start Free Trial
-                  </Link>
-                  <p className="text-center text-xs text-white/25 mt-3">
-                    Cancel before 7 days — you won&apos;t be charged
-                  </p>
+          <FadeUp delay={0.1}>
+            <div className="rounded-2xl p-8 relative" style={{ background: 'rgba(255,182,39,0.06)', border: '2px solid rgba(255,182,39,0.5)' }}>
+              <div className="text-center mb-6">
+                <div className="text-xs font-bold uppercase tracking-widest text-[#FFB627] mb-3">{TARMAC_PLAN.name}</div>
+                <div className="flex items-end justify-center gap-1 mb-1">
+                  <span className="text-5xl font-extrabold text-white">{TARMAC_PLAN.price}</span>
+                  <span className="text-white/40 text-lg mb-1">{TARMAC_PLAN.period}</span>
                 </div>
+                <p className="text-sm text-green-400 font-semibold mt-1">7 days free — no charge until trial ends</p>
               </div>
-            </FadeUp>
-          ) : (
-            /* ── Full pricing: 4 plans ── */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-              <FadeUp delay={0.05}>
-                <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div className="mb-6">
-                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Free Trial</div>
-                    <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-3xl font-extrabold text-white">$0</span>
-                      <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>forever</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-2.5 flex-1 mb-6">
-                    {['7 days free', 'Full access to all features', 'Cancel before day 7, pay nothing'].map(f => (
-                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                        <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.18)' }} />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/start" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
-                    Start Free
-                  </Link>
-                </div>
-              </FadeUp>
-              <FadeUp delay={0.1}>
-                <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div className="mb-6">
-                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Quick Prep</div>
-                    <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-3xl font-extrabold text-white">$69</span>
-                      <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>one-time</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-2.5 flex-1 mb-6">
-                    {['All 1,400+ questions', 'AI tutor on every question', 'Progress by knowledge area', 'Timed practice exams'].map(f => (
-                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                        <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }} />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/start?plan=quick_prep" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
-                    Get Quick Prep
-                  </Link>
-                </div>
-              </FadeUp>
-              <FadeUp delay={0.15}>
-                <div className="rounded-2xl p-6 flex flex-col h-full relative" style={{ background: '#0c1f4a', border: '2px solid #FFB627' }}>
-                  <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
-                    <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: '#FFB627', color: '#0A1628' }}>Most Popular</span>
-                  </div>
-                  <div className="mb-6 mt-3">
-                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Tarmac Membership</div>
-                    <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-3xl font-extrabold text-white">$89</span>
-                      <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.35)' }}>one-time</span>
-                    </div>
-                    <p className="text-xs mt-1 font-medium" style={{ color: '#FFB627' }}>90 days · Half the cost of failing</p>
-                  </div>
-                  <ul className="space-y-2.5 flex-1 mb-6">
-                    {['All 1,400+ questions', 'AI tutor — unlimited follow-ups', 'Progress by knowledge area', 'Unlimited timed exams', 'FAA supplement figures'].map(f => (
-                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.82)' }}>
-                        <CheckCircle className="w-3.5 h-3.5 shrink-0 text-[#FFB627]" />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/start?plan=study_pass" className="btn-gold block text-center py-3 rounded-xl font-bold text-sm">Get Tarmac Membership — $89</Link>
-                </div>
-              </FadeUp>
-              <FadeUp delay={0.2}>
-                <div className="rounded-2xl p-6 flex flex-col h-full" style={{ background: '#0d1a38', border: '1px solid rgba(90,184,245,0.22)' }}>
-                  <div className="mb-6">
-                    <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#5ab8f5' }}>Founding Member</div>
-                    <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-3xl font-extrabold text-white">$199</span>
-                      <span className="text-sm ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>one-time</span>
-                    </div>
-                    <p className="text-xs mt-1 font-medium" style={{ color: '#5ab8f5' }}>Lifetime access</p>
-                  </div>
-                  <ul className="space-y-2.5 flex-1 mb-2">
-                    {['Everything in Tarmac Membership', 'Lifetime access', 'Future ratings included†', 'Price locks in now'].map(f => (
-                      <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                        <CheckCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#5ab8f5' }} />{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.2)' }}>Price increases to $299 at Instrument launch.</p>
-                  <Link href="/start?plan=founding_member" className="block text-center py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'rgba(90,184,245,0.1)', border: '1px solid rgba(90,184,245,0.25)', color: '#5ab8f5' }}>
-                    Get Founding Member
-                  </Link>
-                </div>
-              </FadeUp>
-            </div>
-          )}
-
-          <FadeUp delay={0.25}>
-            {!isBeta && (
-              <p className="text-center mt-6 text-sm" style={{ color: 'rgba(255,255,255,0.22)' }}>
-                Need flexibility?{' '}
-                <Link href="/start?plan=monthly" className="underline hover:text-white/40 transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  $44.99/mo — cancel anytime
-                </Link>
+              <ul className="space-y-3 mb-8">
+                {TARMAC_PLAN.features.map(f => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-white/75">
+                    <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />{f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/start" className="btn-gold block w-full text-center py-4 rounded-xl font-bold text-base">
+                Start Free Trial
+              </Link>
+              <p className="text-center text-xs text-white/25 mt-3">
+                Cancel before 7 days — you won&apos;t be charged
               </p>
-            )}
-            <p className="text-center text-xs mt-3" style={{ color: 'rgba(255,255,255,0.15)' }}>
-              {isBeta
-                ? 'Beta pricing. Not affiliated with the FAA.'
-                : '†Instrument, Commercial & CFI prep coming. Founding members get access at no extra cost. All one-time sales final. Not affiliated with the FAA.'}
-            </p>
+            </div>
           </FadeUp>
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section className="py-24 px-6" style={{ background: '#0d1a38' }}>
+      {/* FAQ */}
+      <section id="faq" className="py-24 px-6" style={{ background: '#0d1a38' }}>
         <div className="max-w-2xl mx-auto">
           <FadeUp>
             <div className="text-center mb-12">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>FAQ</p>
-              <h2 className="text-3xl font-extrabold text-white">Questions</h2>
+              <h2 className="text-3xl font-extrabold text-white">Common questions</h2>
             </div>
           </FadeUp>
           <FadeUp delay={0.1}>
@@ -798,13 +554,13 @@ export default function LandingPage() {
             </div>
             <p className="text-center text-sm mt-6" style={{ color: 'rgba(255,255,255,0.3)' }}>
               Something else?{' '}
-              <a href="mailto:mewing713@gmail.com" className="text-[#5ab8f5] hover:underline">Email us</a>
+              <a href="#contact" className="text-[#5ab8f5] hover:underline">Get in touch</a>
             </p>
           </FadeUp>
         </div>
       </section>
 
-      {/* ── Contact ── */}
+      {/* Contact */}
       <section id="contact" className="py-24 px-6" style={{ background: '#060e1f' }}>
         <div className="max-w-2xl mx-auto">
           <FadeUp>
@@ -812,7 +568,7 @@ export default function LandingPage() {
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Get in touch</p>
               <h2 className="text-3xl font-extrabold text-white mb-3">Have a question?</h2>
               <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Whether it&apos;s about pricing, your account, or feedback — we read everything.
+                Pricing, your account, or feedback — we read everything.
               </p>
             </div>
           </FadeUp>
@@ -824,26 +580,27 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Final CTA ── */}
+      {/* Final CTA */}
       <section className="py-32 px-6 relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/mountains.jpeg" alt="" fill className="object-cover object-center" priority={false} />
+          <Image src="/mountains.jpeg" alt="" fill className="object-cover object-center" />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #0d1a38, rgba(5,12,40,0.6) 30%, rgba(5,12,40,0.6) 70%, #060e1f)' }} />
         </div>
         <FadeUp>
           <div className="max-w-lg mx-auto text-center relative">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-7" style={{ background: 'rgba(90,184,245,0.12)', border: '1px solid rgba(90,184,245,0.2)' }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-7"
+              style={{ background: 'rgba(90,184,245,0.12)', border: '1px solid rgba(90,184,245,0.2)' }}>
               <Plane className="w-7 h-7 text-[#5ab8f5]" />
             </div>
             <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-5 leading-tight">
-              The ramp is waiting.<br />
-              <span style={{ color: '#FFB627' }}>The test is next.</span>
+              Don't memorize the test.<br />
+              <span style={{ color: '#FFB627' }}>Prepare for what's next.</span>
             </h2>
             <p className="text-lg mb-9 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-              Start your 7-day free trial. Full access to every question, the AI tutor, and timed exams — cancel anytime before day 7 and pay nothing.
+              Start your 7-day free trial. Private Pilot and Instrument written test prep, built for questions you haven't seen yet.
             </p>
             <Link href="/start" className="btn-gold text-base px-10 py-4 rounded-xl inline-flex items-center gap-2">
-              Start Practicing Free
+              Start Free Trial
               <ArrowRight className="w-5 h-5" />
             </Link>
             <p className="mt-4 text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>No credit card. Cancel anytime.</p>
@@ -851,29 +608,7 @@ export default function LandingPage() {
         </FadeUp>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="py-8 px-6" style={{ background: '#060e1f', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
-          <div className="flex items-center gap-2.5">
-            <Image src="/logo-white.png" alt="TARMAC" width={26} height={26} />
-            <span className="font-bold text-white text-sm">TARMAC</span>
-            <span className="text-xs ml-1" style={{ color: 'rgba(255,255,255,0.2)' }}>© {new Date().getFullYear()}</span>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            <a href="#why" className="hover:text-white/60 transition-colors">Why TARMAC</a>
-            <a href="#pricing" className="hover:text-white/60 transition-colors">Pricing</a>
-            <a href="mailto:mewing713@gmail.com" className="hover:text-white/60 transition-colors">Support</a>
-            <Link href="/terms" className="hover:text-white/60 transition-colors">Terms</Link>
-            <Link href="/privacy" className="hover:text-white/60 transition-colors">Privacy</Link>
-            <Link href="/partners" className="hover:text-white/60 transition-colors">Creator Program</Link>
-            <a href="https://www.instagram.com/tarmac_writtentestprep/" target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors flex items-center gap-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
-              Instagram
-            </a>
-          </div>
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.18)' }}>Legion Systems LLC · Not affiliated with the FAA. Results not guaranteed.</p>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   )
 }

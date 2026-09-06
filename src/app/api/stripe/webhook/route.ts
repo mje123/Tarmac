@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const periodEndTs = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
           if (periodEndTs) periodEnd = new Date(periodEndTs * 1000).toISOString()
-          subStatus = sub.status === 'trialing' ? 'trialing' : 'study_pass'
+          subStatus = sub.status === 'trialing' ? 'trialing' : 'tarmac_member'
 
           // Store promo code in subscription metadata so invoice.payment_succeeded can track it
           const code = await extractPromoCode(stripe, session)
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
         const sub = event.data.object as Stripe.Subscription
         const customerId = sub.customer as string
         const isActive = sub.status === 'active' || sub.status === 'trialing'
-        const newStatus = sub.status === 'trialing' ? 'trialing' : (sub.status === 'active' ? 'study_pass' : 'free')
+        const newStatus = sub.status === 'trialing' ? 'trialing' : (sub.status === 'active' ? 'tarmac_member' : 'free')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const periodEndTs = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
         const periodEnd = periodEndTs ? new Date(periodEndTs * 1000).toISOString() : null

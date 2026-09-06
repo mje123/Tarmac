@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,14 +11,28 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { data: profile } = await supabase
-      .from('users').select('stripe_customer_id').eq('id', user.id).single()
+      .from('users').select('stripe_customer_id, email').eq('id', user.id).single()
 
-    if (!profile?.stripe_customer_id) {
-      return NextResponse.json({ error: 'No billing account found' }, { status: 400 })
+    let customerId = profile?.stripe_customer_id
+
+    // Fallback: look up by email if no customer ID saved in DB
+    if (!customerId && (profile?.email || user.email)) {
+      const email = profile?.email || user.email!
+      const existing = await stripe.customers.list({ email, limit: 1 })
+      if (existing.data.length > 0) {
+        customerId = existing.data[0].id
+        // Save it back so future calls are fast
+        const admin = createAdminClient()
+        await admin.from('users').update({ stripe_customer_id: customerId }).eq('id', user.id)
+      }
+    }
+
+    if (!customerId) {
+      return NextResponse.json({ error: 'No billing account found. Contact support@tarmac.study' }, { status: 400 })
     }
 
     const session = await stripe.billingPortal.sessions.create({
-      customer: profile.stripe_customer_id,
+      customer: customerId,
       return_url: 'https://tarmac.study/settings',
     })
 

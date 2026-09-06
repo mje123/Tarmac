@@ -66,22 +66,22 @@ export default function UpgradeModal({
 
             <div className="p-6">
               <div className="mb-5">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#FFB627] mb-1.5">Beta — 7-Day Free Trial</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-[#FFB627] mb-1.5">7-Day Free Trial</div>
                 <h2 className="text-xl font-bold text-white leading-snug">
                   Start free. Pass on your first try.
                 </h2>
                 <p className="text-sm text-white/45 mt-1">
                   Try everything free for 7 days — no charge until your trial ends.
-                  Then just <span className="text-[#FFB627] font-semibold">$14.99/mo</span>. Cancel anytime.
+                  Then just <span className="text-[#FFB627] font-semibold">$29.99/mo</span>. Cancel anytime.
                 </p>
               </div>
 
               <div className="space-y-2 mb-5">
                 {[
-                  'All 1,400+ FAA questions — unlimited practice',
+                  'AI-generated practice — unlimited, never a fixed bank',
                   'AI tutor explains every wrong answer',
                   'Full 60-question timed practice exams',
-                  'Real-time progress across all 9 knowledge areas',
+                  'Private + Instrument both included',
                   '7-day free trial — no charge until trial ends',
                 ].map(f => (
                   <div key={f} className="flex items-center gap-2.5">
@@ -118,7 +118,7 @@ export default function UpgradeModal({
               </button>
 
               <p className="text-center text-[10px] text-white/25 mt-2">
-                $14.99/mo charged after trial. By starting, you agree to our <a href="/terms" target="_blank" className="underline text-white/35">billing terms</a>.
+                $29.99/mo charged after trial. By starting, you agree to our <a href="/terms" target="_blank" className="underline text-white/35">billing terms</a>.
               </p>
             </div>
           </div>

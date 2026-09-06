@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const body = await request.json()
-  const { message, page } = body
+  const { message, category, page } = body
 
   if (!message?.trim()) {
     return NextResponse.json({ error: 'Message required' }, { status: 400 })
@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
   const { error } = await admin.from('suggestions').insert({
     user_id: user?.id ?? null,
     email: user?.email ?? null,
-    message: message.trim(),
+    message: message.trim().slice(0, 1000),
+    category: category ?? 'other',
     page: page ?? null,
   })
 

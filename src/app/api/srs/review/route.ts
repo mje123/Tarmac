@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { FEATURES } from '@/lib/features'
-
-function nextInterval(repetitions: number, intervalDays: number, easeFactor: number, correct: boolean) {
-  if (!correct) return { interval: 1, ease: easeFactor, reps: 0 }
-  let interval: number
-  if (repetitions === 0) interval = 1
-  else if (repetitions === 1) interval = 3
-  else interval = Math.round(intervalDays * easeFactor)
-  const ease = Math.max(1.3, easeFactor + (correct ? 0.1 : -0.2))
-  return { interval, ease, reps: repetitions + 1 }
-}
+import { computeNextInterval } from '@/lib/spacedRepetition'
 
 export async function POST(request: NextRequest) {
   if (!FEATURES.SRS) return NextResponse.json({ ok: false })
@@ -33,7 +24,7 @@ export async function POST(request: NextRequest) {
     const interval = existing?.interval_days ?? 1
     const ease = existing?.ease_factor ?? 2.5
 
-    const next = nextInterval(reps, interval, ease, correct)
+    const next = computeNextInterval(reps, interval, ease, correct)
     const due = new Date()
     due.setDate(due.getDate() + next.interval)
 

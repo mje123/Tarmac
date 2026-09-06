@@ -5,75 +5,75 @@ const weeks = [
   {
     number: 1,
     days: 'Days 1–7',
-    theme: 'Get Your Bearings',
+    theme: 'Diagnostic & Foundation',
     color: '#3E92CC',
     bg: 'rgba(62,146,204,0.08)',
     border: 'rgba(62,146,204,0.2)',
     badgeBg: 'rgba(62,146,204,0.15)',
     dailyTime: '45 min/day',
-    goal: 'See everything once before you try to master anything. No pressure on score — just build familiarity.',
+    goal: 'Find your real starting point first, then build the concepts you\'re actually missing — not the ones you already know.',
     features: [
-      { icon: Eye, label: 'Read-Through Mode', desc: 'Start here. Question and correct answer shown together. Run through All Topics and just absorb.' },
+      { icon: Eye, label: 'Read-Through Mode', desc: 'Start here. Question and correct answer shown together. Run through All Topics to build a first pass of familiarity — not mastery.' },
       { icon: Bookmark, label: 'Save as you go', desc: 'Anything that makes zero sense — save it immediately. You\'ll revisit it with fresh eyes.' },
       { icon: Bot, label: 'AI Tutor', desc: 'Hit a concept you can\'t picture at all? Ask the AI before moving on. Don\'t let confusion compound.' },
     ],
     focus: ['Regulations', 'Airspace', 'Weather Theory'],
-    focusNote: 'These three categories make up nearly half the exam. Spend extra time here in Read-Through.',
-    checkpoint: 'Checkpoint: You\'ve seen every question type at least once.',
+    focusNote: 'These three categories make up nearly half the exam. Spend extra time here.',
+    checkpoint: 'Checkpoint: You understand the concept behind every question type — not just the answer.',
   },
   {
     number: 2,
     days: 'Days 8–14',
-    theme: 'Start Testing Yourself',
+    theme: 'Application',
     color: '#8B5CF6',
     bg: 'rgba(139,92,246,0.08)',
     border: 'rgba(139,92,246,0.2)',
     badgeBg: 'rgba(139,92,246,0.15)',
     dailyTime: '60 min/day',
-    goal: 'Switch from reading to doing. Practice Mode forces you to commit to an answer — that\'s where real learning happens.',
+    goal: 'Switch from reading to retrieval. Practice Mode forces you to commit to an answer and apply the concept — that\'s where real learning happens.',
     features: [
-      { icon: BookOpen, label: 'Practice Mode', desc: 'Go category by category. Answer questions, get them wrong, understand why. The explanation is the lesson.' },
+      { icon: BookOpen, label: 'Practice Mode', desc: 'Go category by category. Answer questions, get them wrong, understand why. The explanation is the lesson, not the letter.' },
       { icon: Bookmark, label: 'Save everything you miss', desc: 'Wrong answer? Save it. Guessed right but not sure why? Save it. Build your personal study list.' },
-      { icon: Bot, label: 'AI Tutor', desc: 'Still use it. Use it on every wrong answer until you truly get it — not just memorize it.' },
+      { icon: Bot, label: 'AI Tutor', desc: 'Use it on every wrong answer until you understand the concept — not until you\'ve memorized this one wording.' },
     ],
     focus: ['Aircraft Performance', 'Navigation', 'Weight & Balance'],
     focusNote: 'The calculation-heavy topics. Work through the formulas slowly — don\'t just save and skip.',
-    checkpoint: 'Checkpoint: Hitting 55%+ in Practice Mode. Saving questions consistently.',
+    checkpoint: 'Checkpoint: Hitting 55%+ in Practice Mode across mixed scenarios, not just repeated ones.',
   },
   {
     number: 3,
     days: 'Days 15–21',
-    theme: 'Add Pressure',
+    theme: 'Transfer & Simulation',
     color: '#FFB627',
     bg: 'rgba(255,182,39,0.07)',
     border: 'rgba(255,182,39,0.2)',
     badgeBg: 'rgba(255,182,39,0.12)',
     dailyTime: '60 min/day',
-    goal: 'Quiz Mode adds time pressure. Your first Practice Exam shows you exactly where you stand.',
+    goal: 'Quiz Mode adds time pressure and unfamiliar phrasing. Your first Practice Exam shows whether you can apply what you know, not just recall it.',
     features: [
-      { icon: ListChecks, label: 'Quiz Mode', desc: 'Timed sessions. Simulates the mental load of the real exam. Do this before jumping to full exams.' },
-      { icon: Brain, label: 'Daily Review', desc: 'Every morning. 10 minutes. The questions you\'ve missed come back on a schedule — that\'s how they stick.' },
-      { icon: ClipboardList, label: 'First Practice Exam', desc: 'Take one full 60-question exam this week. Treat it like the real thing. The score will tell you where to focus.' },
+      { icon: ListChecks, label: 'Quiz Mode', desc: 'Timed sessions with mixed, less-familiar question framing. Do this before jumping to full exams.' },
+      { icon: Brain, label: 'Daily Review', desc: 'Every morning. 10 minutes. The questions you\'ve missed come back on a schedule — that\'s how concepts actually stick.' },
+      { icon: ClipboardList, label: 'First Practice Exam', desc: 'Take one full timed exam this week. Treat it like the real thing. The score tells you where to focus next.' },
       { icon: Layers, label: 'Flashcards', desc: 'Lock in the numbers: VOR limits, cloud clearances, weather minimums. Quick hits before bed.' },
     ],
     focus: ['Weak Areas', 'Saved Questions', 'Quiz Mode'],
-    focusNote: 'Your saved questions list is your personal weak spot map. Work through it in Practice Mode this week.',
-    checkpoint: 'Checkpoint: Practice Exam at 65%+. Daily Review is a daily habit.',
+    focusNote: 'Your saved questions list is your personal weak-concept map. Work through it in Practice Mode this week.',
+    checkpoint: 'Checkpoint: Practice Exam at 65%+, including questions that don\'t look like ones you\'ve seen.',
   },
   {
     number: 4,
     days: 'Days 22–30',
-    theme: 'Exam Mode',
+    theme: 'Exam Readiness',
     color: '#10B981',
     bg: 'rgba(16,185,129,0.07)',
     border: 'rgba(16,185,129,0.2)',
     badgeBg: 'rgba(16,185,129,0.12)',
     dailyTime: '45 min/day',
-    goal: 'One full Practice Exam every day. Hit 80%+ three days in a row — then book the real thing.',
+    goal: 'One full Practice Exam every day, with fresh questions each time. Hit 80%+ three days in a row — then book the real thing.',
     features: [
       { icon: ClipboardList, label: 'Practice Exam', desc: 'Daily. Timed. No distractions. Replicate real test conditions every single session.' },
       { icon: Brain, label: 'Daily Review', desc: 'Non-negotiable. Even on your best days — especially on your best days.' },
-      { icon: Bookmark, label: 'Saved Questions', desc: 'Final pass through your saved list. If you\'re still missing the same ones, drill them in Practice Mode.' },
+      { icon: Bookmark, label: 'Saved Questions', desc: 'Final pass through your saved list. If you\'re still missing the same concept, drill it in Practice Mode.' },
     ],
     focus: ['Practice Exams', 'Daily Review', 'Saved Questions'],
     focusNote: 'If you\'re at 80%+ consistently for three days — stop studying and schedule the test. More studying won\'t help at that point.',
@@ -83,7 +83,7 @@ const weeks = [
 
 const tips = [
   { icon: Clock, text: 'You need 70% to pass. Aim for 80%+ in practice so you have a comfortable buffer on test day.' },
-  { icon: Zap, text: 'The FAA written pulls from a known question bank. Pattern recognition is real — repetition pays off.' },
+  { icon: Zap, text: 'FAA testing is moving toward more dynamic, scenario-based questions. Recognizing a question isn\'t the same as understanding it — practice the concept, not the wording.' },
   { icon: Target, text: 'Save any question you\'re unsure about, even if you got it right. Certainty matters more than luck.' },
   { icon: TrendingUp, text: 'Daily Review is the secret weapon. 10 minutes every morning compounds faster than you\'d think.' },
   { icon: Award, text: 'Book your exam before Day 30. A real deadline makes the last week actually count.' },
@@ -124,8 +124,11 @@ export default async function StudyPlanPage({ searchParams }: { searchParams: Pr
           <span style={{ color: '#FFB627' }}>Runway</span>
         </h1>
         <p className="text-white/55 text-lg leading-relaxed max-w-xl">
-          A clear sequence to pass your FAA written with a score you're proud of.
-          Right tools, right order, no wasted time.
+          A clear sequence from diagnostic to test-ready: build the foundation, apply it under pressure,
+          then prove you can handle a question you haven't seen. Right tools, right order.
+        </p>
+        <p className="text-white/30 text-xs mt-3 max-w-xl">
+          Day-by-day adaptive scheduling is actively rolling out — today, the runway below is your recommended sequence through TARMAC's existing tools.
         </p>
       </div>
 

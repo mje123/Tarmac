@@ -3,11 +3,11 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Terms of Service | TARMAC',
-  description: 'Terms of Service for TARMAC — FAA Private Pilot exam prep platform.',
+  description: 'Terms of Service for TARMAC — The community that makes you a better pilot.',
 }
 
 export default function TermsPage() {
-  const updated = 'April 30, 2026'
+  const updated = 'June 13, 2026'
 
   return (
     <div className="min-h-screen" style={{ background: '#f8fafc' }}>
@@ -29,7 +29,7 @@ export default function TermsPage() {
             <li>TARMAC is an <strong>independent study tool</strong>. We are <strong>not affiliated with, endorsed by, or approved by the FAA</strong> or any government agency.</li>
             <li>TARMAC questions are <strong>not official FAA questions</strong>. They are independently created practice questions designed to help you study.</li>
             <li>We make <strong>no guarantee</strong> that you will pass any FAA exam, written test, checkride, or receive any aviation certification.</li>
-            <li>TARMAC is currently in <strong>BETA</strong>. Features may be incomplete, inaccurate, or change without notice.</li>
+            <li>Features may be incomplete, inaccurate, or change without notice.</li>
             <li><strong>All sales are final. No refunds under any circumstances.</strong></li>
             <li>By creating an account or making a purchase, you agree to these Terms in full.</li>
           </ul>
@@ -43,8 +43,8 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">2. Nature of the Service — Educational Study Tool Only</h2>
-            <p>TARMAC is an <strong>independent, self-study educational platform</strong> designed to help student pilots prepare for the FAA Private Pilot Airman Knowledge Test. The Service includes practice questions, simulated exams, AI-assisted explanations, and tutoring features.</p>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">2. Nature of the Service — Community Learning Platform</h2>
+            <p>TARMAC is an <strong>independent pilot community learning platform</strong> designed to help student and certificated pilots learn through community discussion, real-world accident analysis, peer Q&amp;A, and ground school practice. The Service includes: Ground School (practice questions, simulated exams, AI tutoring), Accident Debrief (NTSB case analysis and community discussion), Ask a CFI (peer Q&amp;A with community members and self-identified flight instructors), Weather Room (go/no-go scenario debates), Route Critique (preflight route review), and Daily Question.</p>
             <div className="mt-3 font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm">
               TARMAC IS NOT a flight school, certified aviation training program, FAA-approved ground school, Part 141 provider, or Part 61 training provider. TARMAC IS NOT affiliated with, endorsed by, sponsored by, or approved by the Federal Aviation Administration (FAA), the Department of Transportation (DOT), or any other government agency or aviation authority. Nothing on this platform constitutes official FAA instructional material or certified ground training.
             </div>
@@ -53,14 +53,14 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">3. Beta Product Disclosure</h2>
-            <p>TARMAC is currently provided as a <strong>BETA</strong> product. You acknowledge and agree that:</p>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">3. Product Disclosure</h2>
+            <p>TARMAC is a live, production product under active development. You acknowledge and agree that:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>The Service may contain errors, bugs, inaccurate content, or incomplete features.</li>
               <li>Features may be modified, removed, or added at any time without notice.</li>
-              <li>Downtime, data loss, or service interruptions may occur during the beta period.</li>
-              <li>Beta status does not reduce, waive, or otherwise affect your payment obligations or the no-refund policy.</li>
-              <li>Pricing during the beta period is promotional and subject to change. Continued use after a price change constitutes acceptance of the new pricing.</li>
+              <li>Downtime, data loss, or service interruptions may occur.</li>
+              <li>This disclosure does not reduce, waive, or otherwise affect your payment obligations or the no-refund policy.</li>
+              <li>Pricing is subject to change. Continued use after a price change constitutes acceptance of the new pricing. Existing subscribers are not affected by price changes.</li>
             </ul>
           </section>
 
@@ -83,11 +83,11 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">6. Free Trial and Automatic Billing</h2>
             <div className="font-bold text-red-700 bg-red-50 border-2 border-red-300 rounded-lg px-4 py-4 text-sm mb-4">
-              BY STARTING A FREE TRIAL, YOU AUTHORIZE TARMAC TO AUTOMATICALLY CHARGE YOUR PAYMENT METHOD $14.99/MONTH WHEN THE TRIAL ENDS. IF YOU DO NOT CANCEL BEFORE THE TRIAL PERIOD EXPIRES, YOU WILL BE CHARGED. NO EXCEPTIONS.
+              BY STARTING A FREE TRIAL, YOU AUTHORIZE TARMAC TO AUTOMATICALLY CHARGE YOUR PAYMENT METHOD $29.99/MONTH WHEN THE TRIAL ENDS. IF YOU DO NOT CANCEL BEFORE THE TRIAL PERIOD EXPIRES, YOU WILL BE CHARGED. NO EXCEPTIONS.
             </div>
             <p>TARMAC may offer a free trial period for new subscribers ("Free Trial"). By starting a Free Trial, you agree to the following:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Automatic charge:</strong> You must provide a valid payment method to start a Free Trial. If you do not cancel before the trial period expires, your payment method <strong>will be automatically charged</strong> at the standard subscription rate ($14.99/month as of the date these Terms were last updated) on the day the trial ends, and every month thereafter.</li>
+              <li><strong>Automatic charge:</strong> You must provide a valid payment method to start a Free Trial. If you do not cancel before the trial period expires, your payment method <strong>will be automatically charged</strong> at the standard subscription rate ($29.99/month as of the date these Terms were last updated) on the day the trial ends, and every month thereafter.</li>
               <li><strong>Your responsibility to cancel:</strong> It is your sole responsibility to cancel your subscription before the trial ends if you do not wish to be charged. We do not send a separate reminder before charging. Forgetting to cancel is not grounds for a refund.</li>
               <li><strong>No refund for trial conversion:</strong> If you are charged because you did not cancel before the trial ended, that charge is final and non-refundable under Section 8 of these Terms.</li>
               <li>Free Trials are available to new customers only — one per person and one per household. You may not start a new Free Trial if you have previously had a Free Trial under any account or email address.</li>
@@ -145,38 +145,75 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">10. Acceptable Use</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">10. Community Features and User-Generated Content</h2>
+            <p>TARMAC includes community features that allow members to post content, including accident analysis comments (Accident Debrief), aviation questions and answers (Ask a CFI), weather scenario discussions (Weather Room), and route critiques. By posting content through any community feature, you agree to the following:</p>
+
+            <p className="mt-3 font-semibold">a. License Grant</p>
+            <p className="mt-1">You retain ownership of content you post. However, by submitting content to TARMAC, you grant Legion Systems LLC a worldwide, non-exclusive, royalty-free, perpetual, irrevocable license to use, reproduce, display, distribute, and create derivative works of that content in connection with operating and improving the Service.</p>
+
+            <p className="mt-3 font-semibold">b. Your Responsibility for Content</p>
+            <p className="mt-1">You are solely responsible for content you post. You represent and warrant that: (i) you own or have the right to post the content; (ii) the content does not violate any law or third-party rights; (iii) the content is truthful and not misleading; and (iv) the content does not constitute dangerous, harassing, defamatory, obscene, or hateful speech.</p>
+
+            <p className="mt-3 font-semibold">c. Content Moderation</p>
+            <p className="mt-1">TARMAC uses automated AI systems (powered by Anthropic) to review community content before it is posted. We also reserve the right — but have no obligation — to review, remove, or restrict any user-generated content at any time for any reason, with or without notice. Removal of content does not entitle you to a refund or any other remedy.</p>
+
+            <p className="mt-3 font-semibold">d. Community Content Is Not Professional Advice</p>
+            <div className="mt-1 font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm">
+              Content posted in any TARMAC community feature — including Accident Debrief, Ask a CFI, Weather Room, and Route Critique — is posted by community members and is not verified, endorsed, or approved by TARMAC. It does not constitute professional aviation advice, flight instruction, legal counsel, or safety guidance. <strong>Never use community content to make real-world flight decisions.</strong> Always consult qualified, current, authoritative sources for operational decisions.
+            </div>
+
+            <p className="mt-3 font-semibold">e. Callsigns</p>
+            <p className="mt-1">You may choose a community callsign (a user-facing display identifier, 3–12 alphanumeric characters). Callsigns must not be offensive, impersonate real individuals or entities, or violate any third-party rights. TARMAC reserves the right to reclaim or change any callsign that violates these requirements. Your callsign is visible to other community members.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">10a. CFI Designation — Unverified Status</h2>
+            <div className="font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm mb-3">
+              TARMAC does NOT verify whether any user is a Certificated Flight Instructor (CFI). The "Ask a CFI" designation and CFI badge are self-reported by users. TARMAC makes no representation that any person designated as a CFI on this platform holds, or has ever held, an FAA CFI certificate.
+            </div>
+            <p>By marking yourself as a CFI in your profile, you represent that you currently hold a valid FAA Certificated Flight Instructor certificate. You agree not to misrepresent your credentials. Falsely claiming CFI status is a violation of these Terms and may constitute fraud. TARMAC is not liable for any harm resulting from reliance on advice from a person claiming CFI status on this platform.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">10b. Accident Debrief — NTSB Data Use</h2>
+            <p>The Accident Debrief feature uses data sourced from publicly available NTSB (National Transportation Safety Board) records. TARMAC processes this data using AI to anonymize identifying information before presenting scenarios for community discussion. TARMAC is not affiliated with or endorsed by the NTSB. NTSB data may be incomplete, preliminary, or subject to revision. All accident scenarios are presented for educational purposes only.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">11. Acceptable Use</h2>
             <p>You agree not to:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>Share account credentials or allow any other person to access your account</li>
               <li>Create multiple accounts to circumvent access restrictions, obtain additional Free Trials, or abuse promotional offers</li>
-              <li>Scrape, copy, reproduce, redistribute, publish, sell, or resell any content from the Service, including questions, explanations, or any part of the platform</li>
+              <li>Scrape, copy, reproduce, redistribute, publish, sell, or resell any content from the Service, including questions, explanations, community posts, or any part of the platform</li>
               <li>Attempt to reverse-engineer, decompile, or circumvent any security or access restriction of the Service</li>
               <li>Use the Service for any unlawful purpose or in violation of any applicable law or regulation</li>
-              <li>Impersonate another person or misrepresent your identity or affiliation</li>
-              <li>Submit false, misleading, abusive, or harmful content through any input feature of the Service</li>
+              <li>Impersonate another person or misrepresent your identity or affiliation, including falsely claiming to be a CFI</li>
+              <li>Submit false, misleading, abusive, harassing, defamatory, or harmful content through any feature of the Service, including community features</li>
+              <li>Post personally identifying information about other individuals without their consent</li>
+              <li>Abuse the voting, flagging, or reporting systems</li>
               <li>Use the Service to develop competing products or services</li>
             </ul>
             <p className="mt-3">We reserve the right to terminate access to any user who violates these provisions, without refund.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">11. Intellectual Property</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">12. Intellectual Property</h2>
             <p>All content on TARMAC — including questions, explanations, UI design, branding, logos, and underlying code — is owned by or licensed to Legion Systems LLC and protected by applicable intellectual property laws. You are granted a limited, non-exclusive, non-transferable, revocable license to access and use the Service for your own personal, non-commercial study purposes only. No other rights are granted. Any unauthorized use of TARMAC content will constitute infringement of our intellectual property rights.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">12. Communications and Email</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">13. Communications and Email</h2>
             <p>By creating an account, you consent to receive transactional emails related to your account (such as exam results, billing notices, and account alerts). You may also receive occasional product-related emails. You may opt out of non-transactional emails at any time by following the unsubscribe link in any such email or contacting us directly. You may not opt out of emails that are required for the operation of your account (such as billing notices).</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">13. Disclaimer of Warranties</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">14. Disclaimer of Warranties</h2>
             <p className="font-semibold uppercase tracking-wide text-sm">THE SERVICE IS PROVIDED STRICTLY "AS IS" AND "AS AVAILABLE," WITHOUT ANY WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, LEGION SYSTEMS LLC EXPRESSLY DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO: IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, COMPLETENESS, CURRENTNESS, AND NON-INFRINGEMENT. TARMAC DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, SECURE, OR FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS. TARMAC DOES NOT WARRANT THAT ITS QUESTIONS REFLECT CURRENT FAA TEST CONTENT OR THAT USE OF THE SERVICE WILL PREPARE YOU ADEQUATELY FOR ANY EXAMINATION.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">14. Limitation of Liability</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">15. Limitation of Liability</h2>
             <p className="font-semibold uppercase tracking-wide text-sm">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, LEGION SYSTEMS LLC AND ITS OWNERS, OPERATORS, EMPLOYEES, CONTRACTORS, AND AGENTS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES OF ANY KIND, INCLUDING BUT NOT LIMITED TO:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2 font-semibold text-sm uppercase">
               <li>Failure to pass any aviation examination, written test, checkride, or obtain any certification or license</li>
@@ -193,49 +230,49 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">15. Indemnification</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">16. Indemnification</h2>
             <p>You agree to defend, indemnify, and hold harmless Legion Systems LLC and its owners, officers, employees, contractors, and agents from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or related to: (a) your use of or inability to use the Service; (b) your violation of these Terms; (c) your violation of any third-party rights; (d) any content you submit to the Service; or (e) your use of information obtained from the Service to make aviation decisions.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">16. Account Termination</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">17. Account Termination</h2>
             <p>TARMAC reserves the right to suspend or permanently terminate your account at any time, with or without notice, for any reason, including violations of these Terms, suspected fraud, trial abuse, chargeback initiation, or at our sole discretion. Upon termination, your right to access the Service immediately ceases. No refund will be issued upon termination for any reason, including termination for cause.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">17. Force Majeure</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">18. Force Majeure</h2>
             <p>TARMAC shall not be liable for any failure or delay in performance resulting from causes beyond our reasonable control, including but not limited to: acts of God, natural disasters, pandemics, internet or infrastructure outages, third-party service failures (including Stripe, Supabase, or Vercel), government actions, cyberattacks, or other events outside our control. In such events, your payment obligations remain unaffected.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">18. Dispute Resolution and Arbitration</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">19. Dispute Resolution and Arbitration</h2>
             <p>Any dispute, claim, or controversy arising out of or relating to these Terms or your use of TARMAC shall be resolved exclusively through binding individual arbitration, not in court. <strong>You waive any right to a jury trial and any right to participate in a class action lawsuit, class-wide arbitration, or representative action.</strong></p>
             <p className="mt-3">Arbitration shall be conducted on an individual basis under rules of a nationally recognized arbitration forum, at a location mutually agreed upon or conducted remotely. You and TARMAC each waive the right to bring or participate in any class, collective, consolidated, or representative proceeding.</p>
             <p className="mt-3">Before initiating arbitration, you must first send written notice of your dispute to <a href="mailto:support@tarmac.study" className="text-[#3E92CC] underline">support@tarmac.study</a> and allow 30 days for informal resolution. If the dispute involves a claim of $500 or less, either party may choose to resolve it in small claims court instead of arbitration.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">19. Governing Law</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">20. Governing Law</h2>
             <p>These Terms are governed by and construed in accordance with the laws of the United States and the state in which Legion Systems LLC is registered, without regard to conflict of law principles. To the extent any court action is permitted despite the arbitration clause above, you consent to the exclusive jurisdiction and venue of state or federal courts located in the state where Legion Systems LLC operates.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">20. Severability</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">21. Severability</h2>
             <p>If any provision of these Terms is found to be invalid, illegal, or unenforceable by a court or arbitrator of competent jurisdiction, the remaining provisions shall continue in full force and effect. The invalid provision shall be modified to the minimum extent necessary to make it enforceable while preserving the original intent.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">21. Entire Agreement</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">22. Entire Agreement</h2>
             <p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and TARMAC with respect to the Service and supersede all prior or contemporaneous agreements, understandings, representations, or communications, whether written or oral.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">22. Changes to These Terms</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">23. Changes to These Terms</h2>
             <p>TARMAC reserves the right to modify these Terms at any time. We will update the "Last updated" date at the top of this page. For material changes, we will make reasonable efforts to notify you (such as via email or an in-app notice). Your continued use of the Service after any modification constitutes your acceptance of the revised Terms. It is your responsibility to review these Terms periodically. If you do not agree to the revised Terms, you must stop using the Service.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">23. Contact</h2>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">24. Contact</h2>
             <p>Questions about these Terms may be directed to: <a href="mailto:support@tarmac.study" className="text-[#3E92CC] underline">support@tarmac.study</a></p>
           </section>
 

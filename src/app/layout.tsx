@@ -1,36 +1,36 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { ExamTypeProvider } from '@/components/ExamTypeProvider'
-import { createClient } from '@/lib/supabase/server'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
   title: {
-    default: 'TARMAC — FAA Private Pilot Written Test Prep',
+    default: 'TARMAC Written — AI-Powered FAA Written Test Prep',
     template: '%s | TARMAC',
   },
-  description: 'Ace your FAA Private Pilot written knowledge test with TARMAC. AI-powered practice questions, full 60-question exam simulations, instant explanations, and an AI tutor available 24/7. Free to start.',
+  description: 'Private Pilot and Instrument Rating FAA written test prep, built for a testing environment that\'s moving beyond static question banks. AI-generated practice questions, novel-question mode, and full exam simulations. Free to start.',
   keywords: [
-    'FAA written test', 'FAA knowledge test', 'private pilot written exam',
-    'private pilot test prep', 'PAR test prep', 'FAA exam study',
-    'aviation written test', 'student pilot study', 'private pilot ground school',
-    'FAA practice questions', 'pilot written exam practice', 'aviation AI tutor',
+    'FAA written test prep', 'FAA written test', 'private pilot written exam',
+    'private pilot exam prep', 'PAR written test', 'instrument written test',
+    'IRA written test', 'instrument rating exam prep', 'FAA written test study guide',
+    'AI FAA written test prep', 'FAA written test practice', 'aviation AI tutor',
   ],
   authors: [{ name: 'TARMAC' }],
   creator: 'TARMAC',
   metadataBase: new URL('https://tarmac.study'),
   icons: { icon: '/favicon.png', apple: '/logo-white.png' },
   openGraph: {
-    title: 'TARMAC — FAA Private Pilot Written Test Prep',
-    description: 'Ace your FAA Private Pilot written exam. AI-powered practice questions, full exam simulations, and an AI tutor that explains every answer. Free to start.',
+    title: 'TARMAC Written — AI-Powered FAA Written Test Prep',
+    description: 'Private Pilot and Instrument Rating written test prep. AI-generated practice questions, novel-question mode, and full exam simulations. Free to start.',
     type: 'website',
     url: 'https://tarmac.study',
     siteName: 'TARMAC',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'TARMAC — FAA Private Pilot Exam Prep' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'TARMAC — FAA Written Test Prep' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TARMAC — FAA Private Pilot Written Test Prep',
-    description: 'Ace your FAA Private Pilot written exam with AI-powered practice and an AI tutor. Free to start.',
+    title: 'TARMAC Written — AI-Powered FAA Written Test Prep',
+    description: 'Private Pilot and Instrument Rating written test prep with AI-generated practice and an AI tutor. Free to start.',
     images: ['/og-image.png'],
   },
   robots: {
@@ -44,7 +44,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'TARMAC',
-  description: 'AI-powered FAA Private Pilot written knowledge test preparation. Practice questions, full exam simulations, and an AI tutor.',
+  description: 'AI-powered FAA written knowledge test preparation for the Private Pilot and Instrument Rating exams. Practice questions, novel-question mode, full exam simulations, and an AI tutor.',
   url: 'https://tarmac.study',
   applicationCategory: 'EducationApplication',
   operatingSystem: 'Web',
@@ -52,34 +52,30 @@ const jsonLd = {
     '@type': 'Offer',
     price: '0',
     priceCurrency: 'USD',
-    description: 'Free to start — 20 practice questions included',
+    description: 'Free to start — practice questions included',
   },
   audience: {
     '@type': 'Audience',
-    audienceType: 'Student pilots, aviation enthusiasts preparing for FAA Private Pilot written exam',
+    audienceType: 'Student pilots preparing for the FAA Private Pilot or Instrument Rating written exam',
   },
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  let isAdmin = false
-  try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: profile } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
-      isAdmin = profile?.is_admin ?? false
-    }
-  } catch {}
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
+    <html lang="en" className="h-full dark" suppressHydrationWarning>
       <head>
+        {/* Anti-FOUC: apply saved theme class before first paint */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('tarmac-theme');document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t==='light'?'light':'dark');}catch(e){}})();` }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-full"><ExamTypeProvider isAdmin={isAdmin}>{children}</ExamTypeProvider></body>
+      <body className="min-h-full">
+        <ThemeProvider>
+          <ExamTypeProvider>{children}</ExamTypeProvider>
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

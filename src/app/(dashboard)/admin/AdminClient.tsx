@@ -6,8 +6,9 @@ import {
   Users, BookOpen, CreditCard, TrendingUp, Shield, Plus, Loader2,
   CheckCircle, BarChart3, Target, Activity, UserCheck, UserX,
   ShieldCheck, DollarSign, Trash2, Link2, CheckSquare, Bug, Mail, Send, Lightbulb, Gift, RefreshCw, MessageSquare,
-  Pin, ChevronDown, ChevronUp, ExternalLink, Megaphone, Trophy,
+  Pin, ChevronDown, ChevronUp, ExternalLink, Megaphone, Trophy, Sparkles,
 } from 'lucide-react'
+import QuestionEngineTab from './QuestionEngineTab'
 
 interface ReferralDetail {
   id: string
@@ -50,17 +51,21 @@ interface AdminClientProps {
 }
 
 const SUB_COLORS: Record<string, string> = {
+  tarmac_member: 'text-[#3E92CC] bg-[#3E92CC]/10',
   study_pass: 'text-[#3E92CC] bg-[#3E92CC]/10',
   trialing: 'text-green-400 bg-green-400/10',
+  checkride_prep: 'text-purple-400 bg-purple-400/10',
+  annual: 'text-yellow-400 bg-yellow-400/10',
   free: 'text-white/40 bg-white/5',
 }
 
 const SUB_LABELS: Record<string, string> = {
-  study_pass: 'Tarmac Membership',
+  tarmac_member: 'Tarmac Member',
+  study_pass: 'Tarmac Member (legacy)',
   trialing: 'Free Trial',
   free: 'Free',
-  checkride_prep: 'Checkride Prep',
-  annual: 'Annual',
+  checkride_prep: 'Checkride Prep (legacy)',
+  annual: 'Annual (legacy)',
 }
 
 const REFERRAL_LABELS: Record<string, string> = {
@@ -82,7 +87,7 @@ function getReferralSource(u: Record<string, unknown>): string | null {
 }
 
 export default function AdminClient({ stats, recentUsers: initialUsers, recentSessions, answeredPerUser }: AdminClientProps) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum' | 'qotd' | 'announcements' | 'gotw'>('overview')
+  const [tab, setTab] = useState<'overview' | 'questions' | 'engine' | 'users' | 'influencers' | 'bugs' | 'applications' | 'email' | 'suggestions' | 'contact' | 'forum' | 'qotd' | 'announcements' | 'gotw'>('overview')
   const [ifrStats, setIfrStats] = useState<Record<string, number> | null>(null)
   const [ifrMigrationSql, setIfrMigrationSql] = useState<string | null>(null)
   const [ifrSeeding, setIfrSeeding] = useState<string | null>(null)
@@ -597,9 +602,10 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(['overview', 'questions', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum', 'qotd', 'announcements', 'gotw'] as const).map(t => (
+        {(['overview', 'questions', 'engine', 'users', 'influencers', 'bugs', 'applications', 'email', 'suggestions', 'contact', 'forum', 'qotd', 'announcements', 'gotw'] as const).map(t => (
           <button key={t} onClick={() => handleTabChange(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all flex items-center gap-1.5 ${tab === t ? 'bg-[#3E92CC] text-white' : 'text-white/50 hover:text-white'}`}>
+            {t === 'engine' && <Sparkles className="w-3.5 h-3.5" />}
             {t === 'bugs' && <Bug className="w-3.5 h-3.5" />}
             {t === 'email' && <Mail className="w-3.5 h-3.5" />}
             {t === 'suggestions' && <Lightbulb className="w-3.5 h-3.5" />}
@@ -608,7 +614,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
             {t === 'qotd' && <Send className="w-3.5 h-3.5" />}
             {t === 'announcements' && <Megaphone className="w-3.5 h-3.5" />}
             {t === 'gotw' && <Trophy className="w-3.5 h-3.5" />}
-            {t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t === 'qotd' ? 'QOTD' : t === 'announcements' ? 'Announce' : t === 'gotw' ? 'Game of Week' : t}
+            {t === 'engine' ? 'Question Engine' : t === 'applications' ? 'Applications' : t === 'email' ? 'Email' : t === 'suggestions' ? 'Suggestions' : t === 'contact' ? 'Contact' : t === 'forum' ? 'Forum' : t === 'qotd' ? 'QOTD' : t === 'announcements' ? 'Announce' : t === 'gotw' ? 'Game of Week' : t}
             {t === 'announcements' && announcementsLoaded && announcements.filter(a => a.active).length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[#3E92CC] text-white">
                 {announcements.filter(a => a.active).length}
@@ -715,20 +721,35 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
           </div>
           <div className="glass-card p-6 mt-6">
             <h3 className="font-semibold text-white mb-4">User Breakdown</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
                 <div className="text-2xl font-bold text-white/40">{freeUsers}</div>
-                <div className="text-xs text-white/30 mt-1">Free Trial</div>
+                <div className="text-xs text-white/30 mt-1">Free</div>
+              </div>
+              <div className="text-center p-4 rounded-xl" style={{ background: 'rgba(34,197,94,0.08)' }}>
+                <div className="text-2xl font-bold text-green-400">{stats.subCounts['trialing'] || 0}</div>
+                <div className="text-xs text-white/50 mt-1">Trialing</div>
               </div>
               <div className="text-center p-4 rounded-xl" style={{ background: 'rgba(62,146,204,0.08)' }}>
-                <div className="text-2xl font-bold text-[#3E92CC]">{stats.subCounts['study_pass'] || 0}</div>
-                <div className="text-xs text-white/50 mt-1">Tarmac Membership</div>
+                <div className="text-2xl font-bold text-[#3E92CC]">{(stats.subCounts['tarmac_member'] || 0) + (stats.subCounts['study_pass'] || 0) + (stats.subCounts['checkride_prep'] || 0) + (stats.subCounts['annual'] || 0)}</div>
+                <div className="text-xs text-white/50 mt-1">Active Members</div>
               </div>
               <div className="text-center p-4 rounded-xl" style={{ background: 'rgba(255,182,39,0.08)' }}>
                 <div className="text-2xl font-bold text-[#FFB627]">{totalPaid}</div>
                 <div className="text-xs text-white/50 mt-1">Total Paid</div>
               </div>
             </div>
+          </div>
+
+          {/* Community admin shortcut */}
+          <div className="glass-card p-6 mt-6">
+            <h3 className="font-semibold text-white mb-4">Community Moderation</h3>
+            <a href="/admin/debrief"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{ background: 'rgba(232,89,60,0.12)', color: '#E8593C', border: '1px solid rgba(232,89,60,0.25)' }}>
+              <ExternalLink className="w-4 h-4" />
+              Accident Debrief Admin →
+            </a>
           </div>
 
           {/* Referral source chart */}
@@ -916,6 +937,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
         </div>
         </>
       )}
+
+      {tab === 'engine' && <QuestionEngineTab />}
 
       {tab === 'users' && (
         <div className="glass-card p-6">
@@ -1431,6 +1454,9 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="text-white/60 text-xs">{s.email as string || 'Anonymous'}</span>
+                      {(s.category as string) && s.category !== 'other' && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize" style={{ background: 'rgba(255,182,39,0.12)', color: '#FFB627' }}>{(s.category as string).replace(/_/g, ' ')}</span>
+                      )}
                       {(s.page as string) && <span className="text-white/30 text-xs font-mono">{s.page as string}</span>}
                       <span className="text-white/25 text-xs">{formatDate(s.created_at as string)}</span>
                       {s.status === 'archived' && (

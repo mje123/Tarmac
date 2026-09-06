@@ -1,4 +1,11 @@
-export type SubscriptionStatus = 'free' | 'trialing' | 'study_pass' | 'checkride_prep' | 'annual'
+export type SubscriptionStatus =
+  | 'free'
+  | 'tarmac_member'
+  | 'trialing'
+  // Legacy statuses — grandfathered users keep full access
+  | 'study_pass'
+  | 'checkride_prep'
+  | 'annual'
 
 export type PPLCategory =
   | 'Regulations'
@@ -32,20 +39,34 @@ export type SessionType = 'real_exam' | 'practice_mode'
 export type SessionStatus = 'in_progress' | 'completed' | 'abandoned'
 
 export interface OnboardingData {
-  training_stage?: 'not_started' | 'in_training' | 'checkride_scheduled' | 'retaking'
-  test_timeline?: '2_weeks' | '3_6_weeks' | '2_3_months' | 'not_sure'
+  exam_type?: ExamType
+  test_date?: string
+  studied_before?: 'yes' | 'no'
+  taken_faa_written_before?: 'yes' | 'no'
   confidence_level?: 'nervous' | 'unsure' | 'somewhat_confident' | 'very_confident'
-  biggest_worry?: 'retake_cost' | 'not_understanding' | 'no_time' | 'what_to_focus' | 'test_anxiety'
-  previous_tools?: 'first_time' | 'didnt_like' | 'failed_with_them' | 'exploring'
-  learning_style?: 'detailed_explanations' | 'learning_by_doing' | 'need_structure' | 'mixed' | 'skipped'
-  referral_source?: 'instagram' | 'tiktok' | 'youtube' | 'google' | 'reddit' | 'friend' | 'cfi' | 'other'
+  minutes_per_day?: '10' | '20' | '30' | '45' | '60'
+  referral_source?: string
   recommended_plan?: string
+  // legacy fields — kept so existing users' stored onboarding data still reads
+  training_stage?: string
+  primary_goal?: string
+  biggest_worry?: string
+  community_interest?: string
+  learning_style?: 'detailed_explanations' | 'learning_by_doing' | 'need_structure' | 'mixed' | 'skipped'
+  test_timeline?: string
+  previous_tools?: string
 }
 
 export interface User {
   id: string
   email: string
   full_name: string | null
+  callsign: string | null
+  callsign_set_at: string | null
+  debrief_anonymous: boolean
+  is_cfi: boolean
+  cfi_verified: boolean
+  avatar_url: string | null
   subscription_status: SubscriptionStatus
   subscription_expires_at: string | null
   stripe_customer_id: string | null
@@ -69,6 +90,16 @@ export interface Question {
   reference: string | null
   exam_type?: ExamType
   created_at: string
+  // Validated concept-generation pipeline fields (src/lib/generation) — null/undefined
+  // on legacy bank rows that predate the concept layer.
+  concept_id?: string | null
+  archetype_id?: string | null
+  cognitive_level?: string | null
+  scenario_type?: string | null
+  distractor_rationale?: string | null
+  common_trap?: string | null
+  validation_status?: 'legacy' | 'pending' | 'approved' | 'rejected'
+  novelty_key?: string | null
 }
 
 export interface TestSession {
@@ -121,13 +152,13 @@ export interface AIMessage {
   content: string
 }
 
-export interface PricingTier {
-  id: SubscriptionStatus
-  name: string
-  price: number
-  period: string
-  features: string[]
-  highlighted?: boolean
-  badge?: string
-  stripePriceId?: string
+// All paid statuses (new + legacy grandfathered)
+export const PAID_STATUSES: SubscriptionStatus[] = [
+  'tarmac_member', 'trialing', 'study_pass', 'checkride_prep', 'annual'
+]
+
+export function isPaidUser(status: SubscriptionStatus, expires: string | null): boolean {
+  if (!PAID_STATUSES.includes(status)) return false
+  if (!expires) return true
+  return new Date(expires) > new Date()
 }

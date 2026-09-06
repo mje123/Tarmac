@@ -257,7 +257,7 @@ export async function sendAdminTrialNotification({
           </tr>
           <tr>
             <td style="font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;padding:6px 0;">Charges</td>
-            <td style="font-size:14px;color:rgba(255,255,255,0.6);padding:6px 0;">$0.00 today · $14.99 in 7 days (if they don't bail)</td>
+            <td style="font-size:14px;color:rgba(255,255,255,0.6);padding:6px 0;">$0.00 today · $29.99 in 7 days (if they don't bail)</td>
           </tr>
         </table>
       </div>
@@ -311,7 +311,7 @@ export async function sendTrialStartEmail({ to, userId, firstName }: { to: strin
         </tr>
         <tr>
           <td style="font-size:13px;color:#8a6200;font-weight:600;padding-top:8px;">After trial</td>
-          <td style="text-align:right;font-size:15px;font-weight:800;color:#0A2463;padding-top:8px;">$14.99/month</td>
+          <td style="text-align:right;font-size:15px;font-weight:800;color:#0A2463;padding-top:8px;">$29.99/month</td>
         </tr>
       </table>
       <p style="margin:12px 0 0;font-size:12px;color:#8a6200;">Cancel before ${formatted} and you will not be charged — no questions asked.</p>

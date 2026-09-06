@@ -34,107 +34,91 @@ interface Question {
 const QUESTIONS: Question[] = [
   {
     id: 'q1',
-    text: 'Where are you in your pilot training?',
+    text: 'Which FAA written test are you preparing for?',
     options: [
-      { value: 'not_started',          label: "Haven't started flight training yet",    sub: 'Studying for the written first' },
-      { value: 'in_training',          label: 'Currently in flight school',              sub: 'Taking lessons, need to pass written soon' },
-      { value: 'checkride_scheduled',  label: 'Checkride is scheduled',                  sub: 'Written test is the last thing I need' },
-      { value: 'retaking',             label: 'Retaking the written',                    sub: "Failed once — need to pass this time" },
+      { value: 'ppl', label: 'Private Pilot (PAR)',      sub: 'Airplane single-engine land written' },
+      { value: 'ifr', label: 'Instrument Rating (IRA)',  sub: 'Instrument airplane written' },
     ],
     feedbacks: {
-      not_started:         "Perfect time to start. Building a strong foundation now makes everything easier.",
-      in_training:         "You're in the thick of it — let's make sure the written doesn't slow you down.",
-      checkride_scheduled: "Tight timeline. We'll get you focused on exactly what matters most.",
-      retaking:            "You're not alone — and this time you'll understand it, not just memorize it.",
+      ppl: "Regulations, airspace, weather, performance, and navigation — all generated fresh, not pulled from a fixed bank.",
+      ifr: "Approaches, holding, navigation, weather, and alternate requirements — trained through scenarios, not memorized questions.",
     },
   },
   {
     id: 'q2',
-    text: 'When are you planning to take your FAA written test?',
+    text: 'When is your test?',
     options: [
-      { value: '2_weeks',    label: 'In the next 2 weeks',    sub: 'I need to cram fast' },
-      { value: '3_6_weeks',  label: 'In 3–6 weeks',           sub: 'I have time to prepare properly' },
-      { value: '2_3_months', label: 'In 2–3 months',          sub: "I'm studying well in advance" },
-      { value: 'not_sure',   label: 'Not sure yet',           sub: 'Just starting to research' },
+      { value: 'this_month', label: 'Within a month',       sub: 'It\'s coming up fast' },
+      { value: '1_3_months', label: '1–3 months out',        sub: 'Some runway, but a real date' },
+      { value: '3_6_months', label: '3–6 months out',        sub: 'Plenty of time to build the foundation' },
+      { value: 'no_date',    label: 'No date yet',            sub: 'Just getting started' },
     ],
     feedbacks: {
-      '2_weeks':    'Two weeks is tight but doable. Students who focus on weak areas in this window consistently pass.',
-      '3_6_weeks':  "That's the sweet spot. Our most successful students study for 3–6 weeks.",
-      '2_3_months': "You're thinking ahead — that kind of prep pays off on test day.",
-      'not_sure':   "No rush. Start your 7-day free trial and see how it feels.",
+      this_month: "We'll compress your 30-Day Runway to fit — diagnostic first, then straight into your weak areas.",
+      '1_3_months': "That's enough time to build real understanding, not just cram the last two weeks.",
+      '3_6_months': "Plenty of runway. We'll pace it so concepts have time to actually stick.",
+      no_date:      "No problem — pick a target once you're ready and the runway adjusts around it.",
     },
   },
   {
     id: 'q3',
-    text: 'How confident are you about passing the FAA written test?',
+    text: 'Have you studied FAA material for this test before?',
     options: [
-      { value: 'nervous',            label: "Not confident at all",      sub: "I don't feel ready" },
-      { value: 'unsure',             label: "Unsure",                    sub: 'I know some stuff, but not enough' },
-      { value: 'somewhat_confident', label: 'Somewhat confident',        sub: 'Just need more practice' },
-      { value: 'very_confident',     label: 'Very confident',            sub: 'Just want to sharpen up' },
+      { value: 'yes', label: 'Yes',  sub: 'I\'ve been through some ground school or a question bank already' },
+      { value: 'no',  label: 'No',   sub: 'This is my first real pass at it' },
     ],
     feedbacks: {
-      nervous:            "Totally normal. 64% of students feel this way at first. That's exactly what we fix.",
-      unsure:             "Knowing you need more is half the battle. We'll fill in the gaps systematically.",
-      somewhat_confident: "Good foundation. We'll help you lock it in and validate with practice exams.",
-      very_confident:     "Let's prove it. Full-length practice exams will confirm you're ready.",
+      yes: "Good — the diagnostic will find out what actually stuck versus what you just recognized.",
+      no:  "Totally fine. The diagnostic starts broad so we know exactly where to focus first.",
     },
   },
   {
     id: 'q4',
-    text: "What's your biggest worry about the written test?",
+    text: 'Have you taken the FAA written before?',
     options: [
-      { value: 'retake_cost',        label: 'Wasting $175 on a retake if I fail' },
-      { value: 'not_understanding',  label: 'Not understanding the material (just memorizing)' },
-      { value: 'no_time',            label: 'Running out of time to study' },
-      { value: 'what_to_focus',      label: 'Not knowing what to focus on' },
-      { value: 'test_anxiety',       label: 'Test anxiety / pressure' },
+      { value: 'yes', label: 'Yes — this is a retake',  sub: 'I need to close specific gaps' },
+      { value: 'no',  label: 'No — first attempt',       sub: 'Working toward a pass on try one' },
     ],
     feedbacks: {
-      retake_cost:       "Your trial is free. A retake is $175. This is the math that pays for itself.",
-      not_understanding: "That's exactly why we built TARMAC. Every question has an AI tutor that explains the WHY.",
-      no_time:           "200 focused questions in 2 weeks is enough. We'll show you exactly where to spend your time.",
-      what_to_focus:     "We track your accuracy by category and tell you exactly what to drill. No guessing.",
-      test_anxiety:      "Confidence comes from repetition. Take the exam 5 times here before the real one.",
+      yes: "Retakes cost $175. We'll target novel-question practice so you're not caught by the same gaps twice.",
+      no:  "Most members are here for exactly this — the goal is walking in ready, not hoping.",
     },
   },
   {
     id: 'q5',
-    text: 'Have you used other FAA test prep tools before?',
+    text: 'Be honest — how confident are you right now?',
     options: [
-      { value: 'first_time',       label: 'No, this is my first time studying' },
-      { value: 'didnt_like',       label: "Yes, but I didn't like them",         sub: 'Too much memorization, not enough explanation' },
-      { value: 'failed_with_them', label: 'Yes, and I failed with them',         sub: "That's why I'm here" },
-      { value: 'exploring',        label: 'Yes, and they were fine',             sub: 'Just exploring other options' },
+      { value: 'nervous',            label: "I'm overwhelmed — there's a lot I don't know",    sub: 'Starting from scratch' },
+      { value: 'unsure',             label: 'I know some things but have real gaps',            sub: 'Inconsistent, unsure where to focus' },
+      { value: 'somewhat_confident', label: "I'm decent, just need more practice",              sub: 'Close, need to lock it in' },
+      { value: 'very_confident',     label: "I know my stuff — here to validate it",             sub: 'High scorer, want to make sure' },
     ],
     feedbacks: {
-      first_time:       "You're starting fresh — we'll guide you step by step.",
-      didnt_like:       "That's exactly the gap TARMAC fills. Ask follow-up questions until it actually clicks.",
-      failed_with_them: "Those tools teach memorization. We teach understanding. There's a real difference.",
-      exploring:        "Fair. Start your free trial and compare the explanations yourself.",
+      nervous:            "Totally fair. Most new members feel this way — the diagnostic meets you where you are.",
+      unsure:             "Knowing you have gaps is already half the battle. We'll find them and close them systematically.",
+      somewhat_confident: "Almost there. Focused, novel practice locks in what you know and surfaces the blind spots.",
+      very_confident:     "Let's verify it. Novel-question mode reveals what familiar-question practice hides.",
     },
   },
   {
     id: 'q6',
-    text: "What's your learning style?",
-    skippable: true,
+    text: 'How many minutes a day can you realistically study?',
     options: [
-      { value: 'detailed_explanations', label: 'I need detailed explanations' },
-      { value: 'learning_by_doing',     label: 'I learn by doing (just give me questions)' },
-      { value: 'need_structure',        label: 'I need structure (tell me exactly what to do)' },
-      { value: 'mixed',                 label: 'Not sure / Mix of everything' },
+      { value: '10', label: '10 minutes',  sub: 'Quick daily retrieval' },
+      { value: '20', label: '20 minutes',  sub: 'A focused session' },
+      { value: '30', label: '30 minutes',  sub: 'Room for concept work + practice' },
+      { value: '45', label: '45+ minutes', sub: 'Deep sessions, faster progress' },
     ],
     feedbacks: {
-      detailed_explanations: "Our AI tutor gives you as much depth as you need on every single question.",
-      learning_by_doing:     "Jump straight into practice mode — questions, instant feedback, repeat.",
-      need_structure:        "Your dashboard will show exactly what to tackle next, sorted by impact.",
-      mixed:                 "Most people are. We adapt to however you want to study.",
-      skipped:               '',
+      '10': "Short sessions still work — the system just optimizes for retrieval over volume.",
+      '20': "That's enough for a real session: review, retrieval, and a novel question or two.",
+      '30': "Solid daily block — enough time for concept work, practice, and spaced review.",
+      '45': "You'll move through the 30-Day Runway faster with sessions this size.",
     },
   },
   {
     id: 'q7',
-    text: 'Last one — how did you hear about Tarmac?',
+    text: 'Last one — how did you hear about TARMAC?',
     skippable: true,
     options: [
       { value: 'instagram', label: 'Instagram' },
@@ -142,16 +126,16 @@ const QUESTIONS: Question[] = [
       { value: 'youtube',   label: 'YouTube' },
       { value: 'google',    label: 'Google / Search' },
       { value: 'reddit',    label: 'Reddit' },
-      { value: 'friend',    label: 'Friend or classmate' },
+      { value: 'friend',    label: 'Friend or fellow pilot' },
       { value: 'cfi',       label: 'My flight instructor (CFI)' },
       { value: 'other',     label: 'Somewhere else' },
     ],
     feedbacks: {
-      instagram: "Welcome! Glad the feed led you here.",
-      tiktok:    "TikTok → Tarmac. The pilot pipeline.",
+      instagram: "Welcome. Glad the feed led you here.",
+      tiktok:    "TikTok → TARMAC. The pilot pipeline.",
       youtube:   "Good taste in content.",
-      google:    "You searched, you found.",
-      reddit:    "The aviation subreddit delivers again.",
+      google:    "You searched. You found.",
+      reddit:    "The aviation community delivers again.",
       friend:    "Tell them we said thanks.",
       cfi:       "Your CFI has good judgment.",
       other:     "However you got here — glad you did.",
@@ -163,12 +147,17 @@ const QUESTIONS: Question[] = [
 // ─── Option icons ─────────────────────────────────────────────────────────────
 
 const OPTION_ICONS: Record<string, string> = {
-  not_started: '✈️', in_training: '🎓', checkride_scheduled: '📅', retaking: '🔄',
-  '2_weeks': '⚡', '3_6_weeks': '📅', '2_3_months': '🗓️', not_sure: '🤷',
+  // Q1 — exam type
+  ppl: '🛩️', ifr: '🌫️',
+  // Q2 — test date
+  this_month: '⏱️', '1_3_months': '📅', '3_6_months': '🗓️', no_date: '🧭',
+  // Q3 — studied before / Q4 — taken before
+  yes: '✅', no: '🆕',
+  // Q5 — confidence
   nervous: '😰', unsure: '😐', somewhat_confident: '😊', very_confident: '😎',
-  retake_cost: '💸', not_understanding: '📚', no_time: '⏱️', what_to_focus: '🎯', test_anxiety: '😬',
-  first_time: '❌', didnt_like: '📖', failed_with_them: '🔄', exploring: '✅',
-  detailed_explanations: '📖', learning_by_doing: '⚡', need_structure: '🎯', mixed: '🤷',
+  // Q6 — minutes per day
+  '10': '⚡', '20': '📖', '30': '🎯', '45': '🚀',
+  // Q7 — referral
   instagram: '📸', tiktok: '🎵', youtube: '▶️', google: '🔍', reddit: '🤖',
   friend: '🤝', cfi: '🧑‍✈️', other: '🌐',
 }
@@ -186,42 +175,59 @@ interface Recommendation {
 }
 
 function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
-  const { test_timeline, confidence_level, biggest_worry, previous_tools } = answers
+  const { exam_type, confidence_level, taken_faa_written_before, test_date } = answers
   const reasons: string[] = []
 
-  if (test_timeline === '2_weeks') {
-    reasons.push('7 days free gives you a head start — start now, cancel anytime if you pass early')
-  } else if (test_timeline === '2_3_months') {
-    reasons.push("You've got time to build deep understanding — not just memorize answers")
+  // Reason 1: exam
+  if (exam_type === 'ifr') {
+    reasons.push('Instrument written prep — approaches, holding, navigation, and weather, generated as new scenarios every session')
   } else {
-    reasons.push('Your timeline is perfect — 200 focused questions in 3–6 weeks is all it takes')
+    reasons.push('Private Pilot written prep — regulations, airspace, weather, and performance, generated as new scenarios every session')
   }
 
+  // Reason 2: confidence level
   if (confidence_level === 'nervous' || confidence_level === 'unsure') {
-    reasons.push('AI tutor on every question gives you the explanations you need to build real confidence')
+    reasons.push('AI tutor on every question explains the WHY until it actually makes sense — not just the correct letter')
   } else if (confidence_level === 'very_confident') {
-    reasons.push('Full-length timed practice exams will validate your knowledge before test day')
+    reasons.push('Novel-question mode and full timed exams reveal what familiar-question practice leaves behind')
+  } else {
+    reasons.push('Concept-by-concept accuracy dashboard shows exactly where to spend your next study session')
   }
 
-  if (biggest_worry === 'retake_cost') {
-    reasons.push('A retake costs $175. Your first month is free — the math is obvious')
-  } else if (biggest_worry === 'not_understanding') {
-    reasons.push('Every question has an AI tutor that explains the why, not just the answer')
-  } else if (biggest_worry === 'what_to_focus') {
-    reasons.push('Your dashboard tracks accuracy by category and shows exactly where to focus')
-  }
-
-  if (previous_tools === 'failed_with_them') {
-    reasons.push("TARMAC builds genuine understanding — not just memorization")
+  // Reason 3: retake status or timeline
+  if (taken_faa_written_before === 'yes') {
+    reasons.push('A retake costs $175 — novel-question practice targets the gaps that cost you last time')
+  } else if (test_date === 'this_month') {
+    reasons.push('The 30-Day Runway compresses to fit your timeline, starting with a diagnostic today')
+  } else {
+    reasons.push('The 30-Day Runway takes you from diagnostic to test-ready, adapting to your weak areas')
   }
 
   return {
     planId: 'beta_monthly',
-    name: 'Full Access',
-    price: '$14.99/mo',
+    name: 'TARMAC Written',
+    price: '$29.99/mo',
     reasons: reasons.slice(0, 3),
     cta: 'Start Free Trial',
   }
+}
+
+function getStats(answers: Partial<OnboardingData>): { stat: string; label: string }[] {
+  const { confidence_level, minutes_per_day, taken_faa_written_before } = answers
+
+  const s1 = { stat: '2', label: 'exams included — Private + Instrument' }
+
+  const s2 =
+    confidence_level === 'nervous' || confidence_level === 'unsure'
+      ? { stat: '30 days', label: 'diagnostic-to-test-ready runway' }
+      : { stat: 'Novel', label: 'question mode tests real understanding' }
+
+  const s3 =
+    taken_faa_written_before === 'yes' ? { stat: '$175', label: 'avg cost of a written retake — most members avoid it' } :
+    minutes_per_day ? { stat: `${minutes_per_day} min`, label: 'a day, optimized — not just more questions' } :
+    { stat: 'New', label: 'questions generated every session' }
+
+  return [s1, s2, s3]
 }
 
 // ─── Animation variants ───────────────────────────────────────────────────────
@@ -253,9 +259,12 @@ function StartPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const urlPlan = searchParams.get('plan')
+  const urlExam = searchParams.get('exam')
 
-  const [step, setStep] = useState<Step>('q1')
-  const [answers, setAnswers] = useState<Partial<OnboardingData>>({})
+  const [step, setStep] = useState<Step>(urlExam === 'ppl' || urlExam === 'ifr' ? 'q2' : 'q1')
+  const [answers, setAnswers] = useState<Partial<OnboardingData>>(
+    urlExam === 'ppl' || urlExam === 'ifr' ? { exam_type: urlExam } : {}
+  )
   const [selectedValue, setSelectedValue] = useState<string | null>(null)
   const [feedbackText, setFeedbackText] = useState<string | null>(null)
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null)
@@ -272,7 +281,7 @@ function StartPageInner() {
   const [signupSuccess, setSignupSuccess] = useState(false)
 
   useEffect(() => {
-    if (urlPlan) { localStorage.removeItem('tarmac_quiz'); return }
+    if (urlPlan || urlExam) { localStorage.removeItem('tarmac_quiz'); return }
     try {
       const saved = localStorage.getItem('tarmac_quiz')
       if (saved) {
@@ -281,7 +290,7 @@ function StartPageInner() {
         else { localStorage.removeItem('tarmac_quiz') }
       }
     } catch { /* ignore */ }
-  }, [urlPlan])
+  }, [urlPlan, urlExam])
 
   useEffect(() => {
     try { localStorage.setItem('tarmac_quiz', JSON.stringify({ step, answers })) } catch { /* ignore */ }
@@ -297,8 +306,8 @@ function StartPageInner() {
     if (selectedValue) return
     setSelectedValue(value)
     const fieldMap: Record<string, keyof OnboardingData> = {
-      q1: 'training_stage', q2: 'test_timeline', q3: 'confidence_level',
-      q4: 'biggest_worry', q5: 'previous_tools', q6: 'learning_style', q7: 'referral_source',
+      q1: 'exam_type', q2: 'test_date', q3: 'studied_before',
+      q4: 'taken_faa_written_before', q5: 'confidence_level', q6: 'minutes_per_day', q7: 'referral_source',
     }
     const field = fieldMap[step]
     const newAnswers = { ...answers, [field]: value as never }
@@ -309,7 +318,7 @@ function StartPageInner() {
   }
 
   function skipQuestion() {
-    const fieldMap: Record<string, keyof OnboardingData> = { q6: 'learning_style', q7: 'referral_source' }
+    const fieldMap: Record<string, keyof OnboardingData> = { q7: 'referral_source' }
     const field = fieldMap[step]
     const newAnswers = field ? { ...answers, [field]: 'skipped' as never } : { ...answers }
     setAnswers(newAnswers)
@@ -347,6 +356,12 @@ function StartPageInner() {
       await supabase.from('users').update({ onboarding_data: finalAnswers }).eq('id', data.user.id)
       if (!marketingEmails) {
         await supabase.from('users').update({ marketing_emails: false }).eq('id', data.user.id)
+      }
+      if (answers.exam_type === 'ppl' || answers.exam_type === 'ifr') {
+        try {
+          localStorage.setItem('tarmac-exam-type', answers.exam_type)
+          document.cookie = `tarmac-exam-type=${answers.exam_type}; path=/; max-age=31536000; SameSite=Lax`
+        } catch { /* ignore */ }
       }
       fetch('/api/email/welcome', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -413,10 +428,6 @@ function StartPageInner() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <Image src="/logo-white.png" alt="TARMAC" width={30} height={30} className="group-hover:scale-105 transition-transform" />
           <span className="text-sm font-bold text-white tracking-tight">TARMAC</span>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>
-            BETA
-          </span>
         </Link>
 
         {/* Step dots progress */}
@@ -603,7 +614,7 @@ function StartPageInner() {
                   transition={{ delay: 0.5 }}
                   style={{ color: 'rgba(255,255,255,0.18)' }}
                 >
-                  ✈️ &nbsp;2,847 students completed this quiz this week
+                  ✈️ &nbsp;Join pilots studying smarter, not harder
                 </motion.p>
               </motion.div>
             )}
@@ -648,11 +659,7 @@ function StartPageInner() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, type: 'spring', damping: 24 }}
                 >
-                  {[
-                    { stat: '1,400+', label: 'practice questions' },
-                    { stat: '9', label: 'knowledge areas covered' },
-                    { stat: '~3 wks', label: 'avg time to ready' },
-                  ].map(s => (
+                  {getStats(answers).map(s => (
                     <div key={s.stat}
                       className="rounded-xl py-3.5 text-center"
                       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>

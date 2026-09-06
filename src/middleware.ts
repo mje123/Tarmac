@@ -2,8 +2,12 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/', '/login', '/signup', '/start', '/auth/callback', '/terms', '/privacy', '/partners', '/unsubscribed', '/checkout', '/forgot-password', '/update-password']
-// Paths that require an active trial/subscription (free users redirect to /upgrade)
-const GATED_PATHS = ['/dashboard', '/practice', '/exam', '/quiz', '/saved', '/chat', '/flashcards', '/admin']
+// Paths that require an active subscription (free users redirect to /upgrade)
+const GATED_PATHS = [
+  '/dashboard', '/practice', '/exam', '/quiz', '/saved', '/chat', '/flashcards', '/admin',
+  '/debrief', '/cfi', '/weather', '/routes', '/review', '/study-plan', '/settings',
+  '/qotd', '/qotw', '/altitude', '/situations', '/flashcards',
+]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -76,8 +80,9 @@ export async function middleware(request: NextRequest) {
     // For all non-free statuses: check expiry if present.
     // Trialing gets NO special bypass — if webhook is delayed, the expiry date
     // set at checkout (= trial end) still gates access correctly.
+    const PAID_STATUSES = ['tarmac_member', 'trialing', 'study_pass', 'checkride_prep', 'annual']
     const hasAccess = isAdmin ||
-      (status && status !== 'free' && (!expires || new Date(expires) > new Date()))
+      (status && PAID_STATUSES.includes(status) && (!expires || new Date(expires) > new Date()))
 
     if (!hasAccess) {
       const url = request.nextUrl.clone()

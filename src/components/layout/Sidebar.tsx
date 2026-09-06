@@ -9,84 +9,77 @@ import { User } from '@/types'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
-  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers, Brain, Route, Plane, AlertTriangle, MessageCircle, Users,
+  Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers,
+  Brain, Route, Sun, Moon,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
 import { useExamType } from '@/components/ExamTypeProvider'
+import { useTheme } from '@/components/ThemeProvider'
 
-const navSections = [
-  {
-    label: null,
-    items: [
-      { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    ],
-  },
-  {
-    label: 'Practice',
-    items: [
-      { href: '/practice', icon: BookOpen, label: 'Practice Mode' },
-      { href: '/quiz', icon: ListChecks, label: 'Quiz Mode' },
-      { href: '/exam', icon: ClipboardList, label: 'Practice Exam' },
-      { href: '/review', icon: Brain, label: 'Daily Review' },
-    ],
-  },
-  {
-    label: 'Tools',
-    items: [
-      { href: '/saved', icon: Bookmark, label: 'Saved Questions' },
-      { href: '/flashcards', icon: Layers, label: 'Flashcards' },
-      { href: '/chat', icon: Bot, label: 'AI Tutor' },
-      { href: '/study-plan', icon: Route, label: '30-Day Runway' },
-    ],
-  },
-  {
-    label: 'Community',
-    items: [
-      { href: '/qotd', icon: MessageCircle, label: 'Daily Question' },
-      { href: '/qotw', icon: Users,         label: 'Weekly Challenge' },
-    ],
-  },
-  {
-    label: 'Games',
-    items: [
-      { href: '/altitude',    icon: Plane,         label: 'Altitude',    badge: 'NEW' },
-      { href: '/situations',  icon: AlertTriangle, label: 'Situations',  badge: 'NEW' },
-    ],
-  },
-]
+const GROUND_SCHOOL_SECTION = {
+  label: 'Training',
+  items: [
+    { href: '/practice',    icon: BookOpen,     label: 'Practice Mode' },
+    { href: '/quiz',        icon: ListChecks,   label: 'Quiz Mode' },
+    { href: '/exam',        icon: ClipboardList, label: 'Practice Exam' },
+    { href: '/review',      icon: Brain,        label: 'Daily Review' },
+    { href: '/chat',        icon: Bot,          label: 'AI Tutor' },
+    { href: '/flashcards',  icon: Layers,       label: 'Flashcards' },
+    { href: '/study-plan',  icon: Route,        label: '30-Day Runway' },
+  ],
+}
 
-interface SidebarProps { user: User }
+const ACCOUNT_SECTION = {
+  label: 'Account',
+  items: [
+    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/saved',     icon: Bookmark,        label: 'Saved Questions' },
+    { href: '/settings',  icon: Settings,        label: 'Settings' },
+  ],
+}
+
+interface NavItem {
+  href: string
+  icon: React.ElementType
+  label: string
+  accent?: string
+  badge?: string
+}
+
+interface NavSection {
+  label: string
+  items: NavItem[]
+}
+
+const ALL_SECTIONS: NavSection[] = [GROUND_SCHOOL_SECTION, ACCOUNT_SECTION]
 
 const subscriptionLabels: Record<string, string> = {
   free: '',
   trialing: 'Free Trial',
-  study_pass: 'Tarmac Membership',
-  checkride_prep: 'Checkride Prep',
-  annual: 'Annual Pass',
+  tarmac_member: 'TARMAC Member',
+  study_pass: 'TARMAC Member',
+  checkride_prep: 'TARMAC Member',
+  annual: 'TARMAC Member',
 }
 
 const subscriptionColors: Record<string, string> = {
   free: 'text-white/30',
   trialing: 'text-green-400',
+  tarmac_member: 'text-[#3E92CC]',
   study_pass: 'text-[#3E92CC]',
-  checkride_prep: 'text-[#FFB627]',
-  annual: 'text-green-400',
+  checkride_prep: 'text-[#3E92CC]',
+  annual: 'text-[#3E92CC]',
 }
+
+interface SidebarProps { user: User }
 
 export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [gotwGame, setGotwGame] = useState<string | null>(null)
   const { examType, setExamType } = useExamType()
-
-  useEffect(() => {
-    fetch('/api/game-of-week')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.game) setGotwGame(d.game) })
-      .catch(() => {})
-  }, [])
+  const { theme, toggle } = useTheme()
 
   useEffect(() => { setOpen(false) }, [pathname])
 
@@ -98,111 +91,137 @@ export default function Sidebar({ user }: SidebarProps) {
   }
 
   const isPaid = user.subscription_status !== 'free'
-  const visibleSections = isPaid ? navSections : navSections.slice(0, 1)
+  const displayName = user.callsign ? user.callsign : (user.full_name?.split(' ')[0] || 'Pilot')
+
+  function NavLink({ href, icon: Icon, label, accent, badge }: NavItem) {
+    const active = pathname === href || pathname.startsWith(href + '/')
+    return (
+      <Link
+        key={href}
+        href={href}
+        className={cn(
+          'flex items-center gap-3 py-2 rounded-lg text-sm font-medium transition-all relative',
+          active ? 'font-semibold' : 'text-white/50 hover:text-white/85 hover:bg-white/5'
+        )}
+        style={active ? {
+          background: accent
+            ? `linear-gradient(90deg, ${accent}18 0%, transparent 100%)`
+            : 'linear-gradient(90deg, rgba(62,146,204,0.14) 0%, transparent 100%)',
+          borderLeft: `3px solid ${accent || '#3E92CC'}`,
+          paddingLeft: '13px',
+          paddingRight: '12px',
+          color: accent || '#3E92CC',
+        } : { paddingLeft: '16px', paddingRight: '12px' }}
+      >
+        <Icon
+          style={{ width: '16px', height: '16px', flexShrink: 0, color: active ? (accent || '#3E92CC') : undefined }}
+        />
+        {label}
+        {badge && (
+          <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded"
+            style={{ background: 'rgba(62,146,204,0.15)', color: '#3E92CC', border: '1px solid rgba(62,146,204,0.25)' }}>
+            {badge}
+          </span>
+        )}
+      </Link>
+    )
+  }
 
   const navContent = (
     <>
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <Image src="/logo-white.png" alt="TARMAC" width={40} height={40} className="shrink-0" />
-        <span className="text-xl font-bold text-white tracking-tight">TARMAC</span>
-        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full tracking-wider" style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>BETA</span>
+        <Image src="/logo-white.png" alt="TARMAC" width={36} height={36} className="shrink-0" />
+        <span className="text-lg font-bold text-white tracking-tight">TARMAC</span>
         <button onClick={() => setOpen(false)} className="ml-auto md:hidden text-white/40 hover:text-white transition-colors">
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
-        {visibleSections.map((section, si) => (
-          <div key={si}>
-            {section.label && (
-              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest"
-                style={{ color: section.label === 'Limited Time' ? 'rgba(62,146,204,0.6)' : 'rgba(255,255,255,0.25)' }}>
-                {section.label}
-              </p>
-            )}
+      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-5">
+        {ALL_SECTIONS.map((section) => (
+          <div key={section.label}>
+            <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest"
+              style={{ color: 'rgba(255,255,255,0.22)' }}>
+              {section.label}
+            </p>
             <div className="space-y-0.5">
-              {section.items.map(({ href, icon: Icon, label, badge }: { href: string; icon: React.ElementType; label: string; badge?: string }) => {
-                const active = pathname === href || pathname.startsWith(href + '/')
-                const slug = href.replace('/', '')
-                const isGotw = gotwGame === slug
-                return (
+              {section.items.map((item) =>
+                isPaid ? (
+                  <NavLink key={item.href} {...item} />
+                ) : item.href === '/dashboard' ? (
+                  <NavLink key={item.href} {...item} />
+                ) : (
                   <Link
-                    key={href}
-                    href={href}
-                    className={cn(
-                      'flex items-center gap-3 py-2.5 rounded-lg text-sm font-medium transition-all relative',
-                      active ? 'text-[#3E92CC] font-semibold' : 'text-white/55 hover:text-white/90 hover:bg-white/5'
-                    )}
-                    style={active ? {
-                      background: 'linear-gradient(90deg, rgba(62,146,204,0.14) 0%, rgba(62,146,204,0.04) 100%)',
-                      borderLeft: '3px solid #3E92CC',
-                      paddingLeft: '13px',
-                      paddingRight: '12px',
-                    } : { paddingLeft: '16px', paddingRight: '12px' }}
+                    key={item.href}
+                    href="/upgrade"
+                    className="flex items-center gap-3 py-2 rounded-lg text-sm font-medium text-white/25 transition-all cursor-pointer hover:text-white/40"
+                    style={{ paddingLeft: '16px', paddingRight: '12px' }}
                   >
-                    <Icon className={cn('shrink-0', active ? 'text-[#3E92CC]' : '')} style={{ width: '18px', height: '18px' }} />
-                    {label}
-                    {isGotw && (
-                      <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-full"
-                        style={{ background: 'rgba(255,182,39,0.18)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.35)' }}>
-                        GOTW
-                      </span>
-                    )}
-                    {!isGotw && badge && (
-                      <span className="ml-auto text-[10px] font-black px-1.5 py-0.5 rounded-full"
-                        style={{ background: 'rgba(62,146,204,0.15)', color: '#3E92CC', border: '1px solid rgba(62,146,204,0.25)' }}>
-                        {badge}
-                      </span>
-                    )}
+                    <item.icon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+                    {item.label}
                   </Link>
                 )
-              })}
+              )}
             </div>
           </div>
         ))}
 
         {user.is_admin && (
-          <Link
-            href="/admin"
-            className={cn(
-              'flex items-center gap-3 py-2.5 rounded-lg text-sm font-medium transition-all mt-4',
-              pathname.startsWith('/admin') ? 'text-[#FFB627] font-semibold' : 'text-white/55 hover:text-white/90 hover:bg-white/5'
-            )}
-            style={pathname.startsWith('/admin') ? {
-              background: 'linear-gradient(90deg, rgba(255,182,39,0.14) 0%, rgba(255,182,39,0.04) 100%)',
-              borderLeft: '3px solid #FFB627',
-              paddingLeft: '13px',
-              paddingRight: '12px',
-            } : { paddingLeft: '16px', paddingRight: '12px' }}
-          >
-            <Shield className="w-[18px] h-[18px] shrink-0 text-[#FFB627]" />
-            Admin
-          </Link>
+          <div>
+            <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest"
+              style={{ color: 'rgba(255,182,39,0.4)' }}>Admin</p>
+            <Link
+              href="/admin"
+              className={cn(
+                'flex items-center gap-3 py-2 rounded-lg text-sm font-medium transition-all',
+                pathname.startsWith('/admin') ? 'text-[#FFB627] font-semibold' : 'text-white/50 hover:text-white/85 hover:bg-white/5'
+              )}
+              style={pathname.startsWith('/admin') ? {
+                background: 'linear-gradient(90deg, rgba(255,182,39,0.14) 0%, transparent 100%)',
+                borderLeft: '3px solid #FFB627',
+                paddingLeft: '13px',
+                paddingRight: '12px',
+              } : { paddingLeft: '16px', paddingRight: '12px' }}
+            >
+              <Shield className="w-4 h-4 shrink-0 text-[#FFB627]" />
+              Admin Panel
+            </Link>
+          </div>
         )}
       </nav>
 
-      {/* User footer */}
+      {/* Footer */}
       <div className="px-3 pb-4 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px' }}>
-        <div className="px-3 py-3 rounded-xl mb-1" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <div className="font-semibold text-white text-sm truncate">{user.full_name || 'Pilot'}</div>
+        <div className="px-3 py-3 rounded-xl mb-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2">
+            {user.callsign ? (
+              <span className="font-mono font-bold text-white text-sm">{user.callsign}</span>
+            ) : (
+              <span className="font-semibold text-white text-sm truncate">{user.full_name || 'Pilot'}</span>
+            )}
+          </div>
           {subscriptionLabels[user.subscription_status] && (
             <div className={cn('text-xs mt-0.5 font-medium', subscriptionColors[user.subscription_status])}>
               {subscriptionLabels[user.subscription_status]}
             </div>
           )}
+          {!user.callsign && isPaid && (
+            <Link href="/settings" className="text-xs text-[#3E92CC]/70 hover:text-[#3E92CC] mt-1 block transition-colors">
+              Set your callsign →
+            </Link>
+          )}
         </div>
 
-        {user.subscription_status === 'free' && !user.stripe_customer_id && (
+        {user.subscription_status === 'free' && (
           <Link
             href="/upgrade"
-            className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
+            className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 mb-1"
             style={{
               background: 'linear-gradient(135deg, rgba(255,182,39,0.18) 0%, rgba(255,182,39,0.08) 100%)',
               border: '1px solid rgba(255,182,39,0.35)',
               color: '#FFB627',
-              boxShadow: '0 2px 12px rgba(255,182,39,0.12)',
             }}
           >
             <span className="text-base leading-none">⚡</span>
@@ -210,41 +229,41 @@ export default function Sidebar({ user }: SidebarProps) {
           </Link>
         )}
 
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:text-white/90 hover:bg-white/5 transition-all"
-        >
-          <Settings className="w-[18px] h-[18px]" />
-          Settings
-        </Link>
-
-        {user.is_admin && (
-          <div className="flex rounded-lg overflow-hidden mb-1" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
-            <button
-              onClick={() => examType !== 'ppl' && setExamType('ppl')}
-              className="flex-1 py-1.5 text-xs font-bold transition-all"
-              style={examType === 'ppl'
-                ? { background: '#3E92CC', color: 'white' }
-                : { background: 'transparent', color: 'rgba(255,255,255,0.35)' }}
-            >PPL</button>
-            <button
-              onClick={() => examType !== 'ifr' && setExamType('ifr')}
-              className="flex-1 py-1.5 text-xs font-bold transition-all"
-              style={examType === 'ifr'
-                ? { background: '#FFB627', color: '#060e1c' }
-                : { background: 'transparent', color: 'rgba(255,255,255,0.35)' }}
-            >IFR</button>
-          </div>
-        )}
+        <div className="flex rounded-lg overflow-hidden mb-1" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+          <button
+            onClick={() => examType !== 'ppl' && setExamType('ppl')}
+            className="flex-1 py-1.5 text-xs font-bold transition-all"
+            style={examType === 'ppl'
+              ? { background: '#3E92CC', color: 'white' }
+              : { background: 'transparent', color: 'rgba(255,255,255,0.35)' }}
+          >Private</button>
+          <button
+            onClick={() => examType !== 'ifr' && setExamType('ifr')}
+            className="flex-1 py-1.5 text-xs font-bold transition-all"
+            style={examType === 'ifr'
+              ? { background: '#FFB627', color: '#060e1c' }
+              : { background: 'transparent', color: 'rgba(255,255,255,0.35)' }}
+          >Instrument</button>
+        </div>
 
         <SuggestionButton />
         <BugReportButton />
 
         <button
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:text-red-400 hover:bg-red-400/5 transition-all"
+          onClick={toggle}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-all"
         >
-          <LogOut className="w-[18px] h-[18px]" />
+          {theme === 'dark'
+            ? <Sun className="w-4 h-4" />
+            : <Moon className="w-4 h-4" />}
+          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        </button>
+
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/40 hover:text-red-400 hover:bg-red-400/5 transition-all"
+        >
+          <LogOut className="w-4 h-4" />
           Sign Out
         </button>
       </div>
@@ -262,9 +281,8 @@ export default function Sidebar({ user }: SidebarProps) {
           <Menu className="w-6 h-6" />
         </button>
         <div className="flex items-center gap-2">
-          <Image src="/logo-white.png" alt="TARMAC" width={28} height={28} />
+          <Image src="/logo-white.png" alt="TARMAC" width={26} height={26} />
           <span className="text-base font-bold text-white tracking-tight">TARMAC</span>
-          <span className="text-[9px] font-bold px-1 py-0.5 rounded-full" style={{ background: 'rgba(255,182,39,0.15)', color: '#FFB627', border: '1px solid rgba(255,182,39,0.3)' }}>BETA</span>
         </div>
         <div className="w-8" />
       </div>
@@ -281,7 +299,7 @@ export default function Sidebar({ user }: SidebarProps) {
 
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex w-64 flex-col h-full shrink-0"
+        className="hidden md:flex w-60 flex-col h-full shrink-0"
         style={{ background: 'var(--bg-sidebar)', borderRight: '1px solid var(--border-sidebar)' }}
       >
         {navContent}

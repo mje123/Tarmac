@@ -6,6 +6,14 @@
   --sky: #3E92CC;
   --gold: #FFB627;
 
+  /* Community feature accents */
+  --debrief-accent: #E8593C;
+  --cfi-accent: #2ECC71;
+  --weather-accent: #F39C12;
+  --route-accent: #9B59B6;
+  --community-accent: #3E92CC;
+  --ground-school-accent: #3E92CC;
+
   /* Dark mode defaults */
   --bg-page: linear-gradient(160deg, #06101e 0%, #0a1630 100%);
   --bg-sidebar: #080f20;
@@ -59,12 +67,58 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Light mode: dark text in main content ── */
+/* ── Light mode CSS variable overrides ── */
+html.light {
+  --bg-page: #edf1f9;
+  /* sidebar intentionally stays dark */
+  --card-bg: rgba(255,255,255,0.92);
+  --card-border: rgba(10,36,99,0.08);
+  --card-shadow: 0 2px 12px rgba(10,36,99,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+  --card-hover-border: rgba(10,36,99,0.15);
+  --card-hover-shadow: 0 6px 24px rgba(10,36,99,0.11);
+  --ring-track: rgba(10,36,99,0.08);
+  --text-dim: rgba(10,36,99,0.45);
+  --input-bg: rgba(255,255,255,0.9);
+  --input-border: rgba(10,36,99,0.18);
+  --input-text: #0d1f3c;
+  --input-placeholder: rgba(13,31,60,0.35);
+  --input-focus-border: rgba(62,146,204,0.7);
+  --input-focus-bg: #ffffff;
+  --input-focus-shadow: 0 0 0 3px rgba(62,146,204,0.15);
+  --select-option-bg: #ffffff;
+  --progress-bg: rgba(10,36,99,0.1);
+  --divider: rgba(10,36,99,0.08);
+  --hover-surface: rgba(10,36,99,0.04);
+  --ghost-color: rgba(10,36,99,0.7);
+  --ghost-border: rgba(10,36,99,0.18);
+  --ghost-hover-bg: rgba(10,36,99,0.05);
+  --ghost-hover-border: rgba(10,36,99,0.3);
+  --ghost-hover-color: #0a1530;
+
+  --surface-1: rgba(255,255,255,0.82);
+  --surface-2: rgba(255,255,255,0.92);
+  --surface-3: #ffffff;
+  --border-1: rgba(10,36,99,0.08);
+  --border-2: rgba(10,36,99,0.10);
+  --border-3: rgba(10,36,99,0.13);
+  --border-4: rgba(10,36,99,0.17);
+  --text-pri: rgba(10,36,99,0.88);
+  --text-sec: rgba(10,36,99,0.55);
+  --text-ter: rgba(10,36,99,0.38);
+  --text-qua: rgba(10,36,99,0.25);
+}
+
+html.light body {
+  background: #edf1f9;
+  color: #0d1f3c;
+}
+
+/* Light mode: dark text via Tailwind utility overrides */
 html.light #main-content [class*="text-white"] { color: #0d1f3c !important; }
 html.light #main-content .text-white\/90 { color: rgba(13,31,60,0.9) !important; }
-html.light #main-content .text-white\/65 { color: rgba(13,31,60,0.65) !important; }
 html.light #main-content .text-white\/80 { color: rgba(13,31,60,0.8) !important; }
 html.light #main-content .text-white\/70 { color: rgba(13,31,60,0.7) !important; }
+html.light #main-content .text-white\/65 { color: rgba(13,31,60,0.65) !important; }
 html.light #main-content .text-white\/60 { color: rgba(13,31,60,0.6) !important; }
 html.light #main-content .text-white\/55 { color: rgba(13,31,60,0.55) !important; }
 html.light #main-content .text-white\/50 { color: rgba(13,31,60,0.5) !important; }
@@ -78,7 +132,7 @@ html.light #main-content .text-white\/18 { color: rgba(13,31,60,0.18) !important
 html.light #main-content .text-white\/15 { color: rgba(13,31,60,0.15) !important; }
 html.light #main-content .text-white\/10 { color: rgba(13,31,60,0.1) !important; }
 
-/* Preserve button text colors — buttons use fixed colors, not white text classes */
+/* Preserve button text colors */
 html.light .btn-primary { color: white !important; }
 html.light .btn-gold { color: #060e1c !important; }
 
