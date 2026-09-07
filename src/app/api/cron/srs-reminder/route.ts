@@ -15,15 +15,17 @@ export async function GET(request: NextRequest) {
     const supabase = createAdminClient()
     const now = new Date().toISOString()
 
-    // Find users with due SRS cards
-    const { data: dueCards } = await supabase
-      .from('srs_cards')
-      .select('user_id')
-      .lte('due_at', now)
+    // Due reviews now come from two sources: concept_mastery (primary, concept-grained)
+    // and srs_cards (fallback, still live for non-concept/legacy questions).
+    const [{ data: dueConcepts }, { data: dueCards }] = await Promise.all([
+      supabase.from('concept_mastery').select('user_id').lte('next_review', now),
+      supabase.from('srs_cards').select('user_id').lte('due_at', now),
+    ])
 
-    if (!dueCards || dueCards.length === 0) return NextResponse.json({ sent: 0 })
+    const allDue = [...(dueConcepts || []), ...(dueCards || [])]
+    if (allDue.length === 0) return NextResponse.json({ sent: 0 })
 
-    const userIds = [...new Set(dueCards.map(c => c.user_id as string))]
+    const userIds = [...new Set(allDue.map(c => c.user_id as string))]
 
     const { data: users } = await supabase
       .from('users')
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     let sent = 0
     for (const u of users) {
-      const count = dueCards.filter(c => c.user_id === u.id).length
+      const count = allDue.filter(c => c.user_id === u.id).length
       const firstName = (u.full_name as string)?.split(' ')[0] || 'Pilot'
 
       const body = `

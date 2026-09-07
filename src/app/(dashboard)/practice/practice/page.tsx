@@ -1,0 +1,1237 @@
+'use client'
+
+import React, { useState, useEffect, useRef, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Question, AnswerOption, QuestionCategory } from '@/types'
+import AIChat from '@/components/ui/AIChat'
+import SupplementViewer from '@/components/ui/SupplementViewer'
+import GeneralChat from '@/components/ui/GeneralChat'
+import { useExamType } from '@/components/ExamTypeProvider'
+import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
+import {
+  CheckCircle,
+  XCircle,
+  ChevronRight,
+  ChevronLeft,
+  RotateCcw,
+  BookOpen,
+  Loader2,
+  Bookmark,
+  Plane,
+  Zap,
+  Target,
+  TrendingUp,
+  Cloud,
+  Compass,
+  Wind,
+  Gauge,
+  Scale,
+  Radio,
+  Map,
+  Play,
+  Trophy,
+  Flame,
+  Eye,
+} from 'lucide-react'
+
+const PPL_CATEGORIES: { value: QuestionCategory; icon: React.ElementType; color: string }[] = [
+  { value: 'Regulations', icon: BookOpen, color: '#3E92CC' },
+  { value: 'Airspace', icon: Compass, color: '#8B5CF6' },
+  { value: 'Weather Theory', icon: Cloud, color: '#06B6D4' },
+  { value: 'Weather Services', icon: Wind, color: '#10B981' },
+  { value: 'Aircraft Performance', icon: Gauge, color: '#F59E0B' },
+  { value: 'Weight & Balance', icon: Scale, color: '#EF4444' },
+  { value: 'Aerodynamics', icon: Plane, color: '#EC4899' },
+  { value: 'Flight Instruments', icon: Radio, color: '#6366F1' },
+  { value: 'Navigation', icon: Map, color: '#14B8A6' },
+]
+
+const IFR_CATEGORY_LIST: { value: QuestionCategory; icon: React.ElementType; color: string }[] = [
+  { value: 'IFR Regulations', icon: BookOpen, color: '#3E92CC' },
+  { value: 'Instrument Navigation', icon: Compass, color: '#8B5CF6' },
+  { value: 'Instrument Approaches', icon: Target, color: '#06B6D4' },
+  { value: 'IFR Weather', icon: Cloud, color: '#10B981' },
+  { value: 'IFR En Route', icon: Map, color: '#F59E0B' },
+  { value: 'ATC & Communications', icon: Radio, color: '#EF4444' },
+  { value: 'Instrument Systems', icon: Gauge, color: '#6366F1' },
+  { value: 'Departure & Arrivals', icon: Plane, color: '#EC4899' },
+  { value: 'IFR Emergency Operations', icon: Zap, color: '#FF6B6B' },
+]
+
+const PRACTICE_KEY = 'tarmac_practice_state'
+const MODE_KEY = 'tarmac_study_mode'
+const MAX_AGE_MS = 24 * 60 * 60 * 1000
+
+type Phase = 'setup' | 'question' | 'correct' | 'wrong' | 'summary'
+
+interface PracticeState {
+  sessionId: string
+  category: QuestionCategory | 'all' | 'weak' | 'saved'
+  selectedCategories?: QuestionCategory[]
+  correctCount: number
+  totalAnswered: number
+  askedIds: string[]
+  savedAt: number
+}
+
+function loadPracticeState(): PracticeState | null {
+  try {
+    const raw = localStorage.getItem(PRACTICE_KEY)
+    if (!raw) return null
+    const state: PracticeState = JSON.parse(raw)
+    if (Date.now() - state.savedAt > MAX_AGE_MS) {
+      localStorage.removeItem(PRACTICE_KEY)
+      return null
+    }
+    return state
+  } catch {
+    return null
+  }
+}
+
+export default function PracticePage() {
+  return (
+    <Suspense fallback={null}>
+      <PracticePageInner />
+    </Suspense>
+  )
+}
+
+function PracticePageInner() {
+  const searchParams = useSearchParams()
+  const { examType } = useExamType()
+  const CATEGORIES = examType === 'ifr' ? IFR_CATEGORY_LIST : PPL_CATEGORIES
+
+  const [phase, setPhase] = useState<Phase>('setup')
+  const [category, setCategory] = useState<QuestionCategory | 'all' | 'weak' | 'saved'>('all')
+  const [selectedCategories, setSelectedCategories] = useState<Set<QuestionCategory>>(new Set())
+  const [question, setQuestion] = useState<Question | null>(null)
+  const [selectedAnswer, setSelectedAnswer] = useState<AnswerOption | null>(null)
+  const [pendingAnswer, setPendingAnswer] = useState<AnswerOption | null>(null)
+  const [correctCount, setCorrectCount] = useState(0)
+  const [totalAnswered, setTotalAnswered] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [showAI, setShowAI] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [askedIds, setAskedIds] = useState<string[]>([])
+  const [conceptHistory, setConceptHistory] = useState<string[]>([])
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
+  const [resumeState, setResumeState] = useState<PracticeState | null>(null)
+  const [streak, setStreak] = useState(0)
+
+  // Read-through mode state
+  const [memMode, setMemMode] = useState(false)
+  const [questionHistory, setQuestionHistory] = useState<Question[]>([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
+
+  // Refs so keyboard handler always sees latest state
+  const historyIndexRef = useRef(historyIndex)
+  const questionHistoryRef = useRef(questionHistory)
+  const loadingRef = useRef(loading)
+  const categoryRef = useRef(category)
+  const selectedCategoriesRef = useRef(selectedCategories)
+  const examTypeRef = useRef(examType)
+
+  historyIndexRef.current = historyIndex
+  questionHistoryRef.current = questionHistory
+  loadingRef.current = loading
+  categoryRef.current = category
+  selectedCategoriesRef.current = selectedCategories
+  examTypeRef.current = examType
+
+  useEffect(() => {
+    setResumeState(loadPracticeState())
+    const saved = localStorage.getItem(MODE_KEY)
+    if (saved === 'readthrough') setMemMode(true)
+  }, [])
+
+  // Keyboard shortcuts in read-through mode
+  useEffect(() => {
+    if (!memMode || phase !== 'question') return
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault()
+        handleMemNext()
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        handleMemPrev()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [memMode, phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function buildParams(excludeIds: string[]): URLSearchParams {
+    const params = new URLSearchParams()
+    const multi = selectedCategoriesRef.current.size > 0 ? selectedCategoriesRef.current : null
+    const cat = categoryRef.current
+    if (cat === 'saved') {
+      params.set('saved', '1')
+    } else if (multi) {
+      multi.forEach(c => params.append('categories', c))
+    } else if (cat !== 'all' && cat !== 'weak') {
+      params.set('category', cat)
+    } else if (cat === 'weak') {
+      params.set('weak', '1')
+    }
+    excludeIds.forEach(id => params.append('exclude', id))
+    params.set('examType', examTypeRef.current)
+    return params
+  }
+
+  function savePracticeProgress(
+    sid: string,
+    cat: QuestionCategory | 'all' | 'weak' | 'saved',
+    correct: number,
+    total: number,
+    asked: string[],
+    selCats?: QuestionCategory[]
+  ) {
+    localStorage.setItem(PRACTICE_KEY, JSON.stringify({
+      sessionId: sid, category: cat, selectedCategories: selCats,
+      correctCount: correct, totalAnswered: total, askedIds: asked, savedAt: Date.now(),
+    }))
+  }
+
+  async function startSession(overrideCategory?: QuestionCategory | 'all' | 'weak' | 'saved') {
+    setLoading(true)
+    try {
+      const [sessionRes, savedRes] = await Promise.all([
+        fetch('/api/sessions/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionType: 'practice_mode' }),
+        }),
+        fetch('/api/questions/save'),
+      ])
+      const data = await sessionRes.json()
+      const savedData = await savedRes.json()
+      setSavedIds(new Set(savedData.savedIds || []))
+      setSessionId(data.sessionId)
+      setCorrectCount(0)
+      setTotalAnswered(0)
+      setAskedIds([])
+      setStreak(0)
+      setResumeState(null)
+      await fetchQuestion(data.sessionId, [], overrideCategory ?? category, selectedCategories)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Deep link from Practice Home's "Start Today's Training" CTA — skips setup and
+  // jumps straight into a weak-area session.
+  useEffect(() => {
+    const autoStart = searchParams.get('autoStart')
+    if (autoStart === 'weak') {
+      setCategory('weak')
+      startSession('weak')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function startMemSession() {
+    setLoading(true)
+    try {
+      const savedRes = await fetch('/api/questions/save')
+      const savedData = await savedRes.json()
+      setSavedIds(new Set(savedData.savedIds || []))
+      setQuestionHistory([])
+      setHistoryIndex(-1)
+      setTotalAnswered(0)
+      setResumeState(null)
+      const params = buildParams([])
+      const res = await fetch(`/api/questions/random?${params}`)
+      const data = await res.json()
+      if (!data.question) {
+        setPhase('summary')
+        return
+      }
+      setQuestionHistory([data.question])
+      setHistoryIndex(0)
+      setQuestion(data.question)
+      setPhase('question')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleMemNext() {
+    if (loadingRef.current) return
+    const idx = historyIndexRef.current
+    const hist = questionHistoryRef.current
+    if (idx < hist.length - 1) {
+      const newIdx = idx + 1
+      setHistoryIndex(newIdx)
+      setQuestion(hist[newIdx])
+    } else {
+      setLoading(true)
+      try {
+        const excludeIds = hist.map(q => q.id)
+        const params = buildParams(excludeIds)
+        const res = await fetch(`/api/questions/random?${params}`)
+        const data = await res.json()
+        if (!data.question) {
+          setPhase('summary')
+          return
+        }
+        const newHistory = [...hist, data.question]
+        setQuestionHistory(newHistory)
+        setHistoryIndex(newHistory.length - 1)
+        setQuestion(data.question)
+        setTotalAnswered(t => t + 1)
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
+  function handleMemPrev() {
+    const idx = historyIndexRef.current
+    if (idx <= 0) return
+    const newIdx = idx - 1
+    setHistoryIndex(newIdx)
+    setQuestion(questionHistoryRef.current[newIdx])
+  }
+
+  function setMode(mode: 'practice' | 'readthrough') {
+    setMemMode(mode === 'readthrough')
+    localStorage.setItem(MODE_KEY, mode)
+  }
+
+  async function resumeSession(state: PracticeState) {
+    setLoading(true)
+    try {
+      const savedRes = await fetch('/api/questions/save')
+      const savedData = await savedRes.json()
+      setSavedIds(new Set(savedData.savedIds || []))
+      const restoredCats = new Set<QuestionCategory>(state.selectedCategories ?? [])
+      setSessionId(state.sessionId)
+      setCategory(state.category)
+      setSelectedCategories(restoredCats)
+      setCorrectCount(state.correctCount)
+      setTotalAnswered(state.totalAnswered)
+      setAskedIds(state.askedIds)
+      setResumeState(null)
+      await fetchQuestion(state.sessionId, state.askedIds, state.category, restoredCats)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function fetchQuestion(
+    sid: string,
+    excludeIds: string[],
+    cat: QuestionCategory | 'all' | 'weak' | 'saved',
+    selCats?: Set<QuestionCategory>
+  ) {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      const multi = selCats && selCats.size > 0 ? selCats : null
+      if (cat === 'saved') {
+        params.set('saved', '1')
+      } else if (multi) {
+        multi.forEach(c => params.append('categories', c))
+      } else if (cat !== 'all' && cat !== 'weak') {
+        params.set('category', cat)
+      } else if (cat === 'weak') {
+        params.set('weak', '1')
+      }
+      excludeIds.forEach(id => params.append('exclude', id))
+      params.set('examType', examType)
+      conceptHistory.slice(-2).forEach(id => params.append('recentConcept', id))
+      const res = await fetch(`/api/questions/random?${params}`)
+      const data = await res.json()
+      if (!data.question) {
+        setPhase('summary')
+        return
+      }
+      setQuestion(data.question)
+      if (data.question.concept_id) {
+        setConceptHistory(h => [...h, data.question.concept_id].slice(-5))
+      }
+      setSelectedAnswer(null)
+      setPendingAnswer(null)
+      setPhase('question')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function submitAnswer(answer: AnswerOption, confidence: ConfidenceLevel | null) {
+    if (!question || !sessionId) return
+    setSelectedAnswer(answer)
+    setPendingAnswer(null)
+    const isCorrect = answer === question.correct_answer
+    const newCorrect = correctCount + (isCorrect ? 1 : 0)
+    const newTotal = totalAnswered + 1
+    setTotalAnswered(newTotal)
+    if (isCorrect) {
+      setCorrectCount(newCorrect)
+      setStreak(s => s + 1)
+    } else {
+      setStreak(0)
+    }
+    await fetch('/api/sessions/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect, confidence }),
+    })
+    savePracticeProgress(sessionId, category, newCorrect, newTotal, askedIds, [...selectedCategories])
+    if (isCorrect) setPhase('correct')
+    else setPhase('wrong')
+  }
+
+  async function nextQuestion() {
+    const newIds = [...askedIds, question!.id]
+    setAskedIds(newIds)
+    setPendingAnswer(null)
+    await fetchQuestion(sessionId!, newIds, category, selectedCategories)
+  }
+
+  // "Prove It" — deliberately does NOT just re-ask the same concept at a harder
+  // label. It asks the server for a genuinely different archetype/scenario shape on
+  // the same concept (see the proveIt scoring bonus in api/questions/random), so
+  // getting it right means the student can transfer the rule, not that they recognized
+  // a near-duplicate question.
+  async function proveIt() {
+    if (!question || !sessionId || !question.concept_id) return
+    const newIds = [...askedIds, question.id]
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      params.set('conceptId', question.concept_id)
+      params.set('proveIt', '1')
+      if (question.archetype_id) params.set('lastArchetypeId', question.archetype_id)
+      if (question.novelty_key) params.set('lastNoveltyKey', question.novelty_key)
+      params.set('examType', examType)
+      newIds.forEach(id => params.append('exclude', id))
+      const res = await fetch(`/api/questions/random?${params}`)
+      const data = await res.json()
+      setAskedIds(newIds)
+      if (!data.question) {
+        await fetchQuestion(sessionId, newIds, category, selectedCategories)
+        return
+      }
+      setQuestion(data.question)
+      if (data.question.concept_id) {
+        setConceptHistory(h => [...h, data.question.concept_id].slice(-5))
+      }
+      setSelectedAnswer(null)
+      setPendingAnswer(null)
+      setPhase('question')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function endSession() {
+    if (sessionId) savePracticeProgress(sessionId, category, correctCount, totalAnswered, askedIds, [...selectedCategories])
+    setPhase('summary')
+  }
+
+  function reset() {
+    localStorage.removeItem(PRACTICE_KEY)
+    setPhase('setup')
+    setCorrectCount(0)
+    setTotalAnswered(0)
+    setAskedIds([])
+    setSessionId(null)
+    setQuestion(null)
+    setStreak(0)
+    setQuestionHistory([])
+    setHistoryIndex(-1)
+    setResumeState(loadPracticeState())
+  }
+
+  async function toggleSave() {
+    if (!question) return
+    const isSaved = savedIds.has(question.id)
+    await fetch('/api/questions/save', {
+      method: isSaved ? 'DELETE' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questionId: question.id }),
+    })
+    setSavedIds(prev => {
+      const next = new Set(prev)
+      isSaved ? next.delete(question.id) : next.add(question.id)
+      return next
+    })
+  }
+
+  const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0
+
+  const optionKeys: AnswerOption[] = question
+    ? (['A', 'B', 'C', 'D'] as AnswerOption[]).filter(k =>
+        k === 'A' || k === 'B' || k === 'C' || (k === 'D' && !!question.option_d)
+      )
+    : ['A', 'B', 'C']
+  const optionValues: Record<string, string> = question ? {
+    A: question.option_a, B: question.option_b, C: question.option_c, D: question.option_d || '',
+  } : { A: '', B: '', C: '', D: '' }
+
+
+  // ── Setup screen ─────────────────────────────────────────────────────────────
+  if (phase === 'setup') {
+    const isMulti = selectedCategories.size > 0
+    const isAll = !isMulti && category === 'all'
+    const isWeak = !isMulti && category === 'weak'
+
+    function toggleCategory(val: QuestionCategory) {
+      setSelectedCategories(prev => {
+        const next = new Set(prev)
+        if (next.has(val)) next.delete(val)
+        else next.add(val)
+        return next
+      })
+      setCategory('all')
+    }
+
+    function selectSpecial(mode: 'all' | 'weak' | 'saved') {
+      setSelectedCategories(new Set())
+      setCategory(mode)
+    }
+
+    const startLabel = isMulti
+      ? `Start — ${selectedCategories.size} topic${selectedCategories.size > 1 ? 's' : ''}`
+      : isWeak ? 'Start — Weak Areas'
+      : category === 'saved' ? 'Start — Saved Questions'
+      : 'Start — All Topics'
+
+    return (
+      <div className="min-h-screen p-6 md:p-10 max-w-4xl mx-auto animate-fade-in">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(62,146,204,0.15)', border: '1px solid rgba(62,146,204,0.2)' }}>
+              <BookOpen className="w-5 h-5 text-[#3E92CC]" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">Practice Mode</h1>
+              <p className="text-white/45 text-sm mt-0.5">Answer questions, get instant AI feedback, and build real knowledge.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mode toggle */}
+        <div className="flex mb-8 p-1 rounded-2xl gap-1" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-1)' }}>
+          <button
+            onClick={() => setMode('practice')}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-semibold transition-all"
+            style={!memMode ? {
+              background: 'rgba(62,146,204,0.15)',
+              color: '#3E92CC',
+              border: '1px solid rgba(62,146,204,0.3)',
+            } : {
+              color: 'var(--text-ter)',
+            }}
+          >
+            <Target className="w-4 h-4 shrink-0" />
+            Practice
+            <span className="text-xs opacity-60 hidden sm:inline">{!memMode ? '— test yourself' : ''}</span>
+          </button>
+          <button
+            onClick={() => setMode('readthrough')}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-semibold transition-all"
+            style={memMode ? {
+              background: 'rgba(255,182,39,0.12)',
+              color: '#FFB627',
+              border: '1px solid rgba(255,182,39,0.3)',
+            } : {
+              color: 'var(--text-ter)',
+            }}
+          >
+            <Eye className="w-4 h-4 shrink-0" />
+            Read-Through
+            <span className="text-xs opacity-60 hidden sm:inline">{memMode ? '— see answers' : ''}</span>
+          </button>
+        </div>
+
+        {/* Resume banner (practice mode only) */}
+        {resumeState && !memMode && (
+          <div className="mb-6 p-5 rounded-2xl" style={{ background: 'linear-gradient(135deg, rgba(62,146,204,0.12), rgba(62,146,204,0.06))', border: '1px solid rgba(62,146,204,0.25)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Play className="w-4 h-4 text-[#3E92CC]" />
+              <span className="text-sm font-bold text-white">Session in Progress</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="text-center">
+                <div className="text-xl font-bold text-white">{resumeState.totalAnswered}</div>
+                <div className="text-white/40 text-xs">Answered</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-[#FFB627]">
+                  {resumeState.totalAnswered > 0 ? Math.round((resumeState.correctCount / resumeState.totalAnswered) * 100) : 0}%
+                </div>
+                <div className="text-white/40 text-xs">Accuracy</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm font-bold text-[#3E92CC] truncate">
+                  {resumeState.selectedCategories && resumeState.selectedCategories.length > 0
+                    ? `${resumeState.selectedCategories.length} topics`
+                    : resumeState.category === 'all' ? 'All' : resumeState.category === 'weak' ? 'Weak' : resumeState.category.split(' ')[0]}
+                </div>
+                <div className="text-white/40 text-xs">Topic</div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => resumeSession(resumeState)}
+                disabled={loading}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #3E92CC, #2a7ab5)' }}
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Play className="w-4 h-4" /> Resume Session</>}
+              </button>
+              <button
+                onClick={() => { localStorage.removeItem(PRACTICE_KEY); setResumeState(null) }}
+                className="px-4 py-2.5 rounded-xl text-xs text-white/40 hover:text-white/60 transition-colors border border-white/10"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Read-through mode description */}
+        {memMode && (
+          <div className="mb-6 p-4 rounded-2xl" style={{ background: 'rgba(255,182,39,0.06)', border: '1px solid rgba(255,182,39,0.15)' }}>
+            <p className="text-sm text-white/60 leading-relaxed">
+              <span className="text-[#FFB627] font-semibold">Read-Through mode</span> — questions and correct answers are shown together. Read them, absorb the pattern, and move on. No guessing required. Use <kbd className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>Space</kbd> or <kbd className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}>→</kbd> to advance.
+            </p>
+          </div>
+        )}
+
+        {/* Topic selection */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-white/70 uppercase tracking-wider">Select Topics</h2>
+            {isMulti && (
+              <button onClick={() => selectSpecial('all')} className="text-xs text-[#3E92CC] hover:text-[#5aabdf]">
+                Clear ({selectedCategories.size})
+              </button>
+            )}
+          </div>
+
+          {/* Special options */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+            <button
+              onClick={() => selectSpecial('all')}
+              className="p-3 rounded-xl text-left transition-all"
+              style={{
+                background: isAll ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'var(--surface-1)',
+                border: `1px solid ${isAll ? 'rgba(255,182,39,0.4)' : 'var(--border-1)'}`,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,182,39,0.15)' }}>
+                  <Zap className="w-3.5 h-3.5 text-[#FFB627]" />
+                </div>
+                <div>
+                  <div className="text-white text-sm font-semibold">All Topics</div>
+                  <div className="text-white/40 text-xs">Mixed practice</div>
+                </div>
+              </div>
+            </button>
+            <button
+              onClick={() => selectSpecial('weak')}
+              className="p-3 rounded-xl text-left transition-all"
+              style={{
+                background: isWeak ? 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))' : 'var(--surface-1)',
+                border: `1px solid ${isWeak ? 'rgba(239,68,68,0.4)' : 'var(--border-1)'}`,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)' }}>
+                  <Target className="w-3.5 h-3.5 text-red-400" />
+                </div>
+                <div>
+                  <div className="text-white text-sm font-semibold">Weak Areas</div>
+                  <div className="text-white/40 text-xs">Focus on misses</div>
+                </div>
+              </div>
+            </button>
+            <button
+              onClick={() => selectSpecial('saved')}
+              className="p-3 rounded-xl text-left transition-all"
+              style={{
+                background: category === 'saved' && !isMulti ? 'linear-gradient(135deg, rgba(255,182,39,0.2), rgba(255,182,39,0.1))' : 'var(--surface-1)',
+                border: `1px solid ${category === 'saved' && !isMulti ? 'rgba(255,182,39,0.4)' : 'var(--border-1)'}`,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,182,39,0.15)' }}>
+                  <Bookmark className="w-3.5 h-3.5 text-[#FFB627]" />
+                </div>
+                <div>
+                  <div className="text-white text-sm font-semibold">Saved</div>
+                  <div className="text-white/40 text-xs">Study Later list</div>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {/* Category grid */}
+          <p className="text-white/30 text-xs mb-2">Or pick specific topics to combine:</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            {CATEGORIES.map(({ value, icon: Icon, color }) => {
+              const checked = selectedCategories.has(value)
+              return (
+                <button
+                  key={value}
+                  onClick={() => toggleCategory(value)}
+                  className="p-3 rounded-xl text-left transition-all relative"
+                  style={{
+                    background: checked ? `linear-gradient(135deg, ${color}22, ${color}11)` : 'var(--surface-1)',
+                    border: `1px solid ${checked ? `${color}55` : 'var(--border-1)'}`,
+                  }}
+                >
+                  <div
+                    className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: checked ? color : 'var(--surface-3)',
+                      border: `1px solid ${checked ? color : 'var(--border-4)'}`,
+                    }}
+                  >
+                    {checked && (
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-2" style={{ background: `${color}20` }}>
+                    <Icon className="w-3.5 h-3.5" style={{ color }} />
+                  </div>
+                  <div className="text-white text-xs font-medium leading-tight pr-4">{value}</div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Start button */}
+        <button
+          onClick={() => (memMode ? startMemSession() : startSession())}
+          disabled={loading}
+          className="btn-gold w-full justify-center py-4 text-base font-bold gap-3"
+          style={{ borderRadius: '16px' }}
+        >
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : memMode ? (
+            <><Eye className="w-5 h-5" />{startLabel.replace('Start', 'Start Read-Through')}</>
+          ) : (
+            <><Play className="w-5 h-5" />{resumeState ? 'Start New Session' : startLabel}</>
+          )}
+        </button>
+      </div>
+    )
+  }
+
+  // ── Summary screen ────────────────────────────────────────────────────────────
+  if (phase === 'summary') {
+    if (memMode) {
+      const reviewed = questionHistory.length
+      return (
+        <div className="flex items-center justify-center min-h-screen p-8">
+          <div className="glass-card p-8 max-w-md w-full text-center animate-fade-in">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: 'rgba(255,182,39,0.15)', border: '2px solid rgba(255,182,39,0.3)' }}>
+              <Eye className="w-9 h-9 text-[#FFB627]" />
+            </div>
+            <div className="text-5xl font-bold text-white mb-1">{reviewed}</div>
+            <div className="font-semibold text-[#FFB627] mb-1">Questions reviewed</div>
+            <div className="text-white/40 text-sm mb-8">All done — you've seen everything in this set.</div>
+            <button onClick={reset} className="btn-primary w-full justify-center py-3 gap-2">
+              <RotateCcw className="w-4 h-4" />
+              Back to Setup
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    const grade = accuracy >= 90 ? 'Outstanding! You\'re killing it! 🔥' : accuracy >= 70 ? 'Solid work — you\'re on track! ✈️' : accuracy >= 50 ? 'Good effort — keep pushing! 💪' : 'Every question is progress — don\'t stop! 🛫'
+    const gradeColor = accuracy >= 90 ? '#10B981' : accuracy >= 70 ? '#FFB627' : accuracy >= 50 ? '#3E92CC' : '#EF4444'
+    return (
+      <div className="flex items-center justify-center min-h-screen p-8">
+        <div className="glass-card p-8 max-w-md w-full text-center animate-fade-in">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: `${gradeColor}20`, border: `2px solid ${gradeColor}40` }}>
+            <Trophy className="w-9 h-9" style={{ color: gradeColor }} />
+          </div>
+          <div className="text-5xl font-bold text-white mb-1">{accuracy}%</div>
+          <div className="font-semibold mb-1" style={{ color: gradeColor }}>{grade}</div>
+          <div className="text-white/40 text-sm mb-8">{correctCount} of {totalAnswered} questions correct</div>
+
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            {[
+              { label: 'Correct', value: correctCount, color: '#10B981' },
+              { label: 'Missed', value: totalAnswered - correctCount, color: '#EF4444' },
+              { label: 'Streak', value: streak, color: '#FFB627' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="rounded-xl p-3" style={{ background: `${color}10`, border: `1px solid ${color}25` }}>
+                <div className="text-2xl font-bold" style={{ color }}>{value}</div>
+                <div className="text-white/40 text-xs mt-0.5">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={reset} className="btn-primary w-full justify-center py-3 gap-2">
+            <RotateCcw className="w-4 h-4" />
+            New Practice Session
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Loading ────────────────────────────────────────────────────────────────────
+  if (!question || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-10 h-10 text-[#3E92CC] animate-spin" />
+      </div>
+    )
+  }
+
+  const supplementRef = question.question_text.match(/FAA-CT-8080-2H[,\s]+(Figures?|Legend)\s+\d+/i)?.[0]
+    || question.question_text.match(/\(Refer to (Figures?|Legend)\s+\d+/i)?.[0]?.replace('(Refer to ', '')
+
+  const isSaved = savedIds.has(question.id)
+  const catInfo = CATEGORIES.find(c => c.value === question.category)
+  const optionLetterColors: Record<string, string> = { A: '#3E92CC', B: '#8B5CF6', C: '#10B981', D: '#F59E0B' }
+
+  // ── Read-Through Mode Card ─────────────────────────────────────────────────────
+  if (memMode) {
+    const reviewed = questionHistory.length
+    const atFirst = historyIndex === 0
+
+    return (
+      <div className="min-h-screen p-4 md:p-6 flex flex-col max-w-3xl mx-auto animate-fade-in">
+        {/* Top bar */}
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,182,39,0.1)', border: '1px solid rgba(255,182,39,0.2)' }}>
+            <Eye className="w-3.5 h-3.5 text-[#FFB627]" />
+            <span className="text-[#FFB627] text-xs font-semibold">Read-Through</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)' }}>
+            <span className="text-white text-sm font-semibold">{reviewed} reviewed</span>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
+              Supplement ↗
+            </a>
+            <button onClick={reset} className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
+              End
+            </button>
+          </div>
+        </div>
+
+        {supplementRef && (
+          <div className="mb-4">
+            <SupplementViewer figureRef={supplementRef} />
+          </div>
+        )}
+
+        {/* Read-through card */}
+        <div className="glass-card flex flex-col animate-fade-in" style={{ borderRadius: '20px', boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)' }}>
+          {/* Meta row */}
+          <div className="flex items-center gap-2 p-5 pb-0 flex-wrap">
+            {catInfo && (
+              <span className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold"
+                style={{ background: `${catInfo.color}18`, color: catInfo.color, border: `1px solid ${catInfo.color}30` }}>
+                <catInfo.icon className="w-3 h-3" />
+                {question.category}
+              </span>
+            )}
+            <button
+              onClick={toggleSave}
+              title={isSaved ? 'Remove from Study Later' : 'Save to Study Later'}
+              className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+              style={{
+                background: isSaved ? 'rgba(255,182,39,0.12)' : 'var(--surface-1)',
+                border: `1px solid ${isSaved ? 'rgba(255,182,39,0.35)' : 'var(--border-2)'}`,
+                color: isSaved ? '#FFB627' : 'var(--text-ter)',
+              }}
+            >
+              <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+              {isSaved ? 'Saved' : 'Study Later'}
+            </button>
+          </div>
+
+          {/* Question text */}
+          <div className="p-5 pb-4">
+            <p className="text-white text-lg leading-relaxed font-medium">{question.question_text}</p>
+          </div>
+
+          {/* Answer divider */}
+          <div className="mx-5 flex items-center gap-3">
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,182,39,0.2)' }} />
+            <span className="text-xs font-bold tracking-widest" style={{ color: 'rgba(255,182,39,0.5)' }}>CORRECT ANSWER</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,182,39,0.2)' }} />
+          </div>
+
+          {/* Options — correct one highlighted, others dimmed */}
+          <div className="p-5 pt-4 space-y-2">
+            {optionKeys.map(key => {
+              const isCorrect = key === question.correct_answer
+              return (
+                <div
+                  key={key}
+                  className="flex items-center gap-3 p-3.5 rounded-2xl transition-all"
+                  style={isCorrect ? {
+                    background: 'rgba(255,182,39,0.1)',
+                    border: '1px solid rgba(255,182,39,0.35)',
+                  } : {
+                    background: 'var(--surface-1)',
+                    border: '1px solid var(--border-1)',
+                    opacity: 0.38,
+                  }}
+                >
+                  <span
+                    className="w-7 h-7 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
+                    style={isCorrect ? {
+                      background: 'rgba(255,182,39,0.25)',
+                      color: '#FFB627',
+                    } : {
+                      background: 'var(--surface-3)',
+                      color: 'var(--text-ter)',
+                    }}
+                  >
+                    {key}
+                  </span>
+                  <span
+                    className="text-sm leading-relaxed"
+                    style={{ color: isCorrect ? '#FFB627' : 'var(--text-ter)' }}
+                  >
+                    {optionValues[key]}
+                  </span>
+                  {isCorrect && <CheckCircle className="w-4 h-4 text-[#FFB627] shrink-0 ml-auto" />}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Explanation */}
+          {question.explanation && (
+            <div className="mx-5 mb-5 p-3.5 rounded-xl text-sm leading-relaxed"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: 'var(--text-sec)' }}>
+              {question.explanation}
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="p-5 pt-0 flex items-center gap-3">
+            <button
+              onClick={handleMemPrev}
+              disabled={atFirst}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all"
+              style={{
+                background: 'var(--surface-1)',
+                border: '1px solid var(--border-1)',
+                color: 'var(--text-sec)',
+                opacity: atFirst ? 0.3 : 1,
+                cursor: atFirst ? 'default' : 'pointer',
+              }}
+            >
+              <ChevronLeft className="w-4 h-4" /> Prev
+            </button>
+
+            <div className="flex-1 text-center">
+              <span className="text-white/30 text-sm">{historyIndex + 1} / {reviewed}</span>
+            </div>
+
+            <button
+              onClick={handleMemNext}
+              disabled={loading}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold transition-all hover:opacity-90"
+              style={{
+                background: 'linear-gradient(135deg, #FFB627, #e09e1a)',
+                color: '#0A2463',
+                boxShadow: '0 4px 20px rgba(255,182,39,0.3)',
+              }}
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Next <ChevronRight className="w-4 h-4" /></>}
+            </button>
+          </div>
+        </div>
+
+        <p className="text-center text-white/20 text-xs mt-4">
+          <kbd className="px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>Space</kbd>
+          {' '}or{' '}
+          <kbd className="px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>→</kbd>
+          {' '}to advance ·
+          <kbd className="px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>←</kbd>
+          {' '}to go back
+        </p>
+
+        <GeneralChat
+          currentQuestionContext={question
+            ? `Category: ${question.category}\nQuestion: ${question.question_text}`
+            : undefined
+          }
+        />
+      </div>
+    )
+  }
+
+  // ── Practice Mode Question screen ─────────────────────────────────────────────
+  return (
+    <div className="min-h-screen p-4 md:p-6 flex flex-col max-w-3xl mx-auto animate-fade-in">
+      {/* Top bar */}
+      <div className="mb-5 flex items-center gap-4">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)' }}>
+            <TrendingUp className="w-3.5 h-3.5 text-[#3E92CC]" />
+            <span className="text-white text-sm font-semibold">{correctCount}/{totalAnswered}</span>
+          </div>
+          {totalAnswered > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: accuracy >= 70 ? 'rgba(16,185,129,0.1)' : 'rgba(255,182,39,0.1)', border: `1px solid ${accuracy >= 70 ? 'rgba(16,185,129,0.25)' : 'rgba(255,182,39,0.25)'}` }}>
+              <span className="text-sm font-bold" style={{ color: accuracy >= 70 ? '#10B981' : '#FFB627' }}>{accuracy}%</span>
+            </div>
+          )}
+          {streak >= 2 && (
+            <div className="flex items-center gap-1 px-3 py-1.5 rounded-full" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}>
+              <Flame className="w-3.5 h-3.5 text-red-400" />
+              <span className="text-red-400 text-sm font-bold">{streak}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
+            className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
+            Supplement ↗
+          </a>
+          <button onClick={endSession} className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
+            End
+          </button>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="mb-5 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--progress-bg)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15)' }}>
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{
+            width: totalAnswered > 0 ? `${accuracy}%` : '0%',
+            background: accuracy >= 70 ? 'linear-gradient(90deg, #10B981, #34D399)' : 'linear-gradient(90deg, #3E92CC, #60B4E8)',
+            boxShadow: accuracy >= 70 ? '0 0 8px rgba(16,185,129,0.5)' : '0 0 8px rgba(62,146,204,0.4)',
+          }}
+        />
+      </div>
+
+      {supplementRef && (
+        <div className="mb-4">
+          <SupplementViewer figureRef={supplementRef} />
+        </div>
+      )}
+
+      {/* Question card */}
+      <div className="glass-card p-6 flex-1 flex flex-col" style={{ borderRadius: '20px', boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)' }}>
+        {/* Meta row */}
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          {catInfo && (
+            <span className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold"
+              style={{ background: `${catInfo.color}18`, color: catInfo.color, border: `1px solid ${catInfo.color}30` }}>
+              <catInfo.icon className="w-3 h-3" />
+              {question.category}
+            </span>
+          )}
+          <span className="text-xs px-3 py-1.5 rounded-full font-medium capitalize"
+            style={{ background: 'var(--surface-2)', color: 'var(--text-sec)', border: '1px solid var(--border-1)' }}>
+            {question.difficulty}
+          </span>
+          <button
+            onClick={toggleSave}
+            title={isSaved ? 'Remove from Study Later' : 'Save to Study Later'}
+            className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold transition-all"
+            style={{
+              background: isSaved ? 'rgba(255,182,39,0.12)' : 'var(--surface-1)',
+              border: `1px solid ${isSaved ? 'rgba(255,182,39,0.35)' : 'var(--border-2)'}`,
+              color: isSaved ? '#FFB627' : 'var(--text-ter)',
+            }}
+          >
+            <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+            {isSaved ? 'Saved' : 'Study Later'}
+          </button>
+        </div>
+
+        <p className="text-white text-lg leading-relaxed mb-7 font-medium flex-shrink-0">{question.question_text}</p>
+
+        <div className="space-y-2.5 flex-1">
+          {optionKeys.map(key => {
+            const isCorrect = key === question.correct_answer
+            const isSelected = key === selectedAnswer
+            const isPending = key === pendingAnswer
+            const revealed = phase !== 'question'
+
+            let bg = isPending ? 'rgba(255,182,39,0.08)' : 'var(--surface-1)'
+            let border = isPending ? 'rgba(255,182,39,0.45)' : 'var(--border-1)'
+            let letterBg = isPending ? 'rgba(255,182,39,0.2)' : 'var(--surface-3)'
+            let letterColor = isPending ? '#FFB627' : 'var(--text-sec)'
+            let textColor = 'var(--text-pri)'
+            const hoverScale = phase === 'question' && !pendingAnswer ? 'hover:scale-[1.005]' : ''
+
+            if (revealed) {
+              if (isCorrect) {
+                bg = 'rgba(16,185,129,0.1)'
+                border = 'rgba(16,185,129,0.35)'
+                letterBg = 'rgba(16,185,129,0.2)'
+                letterColor = '#10B981'
+                textColor = 'var(--text-pri)'
+              } else if (isSelected && !isCorrect) {
+                bg = 'rgba(239,68,68,0.1)'
+                border = 'rgba(239,68,68,0.35)'
+                letterBg = 'rgba(239,68,68,0.2)'
+                letterColor = '#EF4444'
+                textColor = 'var(--text-sec)'
+              } else {
+                textColor = 'var(--text-ter)'
+                letterColor = 'var(--text-qua)'
+              }
+            }
+
+            return (
+              <button
+                key={key}
+                onClick={() => phase === 'question' && !pendingAnswer && setPendingAnswer(key)}
+                className={`w-full text-left p-4 flex items-center gap-3 transition-all duration-150 rounded-2xl ${hoverScale}`}
+                style={{ background: bg, border: `1px solid ${border}`, cursor: phase === 'question' && !pendingAnswer ? 'pointer' : 'default' }}
+              >
+                <span className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-colors"
+                  style={{ background: letterBg, color: letterColor }}>
+                  {key}
+                </span>
+                <span className="leading-relaxed text-sm transition-colors" style={{ color: textColor }}>{optionValues[key]}</span>
+                {revealed && isCorrect && <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 ml-auto" />}
+                {revealed && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-400 shrink-0 ml-auto" />}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Confidence check — appears once an answer is tentatively picked, before it's submitted/revealed */}
+        {phase === 'question' && pendingAnswer && (
+          <div className="mt-5 animate-fade-in">
+            <p className="text-xs text-white/40 mb-2.5 font-medium uppercase tracking-wide">How confident are you?</p>
+            <div className="grid grid-cols-2 gap-2">
+              {CONFIDENCE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => submitAnswer(pendingAnswer, opt.value)}
+                  className="py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-80"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border-1)', color: 'var(--text-sec)' }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Correct feedback */}
+        {phase === 'correct' && (
+          <div className="mt-5 animate-fade-in">
+            <div className="p-4 rounded-2xl mb-4" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <div className="flex items-center gap-2 text-emerald-400 font-bold mb-1.5 text-sm">
+                <CheckCircle className="w-4 h-4" />
+                {streak >= 5 ? '🔥 On fire! Keep it up!' : streak >= 3 ? '⚡ You\'re on a roll!' : totalAnswered <= 3 ? '✈️ Great start!' : '✅ Correct!'}
+                {streak >= 3 && <span className="ml-1 text-red-400 flex items-center gap-1"><Flame className="w-3.5 h-3.5" /> {streak} streak</span>}
+              </div>
+              <p className="text-white/65 text-sm leading-relaxed">{question.explanation}</p>
+            </div>
+            <button
+              onClick={nextQuestion}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.35)' }}
+            >
+              Next Question <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Wrong feedback */}
+        {phase === 'wrong' && (
+          <div className="mt-5 animate-fade-in">
+            <div className="p-4 rounded-2xl mb-4" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+              <div className="flex items-center gap-2 text-red-400 font-bold mb-1.5 text-sm">
+                <XCircle className="w-4 h-4" />
+                Not quite — review the explanation
+              </div>
+              <p className="text-white/65 text-sm leading-relaxed">{question.explanation}</p>
+              {question.distractor_rationale && (
+                <p className="text-white/55 text-xs mt-3 leading-relaxed">
+                  <span className="text-red-300 font-semibold">Why the other answers are wrong: </span>
+                  {question.distractor_rationale}
+                </p>
+              )}
+              {question.common_trap && (
+                <p className="text-white/55 text-xs mt-2 leading-relaxed">
+                  <span className="text-red-300 font-semibold">The trap: </span>
+                  {question.common_trap}
+                </p>
+              )}
+              {question.reference && (
+                <p className="text-white/30 text-xs mt-2">Ref: {question.reference}</p>
+              )}
+            </div>
+
+            {question.concept_id && (
+              <button
+                onClick={proveIt}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90 mb-3"
+                style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.35)' }}
+              >
+                Prove It — different scenario, same concept
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setShowAI(true)}
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #3E92CC, #2a7ab5)', color: 'white', boxShadow: '0 4px 20px rgba(62,146,204,0.35)' }}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                </svg>
+                Ask AI Tutor
+              </button>
+              <button
+                onClick={nextQuestion}
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90"
+                style={{ background: question.concept_id ? 'var(--surface-2)' : 'linear-gradient(135deg, #FFB627, #e09e1a)', color: question.concept_id ? 'var(--text-sec)' : '#0A2463', boxShadow: question.concept_id ? 'none' : '0 4px 20px rgba(255,182,39,0.35)' }}
+              >
+                Next Question
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* General AI Tutor — always available */}
+      <GeneralChat
+        currentQuestionContext={question
+          ? `Category: ${question.category}\nQuestion: ${question.question_text}`
+          : undefined
+        }
+      />
+
+      {showAI && question && selectedAnswer && (
+        <AIChat
+          question={question}
+          userAnswer={selectedAnswer}
+          correctAnswer={question.correct_answer}
+          onClose={() => setShowAI(false)}
+          onContinue={() => { setShowAI(false); endSession() }}
+        />
+      )}
+    </div>
+  )
+}

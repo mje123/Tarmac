@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { ClipboardList, Trophy, TrendingUp, CheckSquare, Calendar } from 'lucide-react'
+import OutcomeReportForm from '@/components/practice/OutcomeReportForm'
 
 interface ExamSession {
   id: string
@@ -148,6 +149,8 @@ export default async function ExamHubPage() {
           </div>
         </div>
       )}
+
+      <OutcomeReportForm examType={examType} />
     </div>
   )
 }

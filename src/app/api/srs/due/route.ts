@@ -12,14 +12,20 @@ export async function GET() {
 
     const now = new Date().toISOString()
 
-    // Count due cards
-    const { count } = await supabase
+    // Primary source: due concepts in concept_mastery.
+    const { count: conceptDue } = await supabase
+      .from('concept_mastery')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .lte('next_review', now)
+
+    // Fallback source: legacy per-question srs_cards, still live for non-concept content.
+    const { count: cardsDue } = await supabase
       .from('srs_cards')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .lte('due_at', now)
 
-    // Also count new cards (missed questions not yet enrolled)
     const { data: enrolled } = await supabase
       .from('srs_cards')
       .select('question_id')
@@ -36,7 +42,7 @@ export async function GET() {
       )
       .not('question_id', 'in', enrolledIds.length > 0 ? `(${enrolledIds.join(',')})` : '(00000000-0000-0000-0000-000000000000)')
 
-    const total = (count ?? 0) + (newCount ?? 0)
+    const total = (conceptDue ?? 0) + (cardsDue ?? 0) + (newCount ?? 0)
 
     return NextResponse.json({ count: total })
   } catch (error) {

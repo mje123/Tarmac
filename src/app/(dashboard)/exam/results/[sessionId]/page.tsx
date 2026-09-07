@@ -11,6 +11,7 @@ interface SessionAnswer {
   user_answer: string | null
   is_correct: boolean | null
   is_marked_for_review: boolean
+  error_tag: string | null
   questions: {
     id: string
     question_text: string
@@ -22,7 +23,27 @@ interface SessionAnswer {
     category: string
     explanation: string
     reference?: string
+    concept_id: string | null
+    cognitive_level: string | null
+    concepts: { name: string } | { name: string }[] | null
   }
+}
+
+function conceptName(q: SessionAnswer['questions']): string | null {
+  if (!q.concepts) return null
+  return Array.isArray(q.concepts) ? q.concepts[0]?.name ?? null : q.concepts.name
+}
+
+const ERROR_TAG_LABELS: Record<string, string> = {
+  concept_gap: 'Concept gap',
+  calculation_error: 'Calculation error',
+  distractor_trap: 'Distractor trap',
+  regulation_confusion: 'Regulation confusion',
+  careless_error: 'Careless error',
+  confidence_error: 'Overconfidence',
+  figure_misread: 'Figure misread',
+  misread_question: 'Misread the question',
+  transfer_failure: 'Transfer failure',
 }
 
 interface ExamSession {
@@ -106,6 +127,34 @@ export default function ExamResultsPage() {
   const missedCount = answers.filter(a => a.is_correct === false).length
   const markedCount = answers.filter(a => a.is_marked_for_review).length
 
+  // Concept-level breakdown — only meaningful for validated-pipeline questions
+  // (concept_id set); legacy bank questions have no concept to group by.
+  const conceptMap: Record<string, { name: string; correct: number; total: number }> = {}
+  for (const ans of answers) {
+    const cid = ans.questions?.concept_id
+    if (!cid) continue
+    const name = conceptName(ans.questions) ?? 'Unknown concept'
+    if (!conceptMap[cid]) conceptMap[cid] = { name, correct: 0, total: 0 }
+    conceptMap[cid].total++
+    if (ans.is_correct) conceptMap[cid].correct++
+  }
+  const conceptBreakdown = Object.values(conceptMap).sort((a, b) => (a.correct / a.total) - (b.correct / b.total))
+
+  // Novel/transfer performance — transfer-level questions are novel-by-design (see
+  // isQuestionNovelForUser's definition used elsewhere); this is the exam-mode analog
+  // without the extra per-question DB checks that mode skips.
+  const transferAnswers = answers.filter(a => a.questions?.cognitive_level === 'transfer')
+  const transferCorrect = transferAnswers.filter(a => a.is_correct).length
+  const transferPct = transferAnswers.length > 0 ? Math.round((transferCorrect / transferAnswers.length) * 100) : null
+
+  // Error classification — only populated for practice-mode-style answers; exam mode
+  // doesn't run classifyError today, so this will mostly be empty until that's added.
+  const errorTagCounts: Record<string, number> = {}
+  for (const ans of answers) {
+    if (ans.error_tag) errorTagCounts[ans.error_tag] = (errorTagCounts[ans.error_tag] ?? 0) + 1
+  }
+  const topErrorTags = Object.entries(errorTagCounts).sort((a, b) => b[1] - a[1]).slice(0, 3)
+
   const filtered = answers.filter(a => {
     if (filter === 'missed') return a.is_correct === false
     if (filter === 'marked') return a.is_marked_for_review
@@ -167,11 +216,60 @@ export default function ExamResultsPage() {
         </div>
       </div>
 
+      {(conceptBreakdown.length > 0 || transferPct != null || topErrorTags.length > 0) && (
+        <div className="glass-card p-6 mb-6 space-y-5">
+          {transferPct != null && (
+            <div>
+              <h3 className="font-semibold text-white mb-1">Novel Question Performance</h3>
+              <p className="text-white/40 text-xs mb-2">Accuracy on transfer-level questions — ones designed to be unfamiliar, not just harder</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-extrabold" style={{ color: transferPct >= 70 ? '#22c55e' : transferPct >= 50 ? '#FFB627' : '#ef4444' }}>{transferPct}%</span>
+                <span className="text-white/40 text-xs">{transferCorrect}/{transferAnswers.length} transfer questions</span>
+              </div>
+            </div>
+          )}
+
+          {conceptBreakdown.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-white mb-3">Weakest Concepts</h3>
+              <div className="space-y-2.5">
+                {conceptBreakdown.slice(0, 5).map(c => {
+                  const cpct = Math.round((c.correct / c.total) * 100)
+                  const color = cpct >= 80 ? '#22c55e' : cpct >= 60 ? '#FFB627' : '#ef4444'
+                  return (
+                    <div key={c.name} className="flex items-center gap-3">
+                      <div className="w-40 text-xs text-white/60 truncate shrink-0">{c.name}</div>
+                      <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${cpct}%`, background: color }} />
+                      </div>
+                      <div className="text-sm text-white w-14 text-right shrink-0">{c.correct}/{c.total}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {topErrorTags.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-white mb-2">Top Error Types</h3>
+              <div className="flex flex-wrap gap-2">
+                {topErrorTags.map(([tag, count]) => (
+                  <span key={tag} className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>
+                    {ERROR_TAG_LABELS[tag] ?? tag} ({count})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex items-center gap-3 mb-6">
-        <a href="/practice" className="btn-primary flex items-center gap-2 px-5 py-2.5">
+        <a href="/practice/weakness" className="btn-primary flex items-center gap-2 px-5 py-2.5">
           <BookOpen className="w-4 h-4" />
-          Practice Missed Topics
+          Build My Remediation Plan
         </a>
       </div>
 

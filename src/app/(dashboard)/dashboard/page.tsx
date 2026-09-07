@@ -55,7 +55,7 @@ export default async function DashboardPage() {
         {/* Right rail — SRS + recent exams (2/5 width) */}
         <div className="lg:col-span-2 space-y-4">
           <Suspense fallback={null}>
-            <SRSWidget />
+            <SRSWidget userId={authUser.id} />
           </Suspense>
 
           {/* Recent exams */}

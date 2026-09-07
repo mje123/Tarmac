@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateExamPDF } from '@/lib/pdfGenerator'
 import { sendExamResultEmail } from '@/lib/emailService'
+import { updateConceptMastery } from '@/lib/masteryUpdate'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     const questionIds = answers.map((a: { questionId: string }) => a.questionId)
     const { data: questions } = await supabase
       .from('questions')
-      .select('id, correct_answer, category, question_text, option_a, option_b, option_c, option_d, explanation')
+      .select('id, correct_answer, category, question_text, option_a, option_b, option_c, option_d, explanation, concept_id')
       .in('id', questionIds)
 
     const questionMap = new Map(questions?.map(q => [q.id, q]) || [])
@@ -53,6 +54,20 @@ export async function POST(request: NextRequest) {
 
     if (answerInserts.length > 0) {
       await supabase.from('test_answers').insert(answerInserts)
+    }
+
+    // Exam attempts now feed concept_mastery too — previously only category-level
+    // user_progress was updated here, so a student's readiness/mastery signal went
+    // stale on exam day even though it's some of the highest-signal data available.
+    // Confidence isn't collected in exam mode (no hints/confidence prompts, per spec),
+    // and per-question novelty checks are skipped here (too many extra queries for a
+    // 60-question submission) — novel-performance tracking stays primarily a
+    // practice-mode signal.
+    for (const ans of gradedAnswers) {
+      const conceptId = ans.question?.concept_id as string | undefined
+      if (conceptId) {
+        await updateConceptMastery(supabase, user.id, conceptId, ans.isCorrect, null, false)
+      }
     }
 
     for (const [category, stats] of Object.entries(categoryStats)) {

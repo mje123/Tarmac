@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { FEATURES } from '@/lib/features'
 import { computeNextInterval } from '@/lib/spacedRepetition'
+import { updateConceptMastery } from '@/lib/masteryUpdate'
 
 export async function POST(request: NextRequest) {
   if (!FEATURES.SRS) return NextResponse.json({ ok: false })
@@ -12,6 +13,32 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { questionId, correct } = await request.json()
+
+    const { data: question } = await supabase
+      .from('questions')
+      .select('concept_id')
+      .eq('id', questionId)
+      .single()
+
+    // Concept-linked questions consolidate onto concept_mastery (the same scheduler
+    // practice/quiz answers use) instead of a second, question-grained srs_cards row —
+    // one mastery signal instead of two drifting ones. Legacy (non-concept) questions
+    // have no concept-level equivalent yet, so they keep using srs_cards exactly as
+    // before; that table stays live and is not dropped.
+    if (question?.concept_id) {
+      await updateConceptMastery(supabase, user.id, question.concept_id, correct, null, false)
+      const { data: mastery } = await supabase
+        .from('concept_mastery')
+        .select('next_review, interval_days')
+        .eq('user_id', user.id)
+        .eq('concept_id', question.concept_id)
+        .single()
+      return NextResponse.json({
+        ok: true,
+        nextDue: mastery?.next_review ?? null,
+        intervalDays: mastery?.interval_days ?? null,
+      })
+    }
 
     const { data: existing } = await supabase
       .from('srs_cards')

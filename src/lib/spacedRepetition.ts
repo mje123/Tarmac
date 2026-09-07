@@ -21,17 +21,51 @@ export function computeNextInterval(
 
 export type ConfidenceLevel = 'very_confident' | 'somewhat_confident' | 'unsure' | 'guessing'
 
+/** Full 9-category error taxonomy. Only the first 6 are ever set by the heuristic
+ *  below; the last 3 require real semantic judgment and are only ever written by the
+ *  async AI refinement pass (see pending_error_classifications / cron/classify-errors),
+ *  which also may confirm or override 'concept_gap'. */
+export type ErrorTag =
+  | 'concept_gap'
+  | 'calculation_error'
+  | 'distractor_trap'
+  | 'regulation_confusion'
+  | 'careless_error'
+  | 'confidence_error'
+  | 'figure_misread'
+  | 'misread_question'
+  | 'transfer_failure'
+
 /** Lightweight error classification derived entirely from data already on hand
- *  (archetype scenario type + the student's stated confidence) — no extra AI call.
- *  This is deliberately a coarse 3-bucket heuristic, not the full spec's 9-category
- *  AI-judged taxonomy (deferred to a later phase). */
+ *  (scenario type, category, stated confidence, and prior accuracy on this concept) —
+ *  no extra AI call. Six of the nine categories are reachable this way; the remaining
+ *  three (figure_misread, misread_question, transfer_failure) need real judgment and
+ *  are left to the async AI refinement pass, which only runs on answers this function
+ *  bucketed as the catch-all 'concept_gap'. */
 export function classifyError(opts: {
   isCorrect: boolean
   scenarioType: string | null
   confidence: ConfidenceLevel | null
-}): 'concept_gap' | 'calculation_error' | 'distractor_trap' | null {
+  category?: string | null
+  /** correct/attempts on this concept BEFORE this answer, or null if there's no prior
+   *  history — lets a wrong answer on an otherwise-strong concept be told apart from a
+   *  genuine gap. */
+  priorAccuracy?: number | null
+}): ErrorTag | null {
   if (opts.isCorrect) return null
   if (opts.scenarioType === 'calculation') return 'calculation_error'
-  if (opts.confidence === 'very_confident' || opts.confidence === 'somewhat_confident') return 'concept_gap'
+  if (opts.category && /regulation/i.test(opts.category)) return 'regulation_confusion'
+
+  const veryConfident = opts.confidence === 'very_confident'
+  const somewhatConfident = opts.confidence === 'somewhat_confident'
+  const strongHistory = opts.priorAccuracy != null && opts.priorAccuracy >= 0.8
+  const solidHistory = opts.priorAccuracy != null && opts.priorAccuracy >= 0.7
+
+  // Confident-and-wrong on a concept the student otherwise handles well reads as a
+  // calibration slip, not a knowledge gap — this is the one distinction the heuristic
+  // can draw reliably without AI help.
+  if (veryConfident && strongHistory) return 'confidence_error'
+  if (somewhatConfident && solidHistory) return 'careless_error'
+  if (veryConfident || somewhatConfident) return 'concept_gap'
   return 'distractor_trap'
 }

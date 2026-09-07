@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { computeNextInterval, classifyError, type ConfidenceLevel } from '@/lib/spacedRepetition'
+import { classifyError, type ConfidenceLevel } from '@/lib/spacedRepetition'
+import { updateConceptMastery } from '@/lib/masteryUpdate'
+import { isQuestionNovelForUser } from '@/lib/novelQuestion'
+import { getUserSessionIds } from '@/lib/userSessions'
 
 const VALID_CONFIDENCE: ConfidenceLevel[] = ['very_confident', 'somewhat_confident', 'unsure', 'guessing']
 
@@ -14,11 +17,48 @@ export async function POST(request: NextRequest) {
     const confidence: ConfidenceLevel | null = VALID_CONFIDENCE.includes(rawConfidence) ? rawConfidence : null
 
     const { data: question } = await supabase
-      .from('questions').select('category, concept_id, scenario_type').eq('id', questionId).single()
+      .from('questions')
+      .select('category, concept_id, scenario_type, archetype_id, cognitive_level, novelty_key')
+      .eq('id', questionId)
+      .single()
 
-    const errorTag = question ? classifyError({ isCorrect, scenarioType: question.scenario_type, confidence }) : null
+    let errorTag: ReturnType<typeof classifyError> = null
+    let errorTagSource: 'heuristic' | 'ai' | null = null
+    let isNovel = false
+    let priorAccuracy: number | null = null
 
-    await supabase.from('test_answers').insert({
+    if (question) {
+      const sessionIds = await getUserSessionIds(supabase, user.id)
+      isNovel = await isQuestionNovelForUser(supabase, sessionIds, {
+        concept_id: question.concept_id,
+        archetype_id: question.archetype_id,
+        cognitive_level: question.cognitive_level,
+        novelty_key: question.novelty_key,
+      })
+
+      if (question.concept_id) {
+        const { data: existingMastery } = await supabase
+          .from('concept_mastery')
+          .select('correct, attempts')
+          .eq('user_id', user.id)
+          .eq('concept_id', question.concept_id)
+          .single()
+        priorAccuracy = existingMastery && existingMastery.attempts > 0
+          ? existingMastery.correct / existingMastery.attempts
+          : null
+      }
+
+      errorTag = classifyError({
+        isCorrect,
+        scenarioType: question.scenario_type,
+        confidence,
+        category: question.category,
+        priorAccuracy,
+      })
+      errorTagSource = errorTag ? 'heuristic' : null
+    }
+
+    const { data: insertedAnswer } = await supabase.from('test_answers').insert({
       session_id: sessionId,
       question_id: questionId,
       user_answer: answer,
@@ -26,7 +66,19 @@ export async function POST(request: NextRequest) {
       answered_at: new Date().toISOString(),
       confidence,
       error_tag: errorTag,
-    })
+      error_tag_source: errorTagSource,
+    }).select('id').single()
+
+    // The heuristic's catch-all bucket gets queued for async AI refinement (figure
+    // misreads, misread questions, and transfer failures need real judgment) — a
+    // reliable DB-queue write, not a fire-and-forget promise a serverless function
+    // could kill mid-flight. Processed by cron/classify-errors.
+    if (errorTag === 'concept_gap' && insertedAnswer && question?.concept_id) {
+      await supabase.from('pending_error_classifications').insert({
+        test_answer_id: insertedAnswer.id,
+        concept_id: question.concept_id,
+      })
+    }
 
     if (question) {
       const { data: existing } = await supabase
@@ -57,62 +109,12 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      // Concept-level mastery signal — additive alongside user_progress. Scheduling
-      // uses the same SM-2-style adaptive interval as srs_cards (see
-      // spacedRepetition.ts) instead of a fixed 1/3-day offset, and tracks confidence
-      // so a wrong-but-confident answer (the highest-priority misconception signal)
-      // is distinguishable from a wrong guess. Only questions from the validated
-      // concept pipeline carry a concept_id; legacy bank questions leave this untouched.
+      // Concept-level mastery signal — additive alongside user_progress. Only
+      // questions from the validated concept pipeline carry a concept_id; legacy bank
+      // questions leave this untouched. See lib/masteryUpdate.ts for the scheduling +
+      // confidence + novelty-counter logic shared with api/srs/review.
       if (question.concept_id) {
-        const now = new Date()
-
-        const { data: existingMastery } = await supabase
-          .from('concept_mastery')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('concept_id', question.concept_id)
-          .single()
-
-        const reps = existingMastery?.repetitions ?? 0
-        const intervalDays = existingMastery?.interval_days ?? 1
-        const ease = existingMastery?.ease_factor ?? 2.5
-        const next = computeNextInterval(reps, intervalDays, ease, isCorrect)
-        const nextReview = new Date(now.getTime() + next.interval * 24 * 60 * 60 * 1000)
-
-        const isConfident = confidence === 'very_confident' || confidence === 'somewhat_confident'
-        const confidenceDelta = confidence == null ? {} : isCorrect
-          ? isConfident ? { confident_correct: 1 } : { guess_correct: 1 }
-          : isConfident ? { confident_wrong: 1 } : { guess_wrong: 1 }
-
-        if (existingMastery) {
-          const updates: Record<string, unknown> = {
-            attempts: existingMastery.attempts + 1,
-            correct: existingMastery.correct + (isCorrect ? 1 : 0),
-            last_seen: now.toISOString(),
-            next_review: nextReview.toISOString(),
-            ease_factor: next.ease,
-            interval_days: next.interval,
-            repetitions: next.reps,
-            updated_at: now.toISOString(),
-          }
-          for (const [key, delta] of Object.entries(confidenceDelta)) {
-            updates[key] = (existingMastery[key] ?? 0) + (delta as number)
-          }
-          await supabase.from('concept_mastery').update(updates).eq('id', existingMastery.id)
-        } else {
-          await supabase.from('concept_mastery').insert({
-            user_id: user.id,
-            concept_id: question.concept_id,
-            attempts: 1,
-            correct: isCorrect ? 1 : 0,
-            last_seen: now.toISOString(),
-            next_review: nextReview.toISOString(),
-            ease_factor: next.ease,
-            interval_days: next.interval,
-            repetitions: next.reps,
-            ...confidenceDelta,
-          })
-        }
+        await updateConceptMastery(supabase, user.id, question.concept_id, isCorrect, confidence, isNovel)
       }
     }
 

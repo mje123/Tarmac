@@ -12,7 +12,31 @@ export async function GET() {
 
     const now = new Date().toISOString()
 
-    // First try: enrolled cards that are due
+    // First try: the most-overdue concept in concept_mastery (the primary spaced-
+    // repetition source) — serve any question from that concept the user hasn't
+    // already answered, so a repeat review isn't just the exact same question.
+    const { data: dueConcepts } = await supabase
+      .from('concept_mastery')
+      .select('concept_id')
+      .eq('user_id', user.id)
+      .lte('next_review', now)
+      .order('next_review', { ascending: true })
+      .limit(1)
+
+    if (dueConcepts && dueConcepts.length > 0) {
+      const conceptId = dueConcepts[0].concept_id as string
+      const { data: candidates } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('concept_id', conceptId)
+        .limit(20)
+      if (candidates && candidates.length > 0) {
+        const question = candidates[Math.floor(Math.random() * candidates.length)]
+        return NextResponse.json({ question, isNew: false })
+      }
+    }
+
+    // Fallback: legacy per-question srs_cards (kept live for non-concept content).
     const { data: dueCards } = await supabase
       .from('srs_cards')
       .select('question_id')
@@ -30,7 +54,7 @@ export async function GET() {
       if (question) return NextResponse.json({ question, isNew: false })
     }
 
-    // Second try: missed questions not yet enrolled
+    // Second fallback: missed legacy questions not yet enrolled anywhere.
     const { data: enrolled } = await supabase
       .from('srs_cards')
       .select('question_id')

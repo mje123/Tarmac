@@ -13,6 +13,14 @@
       "schedule": "0 14 * * *"
     },
     {
+      "path": "/api/cron/classify-errors",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/runway-advance",
+      "schedule": "5 0 * * *"
+    },
+    {
       "path": "/api/accidents/fetch",
       "schedule": "0 6 */2 * *"
     }

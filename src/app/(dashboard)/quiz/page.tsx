@@ -302,6 +302,18 @@ export default function QuizPage() {
                       Correct: {optLabel(q.correct_answer)}
                     </div>
                     <p className="text-white/50 text-xs leading-relaxed border-t border-white/8 pt-3">{q.explanation}</p>
+                    {q.distractor_rationale && (
+                      <p className="text-white/40 text-xs leading-relaxed mt-2">
+                        <span className="text-red-300/80 font-semibold">Why the other answers are wrong: </span>
+                        {q.distractor_rationale}
+                      </p>
+                    )}
+                    {q.common_trap && (
+                      <p className="text-white/40 text-xs leading-relaxed mt-2">
+                        <span className="text-red-300/80 font-semibold">The trap: </span>
+                        {q.common_trap}
+                      </p>
+                    )}
                   </div>
                 )
               })}

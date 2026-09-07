@@ -10,13 +10,17 @@ export default async function SRSWidget({ userId }: { userId: string }) {
     const supabase = await createClient()
     const now = new Date().toISOString()
 
-    const { count: dueCount } = await supabase
-      .from('srs_cards')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .lte('due_at', now)
+    // concept_mastery is the primary spaced-repetition source now (richer signal,
+    // concept-grained); srs_cards stays live as a fallback for legacy (non-concept)
+    // questions it still covers that concept_mastery has no equivalent for yet.
+    const [{ count: conceptDue }, { count: legacyDue }] = await Promise.all([
+      supabase.from('concept_mastery').select('*', { count: 'exact', head: true })
+        .eq('user_id', userId).lte('next_review', now),
+      supabase.from('srs_cards').select('*', { count: 'exact', head: true })
+        .eq('user_id', userId).lte('due_at', now),
+    ])
 
-    const due = dueCount ?? 0
+    const due = (conceptDue ?? 0) + (legacyDue ?? 0)
     if (due === 0) return null
 
     return (

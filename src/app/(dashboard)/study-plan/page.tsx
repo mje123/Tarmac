@@ -1,5 +1,10 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { BookOpen, Eye, Brain, ClipboardList, Bookmark, Layers, Bot, CheckCircle, Zap, Target, TrendingUp, Clock, Award, ListChecks, PartyPopper } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { getOrCreateRunway } from '@/lib/runwayServer'
+import RunwayToday from '@/components/practice/RunwayToday'
 
 const weeks = [
   {
@@ -89,9 +94,20 @@ const tips = [
   { icon: Award, text: 'Book your exam before Day 30. A real deadline makes the last week actually count.' },
 ]
 
+export const dynamic = 'force-dynamic'
+
 export default async function StudyPlanPage({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
   const params = await searchParams
   const isWelcome = params.welcome === '1'
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: profile } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
+  const cookieStore = await cookies()
+  const examType = profile?.is_admin && cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+  const { runway, examDate, today } = await getOrCreateRunway(supabase, user.id, examType)
 
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-3xl mx-auto">
@@ -127,10 +143,16 @@ export default async function StudyPlanPage({ searchParams }: { searchParams: Pr
           A clear sequence from diagnostic to test-ready: build the foundation, apply it under pressure,
           then prove you can handle a question you haven't seen. Right tools, right order.
         </p>
-        <p className="text-white/30 text-xs mt-3 max-w-xl">
-          Day-by-day adaptive scheduling is actively rolling out — today, the runway below is your recommended sequence through TARMAC's existing tools.
-        </p>
       </div>
+
+      <RunwayToday
+        dayIndex={runway.dayIndex}
+        totalDays={runway.totalDays}
+        phase={runway.phase}
+        compressed={runway.compressed}
+        examDate={examDate}
+        today={today}
+      />
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3 mb-10">
@@ -270,15 +292,15 @@ export default async function StudyPlanPage({ searchParams }: { searchParams: Pr
       {/* CTA */}
       <div className="glass-card p-6 text-center"
         style={{ background: 'linear-gradient(135deg, rgba(255,182,39,0.08), rgba(255,182,39,0.03))', borderColor: 'rgba(255,182,39,0.2)' }}>
-        <p className="text-white font-bold text-lg mb-1">Day 1 starts now.</p>
-        <p className="text-white/45 text-sm mb-5">Open Read-Through mode, pick All Topics, and just start moving through questions.</p>
+        <p className="text-white font-bold text-lg mb-1">Not sure what to do right now?</p>
+        <p className="text-white/45 text-sm mb-5">Your runway above already picked today&apos;s session — this sequence is just the reference map behind it.</p>
         <Link
           href="/practice"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.3)' }}
         >
           <Eye className="w-4 h-4" />
-          Start Read-Through Mode
+          Go to Today&apos;s Training
         </Link>
       </div>
     </div>

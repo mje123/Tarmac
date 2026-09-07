@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     const { data: answers, error: answersError } = await supabase
       .from('test_answers')
-      .select('*, questions(*)')
+      .select('*, questions(*, concepts(name))')
       .eq('session_id', sessionId)
 
     if (answersError) throw answersError
