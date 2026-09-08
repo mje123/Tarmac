@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getReadiness } from '@/lib/readinessServer'
+import { getEffectiveExamType } from '@/lib/examType'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,9 +9,7 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: profile } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
-    const cookieVal = request.cookies.get('tarmac-exam-type')?.value
-    const examType = profile?.is_admin && cookieVal === 'ifr' ? 'ifr' : 'ppl'
+    const examType = await getEffectiveExamType(supabase, user.id, request.cookies.get('tarmac-exam-type')?.value)
 
     const result = await getReadiness(supabase, user.id, examType)
     return NextResponse.json(result)

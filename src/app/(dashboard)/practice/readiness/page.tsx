@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { getReadiness } from '@/lib/readinessServer'
+import { getEffectiveExamType } from '@/lib/examType'
 import { ArrowLeft, Play } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -24,9 +25,8 @@ export default async function ReadinessBreakdownPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
   const cookieStore = await cookies()
-  const examType = profile?.is_admin && cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+  const examType = await getEffectiveExamType(supabase, user.id, cookieStore.get('tarmac-exam-type')?.value)
 
   const { score, components, biggestRisks } = await getReadiness(supabase, user.id, examType)
 

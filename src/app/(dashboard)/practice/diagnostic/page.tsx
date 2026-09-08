@@ -42,7 +42,6 @@ export default function DiagnosticPage() {
   const [selected, setSelected] = useState<AnswerOption | null>(null)
   const [isCorrect, setIsCorrect] = useState(false)
   const [tally, setTally] = useState<Record<string, CategoryTally>>({})
-  const [readiness, setReadiness] = useState<number | null>(null)
 
   const fetchQuestion = useCallback(async (idx: number, excludeIds: string[]) => {
     setPhase('loading')
@@ -112,14 +111,13 @@ export default function DiagnosticPage() {
 
   async function finish() {
     setPhase('loading')
-    // Mark today's runway item done and pull the freshly-updated readiness number —
-    // fire-and-forget-safe since neither blocks the results screen from rendering.
+    // Mark today's runway item done — fire-and-forget-safe, doesn't block the results
+    // screen. Deliberately NOT fetching /api/readiness here: a 12-question sample is
+    // exactly the case that formula should never be asked to summarize into a single
+    // number for display. The raw score below is the honest artifact of today's
+    // session; readiness as a concept belongs to the Readiness page once there's
+    // enough accumulated practice history to mean something.
     fetch('/api/runway', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ markTodayComplete: true }) }).catch(() => {})
-    try {
-      const res = await fetch('/api/readiness')
-      const data = await res.json()
-      setReadiness(data.score ?? null)
-    } catch {}
     setPhase('results')
   }
 
@@ -133,8 +131,11 @@ export default function DiagnosticPage() {
         <p className="text-sm mb-2 max-w-md" style={{ color: 'var(--text-sec)' }}>
           {DIAGNOSTIC_LENGTH} questions, sampled broadly across every category. No hints, no AI tutor — just answer and rate how sure you are.
         </p>
-        <p className="text-xs mb-8 max-w-md" style={{ color: 'var(--text-ter)' }}>
+        <p className="text-xs mb-4 max-w-md" style={{ color: 'var(--text-ter)' }}>
           This is a starting point, not a verdict. A short sample can&apos;t declare anything permanently strong or weak — it just tells the Runway where to begin.
+        </p>
+        <p className="text-xs mb-8 max-w-md italic" style={{ color: 'var(--text-ter)' }}>
+          Answer as honestly as you can. This isn&apos;t a test of how good you are — it&apos;s how we figure out where to start. The more honestly you answer, including your confidence, the better we can tailor your study plan.
         </p>
         <button
           onClick={start}
@@ -166,15 +167,15 @@ export default function DiagnosticPage() {
         </div>
 
         <div className="rounded-2xl p-6 mb-4 text-center" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-1)' }}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-ter)' }}>Readiness (early estimate)</p>
-          <p className="text-5xl font-extrabold" style={{ color: 'var(--text-pri)' }}>{readiness ?? '--'}<span className="text-xl" style={{ color: 'var(--text-ter)' }}>/100</span></p>
-          <p className="text-xs mt-2" style={{ color: 'var(--text-ter)' }}>{totalCorrect}/{totalAnswered} correct today — this number sharpens as you build real practice history.</p>
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-ter)' }}>Today&apos;s result</p>
+          <p className="text-5xl font-extrabold" style={{ color: 'var(--text-pri)' }}>{totalCorrect}<span className="text-2xl" style={{ color: 'var(--text-ter)' }}>/{totalAnswered} correct</span></p>
+          <p className="text-xs mt-2" style={{ color: 'var(--text-ter)' }}>Enough to establish a starting point — not enough to define your mastery.</p>
         </div>
 
         {weakest.length > 0 && (
           <div className="rounded-2xl p-6 mb-6" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-1)' }}>
             <h2 className="text-sm font-bold text-white mb-1">Early signals</h2>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-ter)' }}>Where today&apos;s sample looked shakiest — worth building first, not a permanent label.</p>
+            <p className="text-xs mb-3" style={{ color: 'var(--text-ter)' }}>These are early signals, not permanent labels. Tarmac will refine them as you train.</p>
             <div className="space-y-2">
               {weakest.map(w => (
                 <div key={w.cat} className="flex items-center justify-between text-sm">

@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { Play, BookOpen, Shuffle, Zap, GraduationCap, ChevronRight, Target } from 'lucide-react'
 import { getReadiness } from '@/lib/readinessServer'
+import { getEffectiveExamType } from '@/lib/examType'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,14 +13,8 @@ export default async function PracticeHomePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single()
-
   const cookieStore = await cookies()
-  const examType = profile?.is_admin && cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+  const examType = await getEffectiveExamType(supabase, user.id, cookieStore.get('tarmac-exam-type')?.value)
   const examLabel = examType === 'ifr' ? 'Instrument' : 'Private Pilot'
 
   const { score: readiness, biggestRisks } = await getReadiness(supabase, user.id, examType)

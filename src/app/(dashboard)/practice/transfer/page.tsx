@@ -30,6 +30,10 @@ export default function TransferModePage() {
   const [askedIds, setAskedIds] = useState<string[]>([])
   const [conceptHistory, setConceptHistory] = useState<string[]>([])
   const [showAI, setShowAI] = useState(false)
+  // Questions confirmed (by a real server lookup) to have no other same-concept
+  // question available right now. Keyed by question id so it naturally resets the
+  // moment a new question is shown.
+  const [noAltIds, setNoAltIds] = useState<Set<string>>(new Set())
   const totalAnsweredRef = useRef(0)
   totalAnsweredRef.current = totalAnswered
 
@@ -90,21 +94,29 @@ export default function TransferModePage() {
     setAskedIds(ids => [...ids, question.id])
   }
 
+  // Must NEVER fall back to an unrelated concept — if the server has no other question
+  // for this exact concept right now, stay on the current answered screen and hide the
+  // button for this question, instead of silently switching topics.
   async function proveIt() {
     if (!question || !question.concept_id) return
+    const currentQuestionId = question.id
     const params = new URLSearchParams()
     params.set('conceptId', question.concept_id)
     params.set('proveIt', '1')
     if (question.archetype_id) params.set('lastArchetypeId', question.archetype_id)
     if (question.novelty_key) params.set('lastNoveltyKey', question.novelty_key)
     params.set('examType', examType)
-    const newIds = [...askedIds, question.id]
-    newIds.forEach(id => params.append('exclude', id))
+    const excludeIds = [...askedIds, currentQuestionId]
+    excludeIds.forEach(id => params.append('exclude', id))
     setPhase('loading')
     const res = await fetch(`/api/questions/random?${params}`)
     const data = await res.json()
-    setAskedIds(newIds)
-    if (!data.question) { await fetchQuestion(newIds, conceptHistory); return }
+    if (!data.question) {
+      setNoAltIds(s => new Set(s).add(currentQuestionId))
+      setPhase('answered')
+      return
+    }
+    setAskedIds(excludeIds)
     setQuestion(data.question)
     setSelected(null)
     setPending(null)
@@ -223,7 +235,7 @@ export default function TransferModePage() {
           question={question}
           isCorrect={isCorrect}
           onNext={next}
-          onProveIt={proveIt}
+          onProveIt={question && !noAltIds.has(question.id) ? proveIt : undefined}
           onAskAI={!isCorrect ? () => setShowAI(true) : undefined}
         />
       )}

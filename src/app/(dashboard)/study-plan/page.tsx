@@ -5,6 +5,7 @@ import { BookOpen, Eye, Brain, ClipboardList, Bookmark, Layers, Bot, CheckCircle
 import { createClient } from '@/lib/supabase/server'
 import { getOrCreateRunway } from '@/lib/runwayServer'
 import RunwayToday from '@/components/practice/RunwayToday'
+import { getEffectiveExamType } from '@/lib/examType'
 
 const weeks = [
   {
@@ -104,9 +105,8 @@ export default async function StudyPlanPage({ searchParams }: { searchParams: Pr
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
   const cookieStore = await cookies()
-  const examType = profile?.is_admin && cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+  const examType = await getEffectiveExamType(supabase, user.id, cookieStore.get('tarmac-exam-type')?.value)
   const { runway, examDate, today } = await getOrCreateRunway(supabase, user.id, examType)
 
   return (

@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getOrCreateRunway } from '@/lib/runwayServer'
+import { getEffectiveExamType } from '@/lib/examType'
 
 function todayDateString(): string {
   return new Date().toISOString().slice(0, 10)
-}
-
-async function getExamType(supabase: Awaited<ReturnType<typeof createClient>>, userId: string, request: NextRequest): Promise<'ppl' | 'ifr'> {
-  const { data: profile } = await supabase.from('users').select('is_admin').eq('id', userId).single()
-  const cookieVal = request.cookies.get('tarmac-exam-type')?.value
-  return profile?.is_admin && cookieVal === 'ifr' ? 'ifr' : 'ppl'
 }
 
 export async function GET(request: NextRequest) {
@@ -18,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const examType = await getExamType(supabase, user.id, request)
+    const examType = await getEffectiveExamType(supabase, user.id, request.cookies.get('tarmac-exam-type')?.value)
     const result = await getOrCreateRunway(supabase, user.id, examType)
     return NextResponse.json(result)
   } catch (error) {

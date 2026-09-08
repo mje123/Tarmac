@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { ClipboardList, Trophy, TrendingUp, CheckSquare, Calendar } from 'lucide-react'
 import OutcomeReportForm from '@/components/practice/OutcomeReportForm'
+import { getEffectiveExamType } from '@/lib/examType'
 
 interface ExamSession {
   id: string
@@ -19,10 +20,8 @@ export default async function ExamHubPage() {
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('users').select('is_admin').eq('id', user.id).single()
-  const isAdmin = profile?.is_admin ?? false
   const cookieStore = await cookies()
-  const examType = isAdmin && cookieStore.get('tarmac-exam-type')?.value === 'ifr' ? 'ifr' : 'ppl'
+  const examType = await getEffectiveExamType(supabase, user.id, cookieStore.get('tarmac-exam-type')?.value)
   const isIFR = examType === 'ifr'
 
   const { data: sessions } = await supabase

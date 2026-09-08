@@ -123,6 +123,10 @@ function PracticePageInner() {
   const [memMode, setMemMode] = useState(false)
   const [questionHistory, setQuestionHistory] = useState<Question[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
+  // Questions confirmed (by a real server lookup) to have no other same-concept
+  // question available right now. Keyed by question id so it naturally resets the
+  // moment a new question is shown — never persisted, never used to guess ahead of time.
+  const [noAltIds, setNoAltIds] = useState<Set<string>>(new Set())
 
   // Refs so keyboard handler always sees latest state
   const historyIndexRef = useRef(historyIndex)
@@ -399,10 +403,12 @@ function PracticePageInner() {
   // label. It asks the server for a genuinely different archetype/scenario shape on
   // the same concept (see the proveIt scoring bonus in api/questions/random), so
   // getting it right means the student can transfer the rule, not that they recognized
-  // a near-duplicate question.
+  // a near-duplicate question. It must NEVER fall back to an unrelated concept — if the
+  // server has no other question for this exact concept right now, we stay put and hide
+  // the button for this question, instead of silently switching topics.
   async function proveIt() {
     if (!question || !sessionId || !question.concept_id) return
-    const newIds = [...askedIds, question.id]
+    const currentQuestionId = question.id
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -411,14 +417,16 @@ function PracticePageInner() {
       if (question.archetype_id) params.set('lastArchetypeId', question.archetype_id)
       if (question.novelty_key) params.set('lastNoveltyKey', question.novelty_key)
       params.set('examType', examType)
-      newIds.forEach(id => params.append('exclude', id))
+      askedIds.forEach(id => params.append('exclude', id))
+      params.append('exclude', currentQuestionId)
       const res = await fetch(`/api/questions/random?${params}`)
       const data = await res.json()
-      setAskedIds(newIds)
       if (!data.question) {
-        await fetchQuestion(sessionId, newIds, category, selectedCategories)
+        setNoAltIds(s => new Set(s).add(currentQuestionId))
         return
       }
+      const newIds = [...askedIds, currentQuestionId]
+      setAskedIds(newIds)
       setQuestion(data.question)
       if (data.question.concept_id) {
         setConceptHistory(h => [...h, data.question.concept_id].slice(-5))
@@ -1183,10 +1191,11 @@ function PracticePageInner() {
               )}
             </div>
 
-            {question.concept_id && (
+            {question.concept_id && !noAltIds.has(question.id) && (
               <button
                 onClick={proveIt}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90 mb-3"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90 mb-3 disabled:opacity-60"
                 style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.35)' }}
               >
                 Prove It — different scenario, same concept
