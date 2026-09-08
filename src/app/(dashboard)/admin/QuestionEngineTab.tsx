@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Loader2, Sparkles, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { Fragment, useEffect, useState, useCallback } from 'react'
+import { Loader2, Sparkles, CheckCircle, XCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface ConceptRow {
   id: string
@@ -18,11 +18,14 @@ interface ConceptRow {
 interface LogEntry {
   id: string
   concept_id: string | null
+  question_id: string | null
   validation_result: 'approved' | 'rejected'
   rejection_reason: string | null
   model: string
+  raw_output: Record<string, unknown> | null
   created_at: string
   concepts: { name: string; slug: string } | null
+  question_archetypes: { scenario_type: string; cognitive_level: string } | null
 }
 
 /** Admin visibility into the validated question-generation pipeline
@@ -39,6 +42,9 @@ export default function QuestionEngineTab() {
   const [notReady, setNotReady] = useState(false)
   const [generating, setGenerating] = useState<string | null>(null)
   const [lastResult, setLastResult] = useState<Record<string, string>>({})
+  const [expanded, setExpanded] = useState<string | null>(null)
+  const [statusOverride, setStatusOverride] = useState<Record<string, 'approved' | 'rejected'>>({})
+  const [actioning, setActioning] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -76,6 +82,21 @@ export default function QuestionEngineTab() {
       await load()
     } finally {
       setGenerating(null)
+    }
+  }
+
+  async function setQuestionStatus(entry: LogEntry, status: 'approved' | 'rejected') {
+    if (!entry.question_id) return
+    setActioning(entry.id)
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: entry.question_id, validation_status: status }),
+      })
+      if (res.ok) setStatusOverride(prev => ({ ...prev, [entry.id]: status }))
+    } finally {
+      setActioning(null)
     }
   }
 
@@ -158,28 +179,73 @@ export default function QuestionEngineTab() {
             <thead>
               <tr className="text-left text-white/40 text-xs uppercase tracking-wide">
                 <th className="pb-2 pr-4">Concept</th>
+                <th className="pb-2 pr-4">Archetype</th>
                 <th className="pb-2 pr-4">Result</th>
                 <th className="pb-2 pr-4">Reason</th>
                 <th className="pb-2 pr-4">When</th>
+                <th className="pb-2 pr-4"></th>
               </tr>
             </thead>
             <tbody>
-              {log.map(entry => (
-                <tr key={entry.id} className="border-t border-white/5">
-                  <td className="py-2.5 pr-4 text-white/70">{entry.concepts?.name ?? '—'}</td>
-                  <td className="py-2.5 pr-4">
-                    {entry.validation_result === 'approved' ? (
-                      <span className="flex items-center gap-1 text-green-400 text-xs"><CheckCircle className="w-3.5 h-3.5" /> Approved</span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-red-400 text-xs"><XCircle className="w-3.5 h-3.5" /> Rejected</span>
+              {log.map(entry => {
+                const effectiveStatus = statusOverride[entry.id]
+                const isExpanded = expanded === entry.id
+                return (
+                  <Fragment key={entry.id}>
+                    <tr className="border-t border-white/5">
+                      <td className="py-2.5 pr-4 text-white/70">{entry.concepts?.name ?? '—'}</td>
+                      <td className="py-2.5 pr-4 text-white/50 text-xs">
+                        {entry.question_archetypes
+                          ? <span>{entry.question_archetypes.scenario_type} <span className="text-white/30">· {entry.question_archetypes.cognitive_level}</span></span>
+                          : '—'}
+                      </td>
+                      <td className="py-2.5 pr-4">
+                        {entry.validation_result === 'approved' ? (
+                          effectiveStatus === 'rejected' ? (
+                            <span className="flex items-center gap-1 text-white/40 text-xs"><XCircle className="w-3.5 h-3.5" /> Pulled</span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-green-400 text-xs"><CheckCircle className="w-3.5 h-3.5" /> Approved</span>
+                          )
+                        ) : (
+                          <span className="flex items-center gap-1 text-red-400 text-xs"><XCircle className="w-3.5 h-3.5" /> Rejected</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 pr-4 text-white/40 text-xs max-w-md truncate" title={entry.rejection_reason ?? ''}>{entry.rejection_reason ?? '—'}</td>
+                      <td className="py-2.5 pr-4 text-white/30 text-xs whitespace-nowrap">{new Date(entry.created_at).toLocaleString()}</td>
+                      <td className="py-2.5 pr-4 text-right whitespace-nowrap">
+                        <button onClick={() => setExpanded(isExpanded ? null : entry.id)} className="text-white/40 hover:text-white transition-colors inline-flex items-center gap-1 text-xs mr-2">
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />} Details
+                        </button>
+                        {entry.validation_result === 'approved' && entry.question_id && (
+                          effectiveStatus === 'rejected' ? (
+                            <button disabled={actioning === entry.id} onClick={() => setQuestionStatus(entry, 'approved')} className="text-xs px-2 py-1 rounded-lg bg-green-500/15 text-green-400 hover:bg-green-500/25 disabled:opacity-50">
+                              Restore
+                            </button>
+                          ) : (
+                            <button disabled={actioning === entry.id} onClick={() => setQuestionStatus(entry, 'rejected')} className="text-xs px-2 py-1 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 disabled:opacity-50">
+                              Pull
+                            </button>
+                          )
+                        )}
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="border-t border-white/5 bg-black/20">
+                        <td colSpan={6} className="py-3 px-4">
+                          <div className="text-xs text-white/50 mb-2">Model: {entry.model} · Full reason: {entry.rejection_reason ?? '—'}</div>
+                          {entry.raw_output ? (
+                            <pre className="text-[11px] text-white/60 bg-black/30 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(entry.raw_output, null, 2)}</pre>
+                          ) : (
+                            <div className="text-xs text-white/30">No candidate output recorded (failed before generation).</div>
+                          )}
+                        </td>
+                      </tr>
                     )}
-                  </td>
-                  <td className="py-2.5 pr-4 text-white/40 text-xs max-w-md truncate" title={entry.rejection_reason ?? ''}>{entry.rejection_reason ?? '—'}</td>
-                  <td className="py-2.5 pr-4 text-white/30 text-xs whitespace-nowrap">{new Date(entry.created_at).toLocaleString()}</td>
-                </tr>
-              ))}
+                  </Fragment>
+                )
+              })}
               {log.length === 0 && (
-                <tr><td colSpan={4} className="py-6 text-center text-white/30">No generation attempts logged yet.</td></tr>
+                <tr><td colSpan={6} className="py-6 text-center text-white/30">No generation attempts logged yet.</td></tr>
               )}
             </tbody>
           </table>

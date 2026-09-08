@@ -25,6 +25,7 @@ export function formatDate(dateString: string): string {
 export function getSubscriptionLabel(status: SubscriptionStatus): string {
   const labels: Record<SubscriptionStatus, string> = {
     free: 'No Subscription',
+    tarmac_member: 'Active',
     trialing: 'Free Trial',
     study_pass: 'Active',
     checkride_prep: 'Checkride Prep',

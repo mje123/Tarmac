@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import AdminDebriefClient from './AdminDebriefClient'
+import AdminDebriefClient, { type FlaggedComment } from './AdminDebriefClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,5 +19,8 @@ export default async function AdminDebriefPage() {
     admin.from('accident_flags').select('id,comment_id,reason,created_at,accident_comments(id,body,accident_id,is_removed)').order('created_at', { ascending: false }),
   ])
 
-  return <AdminDebriefClient accidents={accidents || []} flaggedComments={flaggedComments || []} />
+  // accident_comments is a to-one embed at runtime (comment_id -> accident_comments.id
+  // is many-to-one), but supabase-js's generic inference types embedded resources as
+  // arrays regardless — a cast, not a runtime concern.
+  return <AdminDebriefClient accidents={accidents || []} flaggedComments={(flaggedComments || []) as unknown as FlaggedComment[]} />
 }

@@ -23,12 +23,12 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       await admin.from('accident_votes').delete().eq('id', existing.id)
-      await admin.from('accident_comments').update({ upvote_count: admin.rpc ? undefined : 0 }).eq('id', commentId)
-      // Decrement
-      await admin.rpc('decrement_accident_upvotes', { comment_id: commentId }).catch(async () => {
+      // Decrement — fall back to a manual read-then-write if the RPC is unavailable.
+      const { error: rpcError } = await admin.rpc('decrement_accident_upvotes', { comment_id: commentId })
+      if (rpcError) {
         const { data: c } = await admin.from('accident_comments').select('upvote_count').eq('id', commentId).single()
         await admin.from('accident_comments').update({ upvote_count: Math.max(0, (c?.upvote_count || 1) - 1) }).eq('id', commentId)
-      })
+      }
       return NextResponse.json({ voted: false })
     } else {
       await admin.from('accident_votes').insert({ comment_id: commentId, user_id: user.id })

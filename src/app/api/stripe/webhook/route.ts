@@ -127,12 +127,16 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        await supabase.from('users').update({
+        const { error: checkoutUpdateError } = await supabase.from('users').update({
           subscription_status: subStatus,
           stripe_customer_id: customerId,
           subscription_expires_at: periodEnd,
           updated_at: new Date().toISOString(),
         }).eq('id', userId)
+        // This write silently failed for every 'tarmac_member' status until the DB
+        // CHECK constraint was fixed to allow it — logging loudly now so a future
+        // schema/value drift like that is never silent again.
+        if (checkoutUpdateError) console.error('checkout.session.completed: failed to update user subscription_status', { userId, subStatus, error: checkoutUpdateError })
 
         // Send trial-start email + admin notification
         if (subStatus === 'trialing') {
@@ -186,11 +190,12 @@ export async function POST(request: NextRequest) {
         const periodEndTs = (sub as any).current_period_end ?? (sub as any).items?.data?.[0]?.current_period_end
         const periodEnd = periodEndTs ? new Date(periodEndTs * 1000).toISOString() : null
 
-        await supabase.from('users').update({
+        const { error: updateError } = await supabase.from('users').update({
           subscription_status: newStatus,
           subscription_expires_at: isActive ? periodEnd : null,
           updated_at: new Date().toISOString(),
         }).eq('stripe_customer_id', customerId)
+        if (updateError) console.error('customer.subscription.updated: failed to update user subscription_status', { customerId, newStatus, error: updateError })
         break
       }
 
@@ -198,11 +203,12 @@ export async function POST(request: NextRequest) {
         const sub = event.data.object as Stripe.Subscription
         const customerId = sub.customer as string
 
-        await supabase.from('users').update({
+        const { error: deleteStatusError } = await supabase.from('users').update({
           subscription_status: 'free',
           subscription_expires_at: null,
           updated_at: new Date().toISOString(),
         }).eq('stripe_customer_id', customerId)
+        if (deleteStatusError) console.error('customer.subscription.deleted: failed to downgrade user', { customerId, error: deleteStatusError })
         break
       }
     }

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   let query = admin
     .from('question_generation_log')
-    .select('id, concept_id, archetype_id, model, prompt_version, validation_result, rejection_reason, created_at, concepts(name, slug)')
+    .select('id, concept_id, archetype_id, question_id, model, prompt_version, validation_result, rejection_reason, raw_output, created_at, concepts(name, slug), question_archetypes(scenario_type, cognitive_level)')
     .order('created_at', { ascending: false })
     .limit(limit)
 

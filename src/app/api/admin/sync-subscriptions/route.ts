@@ -37,7 +37,7 @@ export async function POST() {
         continue
       }
 
-      const newStatus = active.status === 'trialing' ? 'trialing' : 'study_pass'
+      const newStatus = active.status === 'trialing' ? 'trialing' : 'tarmac_member'
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const periodEndTs = (active as any).current_period_end ?? (active as any).items?.data?.[0]?.current_period_end
       const periodEnd = periodEndTs ? new Date(periodEndTs * 1000).toISOString() : null

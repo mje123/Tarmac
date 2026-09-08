@@ -12,7 +12,8 @@ export async function POST(request: NextRequest) {
     if (!feature) return NextResponse.json({ error: 'Missing feature' }, { status: 400 })
 
     const admin = createAdminClient()
-    await admin.from('feature_interest').insert({ user_id: user.id, feature }).onConflict('user_id, feature').ignore()
+    await admin.from('feature_interest')
+      .upsert({ user_id: user.id, feature }, { onConflict: 'user_id, feature', ignoreDuplicates: true })
 
     return NextResponse.json({ registered: true })
   } catch {

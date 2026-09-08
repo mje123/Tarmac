@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Loader2, Eye, EyeOff, Trash2, RefreshCw, Sparkles } from 'lucide-react'
 
 interface Accident { id: string; title: string; is_active: boolean; posted_at: string | null; ai_summary: string | null }
-interface FlaggedComment {
+export interface FlaggedComment {
   id: string; comment_id: string; reason: string; created_at: string
   accident_comments: { id: string; body: string; accident_id: string; is_removed: boolean } | null
 }

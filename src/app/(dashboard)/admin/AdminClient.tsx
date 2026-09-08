@@ -9,6 +9,7 @@ import {
   Pin, ChevronDown, ChevronUp, ExternalLink, Megaphone, Trophy, Sparkles,
 } from 'lucide-react'
 import QuestionEngineTab from './QuestionEngineTab'
+import QuestionBrowserTab from './QuestionBrowserTab'
 
 interface ReferralDetail {
   id: string
@@ -778,6 +779,8 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
 
       {tab === 'questions' && (
         <>
+        <QuestionBrowserTab />
+
         {/* ── IFR Question Bank ───────────────────────────────────────────── */}
         <div className="glass-card p-6 mb-4">
           <div className="flex items-center justify-between mb-4">
@@ -1748,7 +1751,7 @@ export default function AdminClient({ stats, recentUsers: initialUsers, recentSe
                           {p.question_type as string}
                         </span>
                       </div>
-                      {p.context && (
+                      {Boolean(p.context) && (
                         <p className="text-xs text-white/40 mb-1 line-clamp-1">{p.context as string}</p>
                       )}
                       <p className="text-sm text-white/80 line-clamp-2">{p.question_text as string}</p>

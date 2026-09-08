@@ -409,8 +409,8 @@ export default function LandingPage() {
               </p>
             </div>
           </FadeUp>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-y rounded-2xl overflow-hidden"
-            style={{ border: '1px solid rgba(255,255,255,0.07)', divideColor: 'rgba(255,255,255,0.07)' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-x divide-y divide-[rgba(255,255,255,0.07)] rounded-2xl overflow-hidden"
+            style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
             {FEATURES.map((f, i) => (
               <FadeUp key={f.label} delay={i * 0.07}>
                 <div className="p-8 h-full" style={{ background: '#0d1a38' }}>
