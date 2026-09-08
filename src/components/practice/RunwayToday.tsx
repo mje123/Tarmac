@@ -5,6 +5,15 @@ import Link from 'next/link'
 import { Calendar, Play, CheckCircle2 } from 'lucide-react'
 import { PHASE_LABELS, type RunwayPhase } from '@/lib/runway'
 
+// A plain "YYYY-MM-DD" DATE-column value has no time component. Parsing it with
+// `new Date(str)` treats it as UTC midnight, which `.toLocaleDateString()` then
+// renders in the viewer's local zone — shifting it a day earlier for anyone west of
+// UTC. Building the Date from local y/m/d components instead avoids that entirely.
+function formatDateOnly(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString()
+}
+
 const MODE_HREF: Record<string, string> = {
   learn: '/practice/learn',
   practice: '/practice/practice?autoStart=weak',
@@ -54,7 +63,7 @@ export default function RunwayToday({ dayIndex, totalDays, phase, compressed, ex
         </p>
         <button onClick={() => setEditingDate(e => !e)} className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-ter)' }}>
           <Calendar className="w-3.5 h-3.5" />
-          {savedDate ? new Date(savedDate).toLocaleDateString() : 'Set test date'}
+          {savedDate ? formatDateOnly(savedDate) : 'Set test date'}
         </button>
       </div>
 

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateExamPDF } from '@/lib/pdfGenerator'
 import { sendExamResultEmail } from '@/lib/emailService'
 import { updateConceptMastery } from '@/lib/masteryUpdate'
+import { classifyError } from '@/lib/spacedRepetition'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
     const questionIds = answers.map((a: { questionId: string }) => a.questionId)
     const { data: questions } = await supabase
       .from('questions')
-      .select('id, correct_answer, category, question_text, option_a, option_b, option_c, option_d, explanation, concept_id')
+      .select('id, correct_answer, category, question_text, option_a, option_b, option_c, option_d, explanation, concept_id, scenario_type')
       .in('id', questionIds)
 
     const questionMap = new Map(questions?.map(q => [q.id, q]) || [])
@@ -43,14 +44,28 @@ export async function POST(request: NextRequest) {
       time_remaining_seconds: timeRemainingSeconds,
     }).eq('id', sessionId)
 
-    const answerInserts = gradedAnswers.map(ans => ({
-      session_id: sessionId,
-      question_id: ans.questionId,
-      user_answer: ans.answer,
-      is_correct: ans.isCorrect,
-      is_marked_for_review: ans.isMarked || false,
-      answered_at: new Date().toISOString(),
-    }))
+    // No confidence prompts in exam mode, so the confidence-dependent branches
+    // (confidence_error/careless_error) never fire here — but calculation_error,
+    // regulation_confusion, and the concept_gap/distractor_trap fallback still give
+    // real signal, which previously went uncomputed entirely for every exam answer.
+    const answerInserts = gradedAnswers.map(ans => {
+      const errorTag = classifyError({
+        isCorrect: ans.isCorrect,
+        scenarioType: ans.question.scenario_type,
+        confidence: null,
+        category: ans.question.category,
+      })
+      return {
+        session_id: sessionId,
+        question_id: ans.questionId,
+        user_answer: ans.answer,
+        is_correct: ans.isCorrect,
+        is_marked_for_review: ans.isMarked || false,
+        answered_at: new Date().toISOString(),
+        error_tag: errorTag,
+        error_tag_source: errorTag ? 'heuristic' : null,
+      }
+    })
 
     if (answerInserts.length > 0) {
       await supabase.from('test_answers').insert(answerInserts)

@@ -222,10 +222,13 @@ function PracticePageInner() {
   }
 
   // Deep link from Practice Home's "Start Today's Training" CTA — skips setup and
-  // jumps straight into a weak-area session.
+  // jumps straight into a weak-area session. Forces graded mode: Home promises a real
+  // training session, so a leftover Read-Through preference from localStorage
+  // shouldn't silently turn it into a no-grading review instead.
   useEffect(() => {
     const autoStart = searchParams.get('autoStart')
     if (autoStart === 'weak') {
+      setMemMode(false)
       setCategory('weak')
       startSession('weak')
     }

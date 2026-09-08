@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateAndSaveLegacyQuestions, type LegacyExamType, type LegacyCategory } from '@/lib/generation/legacy'
@@ -10,6 +10,8 @@ import { getUserSessionIds } from '@/lib/userSessions'
 
 const PPL_CATEGORIES = new Set(Object.keys(EXAM_QUESTION_DISTRIBUTION))
 const IFR_CATEGORIES = new Set(Object.keys(IFR_EXAM_QUESTION_DISTRIBUTION))
+
+export const maxDuration = 60
 
 const LOW_POOL_THRESHOLD = 20
 // Availability floor only — prevents a category's pool from running dry. Crossing
@@ -285,8 +287,13 @@ export async function GET(request: NextRequest) {
     const maxCognitiveLevel = searchParams.get('maxCognitiveLevel')
     const weaknessOnly = searchParams.get('weaknessOnly') === '1'
 
-    if (!conceptId && categories.length > 0) categories.forEach(c => maybeRefillCategory(c, examType))
-    else if (!conceptId && category) maybeRefillCategory(category, examType)
+    // Runs after the response is sent (see maxDuration above) rather than as a bare
+    // unawaited promise — a serverless function can be frozen/terminated the moment
+    // the response finishes, which was silently killing this refill before it ever
+    // reached a single Anthropic call or question_generation_log write (confirmed via
+    // direct invocation: the pipeline itself works fine, it just never got to run).
+    if (!conceptId && categories.length > 0) categories.forEach(c => after(() => maybeRefillCategory(c, examType)))
+    else if (!conceptId && category) after(() => maybeRefillCategory(category, examType))
 
     let weaknessConceptIds: string[] | null = null
     if (weaknessOnly) {

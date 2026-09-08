@@ -54,7 +54,7 @@ export default async function PracticeHomePage() {
             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-ter)' }}>Your readiness</p>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-5xl font-extrabold tabular-nums" style={{ color: readinessColor }}>
-                {readiness ?? '—'}
+                {readiness ?? '--'}
               </span>
               <span className="text-lg font-semibold" style={{ color: 'var(--text-ter)' }}>/100</span>
             </div>

@@ -72,11 +72,13 @@ export async function POST(request: NextRequest) {
     // The heuristic's catch-all bucket gets queued for async AI refinement (figure
     // misreads, misread questions, and transfer failures need real judgment) — a
     // reliable DB-queue write, not a fire-and-forget promise a serverless function
-    // could kill mid-flight. Processed by cron/classify-errors.
-    if (errorTag === 'concept_gap' && insertedAnswer && question?.concept_id) {
+    // could kill mid-flight. Processed by cron/classify-errors. concept_id is stored
+    // when available but not required — the classifier only needs the question's own
+    // text/options/explanation, so legacy (non-concept) questions get refined too.
+    if (errorTag === 'concept_gap' && insertedAnswer) {
       await supabase.from('pending_error_classifications').insert({
         test_answer_id: insertedAnswer.id,
-        concept_id: question.concept_id,
+        concept_id: question?.concept_id ?? null,
       })
     }
 

@@ -38,7 +38,7 @@ export default async function ReadinessBreakdownPage() {
 
       <div className="rounded-2xl p-6 mb-6 text-center" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-1)' }}>
         <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-ter)' }}>Tarmac Readiness</p>
-        <p className="text-6xl font-extrabold" style={{ color: score == null ? 'var(--text-ter)' : barColor(score) }}>{score ?? '—'}<span className="text-2xl" style={{ color: 'var(--text-ter)' }}>/100</span></p>
+        <p className="text-6xl font-extrabold" style={{ color: score == null ? 'var(--text-ter)' : barColor(score) }}>{score ?? '--'}<span className="text-2xl" style={{ color: 'var(--text-ter)' }}>/100</span></p>
         <p className="text-xs mt-2" style={{ color: 'var(--text-ter)' }}>Based on your Tarmac performance — not a predicted pass rate.</p>
       </div>
 
