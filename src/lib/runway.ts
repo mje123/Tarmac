@@ -57,7 +57,7 @@ export interface ConceptMasterySnapshot {
 }
 
 export interface DailyPlanItem {
-  mode: 'learn' | 'practice' | 'transfer' | 'weakness' | 'exam'
+  mode: 'learn' | 'practice' | 'transfer' | 'weakness' | 'exam' | 'diagnostic'
   conceptIds: string[]
   targetCognitiveLevel: string | null
   estimatedMinutes: number
@@ -76,7 +76,7 @@ export function generateDailyPlan(phase: RunwayPhase, mastery: ConceptMasterySna
 
   switch (phase) {
     case 'diagnose':
-      return { mode: 'practice', conceptIds: [], targetCognitiveLevel: 'recall', estimatedMinutes: 12, label: 'Diagnostic — mixed concepts, see where you stand' }
+      return { mode: 'diagnostic', conceptIds: [], targetCognitiveLevel: 'recall', estimatedMinutes: 12, label: 'Diagnostic — a broad first read on where you stand' }
     case 'build':
       return { mode: 'learn', conceptIds: weakestIds, targetCognitiveLevel: 'application', estimatedMinutes: 15, label: 'Build the concepts you\'re weakest in' }
     case 'apply':

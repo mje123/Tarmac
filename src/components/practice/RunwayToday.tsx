@@ -18,6 +18,7 @@ const MODE_HREF: Record<string, string> = {
   learn: '/practice/learn',
   practice: '/practice/practice?autoStart=weak',
   transfer: '/practice/transfer',
+  diagnostic: '/practice/diagnostic',
   weakness: '/practice/weakness',
   exam: '/exam',
 }
