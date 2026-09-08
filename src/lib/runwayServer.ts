@@ -78,7 +78,7 @@ export async function getOrCreateRunway(supabase: SupabaseClient, userId: string
       next_review: r.next_review,
     }))
 
-    const plan = generateDailyPlan(runway.phase, mastery)
+    const plan = generateDailyPlan(runway.phase, mastery, state!.daily_minutes_target ?? 20)
     const { data: inserted } = await supabase
       .from('daily_plan_items')
       .insert({

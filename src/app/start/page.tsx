@@ -12,7 +12,7 @@ import type { OnboardingData } from '@/types'
 // ─── Quiz data ────────────────────────────────────────────────────────────────
 
 type Step =
-  | 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6' | 'q7'
+  | 'q1' | 'q2' | 'q3' | 'q4'
   | 'recommendation'
   | 'signup'
 
@@ -26,9 +26,29 @@ interface Question {
   id: Step
   text: string
   sub?: string
+  /** 'date' renders a real date input instead of the option-button list. */
+  type?: 'options' | 'date'
   options: Option[]
   skippable?: boolean
   feedbacks: Record<string, string>
+}
+
+/** Days between today and an ISO "YYYY-MM-DD" test date, or null if unset. Used to
+ *  give q2 a real, dynamic feedback message instead of picking from a fixed bucket. */
+function daysUntil(dateStr: string): number {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const target = new Date(y, m - 1, d)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return Math.round((target.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
+}
+
+function testDateFeedback(dateStr: string | null): string {
+  if (!dateStr) return "No problem — pick a target once you're ready and the runway adjusts around it."
+  const days = daysUntil(dateStr)
+  if (days <= 30) return "We'll compress your 30-Day Runway to fit — diagnostic first, then straight into your weak areas."
+  if (days <= 90) return "That's enough time to build real understanding, not just cram the last two weeks."
+  return "Plenty of runway. We'll pace it so concepts have time to actually stick."
 }
 
 const QUESTIONS: Question[] = [
@@ -47,61 +67,13 @@ const QUESTIONS: Question[] = [
   {
     id: 'q2',
     text: 'When is your test?',
-    options: [
-      { value: 'this_month', label: 'Within a month',       sub: 'It\'s coming up fast' },
-      { value: '1_3_months', label: '1–3 months out',        sub: 'Some runway, but a real date' },
-      { value: '3_6_months', label: '3–6 months out',        sub: 'Plenty of time to build the foundation' },
-      { value: 'no_date',    label: 'No date yet',            sub: 'Just getting started' },
-    ],
-    feedbacks: {
-      this_month: "We'll compress your 30-Day Runway to fit — diagnostic first, then straight into your weak areas.",
-      '1_3_months': "That's enough time to build real understanding, not just cram the last two weeks.",
-      '3_6_months': "Plenty of runway. We'll pace it so concepts have time to actually stick.",
-      no_date:      "No problem — pick a target once you're ready and the runway adjusts around it.",
-    },
+    type: 'date',
+    skippable: true,
+    options: [],
+    feedbacks: {},
   },
   {
     id: 'q3',
-    text: 'Have you studied FAA material for this test before?',
-    options: [
-      { value: 'yes', label: 'Yes',  sub: 'I\'ve been through some ground school or a question bank already' },
-      { value: 'no',  label: 'No',   sub: 'This is my first real pass at it' },
-    ],
-    feedbacks: {
-      yes: "Good — the diagnostic will find out what actually stuck versus what you just recognized.",
-      no:  "Totally fine. The diagnostic starts broad so we know exactly where to focus first.",
-    },
-  },
-  {
-    id: 'q4',
-    text: 'Have you taken the FAA written before?',
-    options: [
-      { value: 'yes', label: 'Yes — this is a retake',  sub: 'I need to close specific gaps' },
-      { value: 'no',  label: 'No — first attempt',       sub: 'Working toward a pass on try one' },
-    ],
-    feedbacks: {
-      yes: "Retakes cost $175. We'll target novel-question practice so you're not caught by the same gaps twice.",
-      no:  "Most members are here for exactly this — the goal is walking in ready, not hoping.",
-    },
-  },
-  {
-    id: 'q5',
-    text: 'Be honest — how confident are you right now?',
-    options: [
-      { value: 'nervous',            label: "I'm overwhelmed — there's a lot I don't know",    sub: 'Starting from scratch' },
-      { value: 'unsure',             label: 'I know some things but have real gaps',            sub: 'Inconsistent, unsure where to focus' },
-      { value: 'somewhat_confident', label: "I'm decent, just need more practice",              sub: 'Close, need to lock it in' },
-      { value: 'very_confident',     label: "I know my stuff — here to validate it",             sub: 'High scorer, want to make sure' },
-    ],
-    feedbacks: {
-      nervous:            "Totally fair. Most new members feel this way — the diagnostic meets you where you are.",
-      unsure:             "Knowing you have gaps is already half the battle. We'll find them and close them systematically.",
-      somewhat_confident: "Almost there. Focused, novel practice locks in what you know and surfaces the blind spots.",
-      very_confident:     "Let's verify it. Novel-question mode reveals what familiar-question practice hides.",
-    },
-  },
-  {
-    id: 'q6',
     text: 'How many minutes a day can you realistically study?',
     options: [
       { value: '10', label: '10 minutes',  sub: 'Quick daily retrieval' },
@@ -110,14 +82,14 @@ const QUESTIONS: Question[] = [
       { value: '45', label: '45+ minutes', sub: 'Deep sessions, faster progress' },
     ],
     feedbacks: {
-      '10': "Short sessions still work — the system just optimizes for retrieval over volume.",
+      '10': "Short sessions still work — your daily session is sized to fit, not stretched to a fixed length.",
       '20': "That's enough for a real session: review, retrieval, and a novel question or two.",
       '30': "Solid daily block — enough time for concept work, practice, and spaced review.",
       '45': "You'll move through the 30-Day Runway faster with sessions this size.",
     },
   },
   {
-    id: 'q7',
+    id: 'q4',
     text: 'Last one — how did you hear about TARMAC?',
     skippable: true,
     options: [
@@ -149,15 +121,9 @@ const QUESTIONS: Question[] = [
 const OPTION_ICONS: Record<string, string> = {
   // Q1 — exam type
   ppl: '🛩️', ifr: '🌫️',
-  // Q2 — test date
-  this_month: '⏱️', '1_3_months': '📅', '3_6_months': '🗓️', no_date: '🧭',
-  // Q3 — studied before / Q4 — taken before
-  yes: '✅', no: '🆕',
-  // Q5 — confidence
-  nervous: '😰', unsure: '😐', somewhat_confident: '😊', very_confident: '😎',
-  // Q6 — minutes per day
+  // Q3 — minutes per day
   '10': '⚡', '20': '📖', '30': '🎯', '45': '🚀',
-  // Q7 — referral
+  // Q4 — referral
   instagram: '📸', tiktok: '🎵', youtube: '▶️', google: '🔍', reddit: '🤖',
   friend: '🤝', cfi: '🧑‍✈️', other: '🌐',
 }
@@ -175,7 +141,7 @@ interface Recommendation {
 }
 
 function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
-  const { exam_type, confidence_level, taken_faa_written_before, test_date } = answers
+  const { exam_type, test_date } = answers
   const reasons: string[] = []
 
   // Reason 1: exam
@@ -185,19 +151,10 @@ function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
     reasons.push('Private Pilot written prep — regulations, airspace, weather, and performance, generated as new scenarios every session')
   }
 
-  // Reason 2: confidence level
-  if (confidence_level === 'nervous' || confidence_level === 'unsure') {
-    reasons.push('AI tutor on every question explains the WHY until it actually makes sense — not just the correct letter')
-  } else if (confidence_level === 'very_confident') {
-    reasons.push('Novel-question mode and full timed exams reveal what familiar-question practice leaves behind')
-  } else {
-    reasons.push('Concept-by-concept accuracy dashboard shows exactly where to spend your next study session')
-  }
+  reasons.push('A diagnostic finds out where you actually stand, then the Runway adapts to your weak areas — no guessing from a self-rating')
 
-  // Reason 3: retake status or timeline
-  if (taken_faa_written_before === 'yes') {
-    reasons.push('A retake costs $175 — novel-question practice targets the gaps that cost you last time')
-  } else if (test_date === 'this_month') {
+  // Reason 3: timeline
+  if (test_date && daysUntil(test_date) <= 30) {
     reasons.push('The 30-Day Runway compresses to fit your timeline, starting with a diagnostic today')
   } else {
     reasons.push('The 30-Day Runway takes you from diagnostic to test-ready, adapting to your weak areas')
@@ -213,19 +170,13 @@ function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
 }
 
 function getStats(answers: Partial<OnboardingData>): { stat: string; label: string }[] {
-  const { confidence_level, minutes_per_day, taken_faa_written_before } = answers
+  const { minutes_per_day } = answers
 
   const s1 = { stat: '2', label: 'exams included — Private + Instrument' }
-
-  const s2 =
-    confidence_level === 'nervous' || confidence_level === 'unsure'
-      ? { stat: '30 days', label: 'diagnostic-to-test-ready runway' }
-      : { stat: 'Novel', label: 'question mode tests real understanding' }
-
-  const s3 =
-    taken_faa_written_before === 'yes' ? { stat: '$175', label: 'avg cost of a written retake — most members avoid it' } :
-    minutes_per_day ? { stat: `${minutes_per_day} min`, label: 'a day, optimized — not just more questions' } :
-    { stat: 'New', label: 'questions generated every session' }
+  const s2 = { stat: '30 days', label: 'diagnostic-to-test-ready runway' }
+  const s3 = minutes_per_day
+    ? { stat: `${minutes_per_day} min`, label: 'a day, optimized — not just more questions' }
+    : { stat: 'New', label: 'questions generated every session' }
 
   return [s1, s2, s3]
 }
@@ -266,6 +217,7 @@ function StartPageInner() {
     urlExam === 'ppl' || urlExam === 'ifr' ? { exam_type: urlExam } : {}
   )
   const [selectedValue, setSelectedValue] = useState<string | null>(null)
+  const [dateInputValue, setDateInputValue] = useState('')
   const [feedbackText, setFeedbackText] = useState<string | null>(null)
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null)
 
@@ -296,7 +248,7 @@ function StartPageInner() {
     try { localStorage.setItem('tarmac_quiz', JSON.stringify({ step, answers })) } catch { /* ignore */ }
   }, [step, answers])
 
-  const STEP_ORDER: Step[] = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'recommendation', 'signup']
+  const STEP_ORDER: Step[] = ['q1', 'q2', 'q3', 'q4', 'recommendation', 'signup']
   const questionSteps = STEP_ORDER.filter(s => s.startsWith('q')) as Step[]
   const currentQuestionIndex = questionSteps.indexOf(step)
   const totalQuestions = questionSteps.length
@@ -306,8 +258,7 @@ function StartPageInner() {
     if (selectedValue) return
     setSelectedValue(value)
     const fieldMap: Record<string, keyof OnboardingData> = {
-      q1: 'exam_type', q2: 'test_date', q3: 'studied_before',
-      q4: 'taken_faa_written_before', q5: 'confidence_level', q6: 'minutes_per_day', q7: 'referral_source',
+      q1: 'exam_type', q3: 'minutes_per_day', q4: 'referral_source',
     }
     const field = fieldMap[step]
     const newAnswers = { ...answers, [field]: value as never }
@@ -317,8 +268,17 @@ function StartPageInner() {
     setTimeout(() => advance(step, newAnswers), 1400)
   }
 
+  function selectDate(value: string | null) {
+    if (selectedValue) return
+    setSelectedValue(value || 'skipped')
+    const newAnswers = { ...answers, test_date: value ?? undefined }
+    setAnswers(newAnswers)
+    setFeedbackText(testDateFeedback(value))
+    setTimeout(() => advance(step, newAnswers), 1400)
+  }
+
   function skipQuestion() {
-    const fieldMap: Record<string, keyof OnboardingData> = { q7: 'referral_source' }
+    const fieldMap: Record<string, keyof OnboardingData> = { q4: 'referral_source' }
     const field = fieldMap[step]
     const newAnswers = field ? { ...answers, [field]: 'skipped' as never } : { ...answers }
     setAnswers(newAnswers)
@@ -352,11 +312,23 @@ function StartPageInner() {
     })
     if (error) { setSignupError(error.message); setLoading(false); return }
     if (data.user) {
-      const finalAnswers = { ...answers, recommended_plan: recommendation?.planId }
-      await supabase.from('users').update({ onboarding_data: finalAnswers }).eq('id', data.user.id)
-      if (!marketingEmails) {
-        await supabase.from('users').update({ marketing_emails: false }).eq('id', data.user.id)
+      const userUpdates: Record<string, unknown> = { onboarding_data: answers }
+      if (!marketingEmails) userUpdates.marketing_emails = false
+      if (answers.exam_type === 'ppl' || answers.exam_type === 'ifr') userUpdates.preferred_exam_type = answers.exam_type
+      await supabase.from('users').update(userUpdates).eq('id', data.user.id)
+
+      // Seed study_plan_state at signup (rather than waiting for the lazy
+      // first-Runway-visit create) so a real test date and daily-minutes preference
+      // shape the plan from Day 1 instead of defaulting to no exam date / 20 min.
+      const dailyMinutes = answers.minutes_per_day ? parseInt(answers.minutes_per_day, 10) : null
+      if (answers.test_date || dailyMinutes) {
+        await supabase.from('study_plan_state').insert({
+          user_id: data.user.id,
+          exam_date: answers.test_date || null,
+          daily_minutes_target: dailyMinutes || 20,
+        })
       }
+
       if (answers.exam_type === 'ppl' || answers.exam_type === 'ifr') {
         try {
           localStorage.setItem('tarmac-exam-type', answers.exam_type)
@@ -493,7 +465,31 @@ function StartPageInner() {
                   </h1>
                 </div>
 
+                {/* Date input (q2 — real test date instead of a vague bucket) */}
+                {currentQuestion.type === 'date' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                    <input
+                      type="date"
+                      value={dateInputValue}
+                      onChange={e => setDateInputValue(e.target.value)}
+                      disabled={!!selectedValue}
+                      min={new Date().toISOString().slice(0, 10)}
+                      className="w-full text-sm px-4 py-3.5 rounded-2xl"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'white' }}
+                    />
+                    <button
+                      onClick={() => selectDate(dateInputValue || null)}
+                      disabled={!dateInputValue || !!selectedValue}
+                      className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40"
+                      style={{ background: 'linear-gradient(135deg, #FFB627, #f5a300)', color: '#080E1C' }}
+                    >
+                      Continue
+                    </button>
+                  </motion.div>
+                )}
+
                 {/* Options */}
+                {currentQuestion.type !== 'date' && (
                 <motion.div
                   className="space-y-2.5"
                   variants={containerVariants}
@@ -572,6 +568,7 @@ function StartPageInner() {
                     )
                   })}
                 </motion.div>
+                )}
 
                 {/* Skip */}
                 {currentQuestion.skippable && !selectedValue && (

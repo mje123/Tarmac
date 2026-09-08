@@ -66,17 +66,25 @@ export interface DailyPlanItem {
 
 /** Assembles today's recommended session from the current phase + the user's
  *  concept-mastery snapshot. Deliberately simple, deterministic rules — no AI call —
- *  the AI's job is question generation, not deciding what today's plan should be. */
-export function generateDailyPlan(phase: RunwayPhase, mastery: ConceptMasterySnapshot[]): DailyPlanItem {
+ *  the AI's job is question generation, not deciding what today's plan should be.
+ *
+ *  dailyMinutesTarget is the onboarding "minutes per day" answer (default 20 — the
+ *  DB column's default for users who signed up before this existed). It scales every
+ *  phase's estimatedMinutes except the two full-exam phases, whose length is fixed by
+ *  the real exam format, not study preference. */
+export function generateDailyPlan(phase: RunwayPhase, mastery: ConceptMasterySnapshot[], dailyMinutesTarget = 20): DailyPlanItem {
   const attempted = mastery.filter(m => m.attempts > 0)
   const weakest = [...attempted].sort((a, b) => (a.correct / a.attempts) - (b.correct / b.attempts))
   const due = mastery.filter(m => m.next_review && new Date(m.next_review) <= new Date())
   const weakestIds = weakest.slice(0, 3).map(m => m.concept_id)
   const dueIds = due.slice(0, 5).map(m => m.concept_id)
 
+  const scale = Math.max(0.5, Math.min(2.5, dailyMinutesTarget / 20))
+  const scaled = (minutes: number) => Math.max(5, Math.round(minutes * scale))
+
   switch (phase) {
     case 'diagnose':
-      return { mode: 'diagnostic', conceptIds: [], targetCognitiveLevel: 'recall', estimatedMinutes: 12, label: 'Diagnostic — a broad first read on where you stand' }
+      return { mode: 'diagnostic', conceptIds: [], targetCognitiveLevel: 'recall', estimatedMinutes: scaled(12), label: 'Diagnostic — a broad first read on where you stand' }
     case 'build':
       // Most current content is legacy (no concept_id), so a Diagnostic-heavy session
       // can leave concept_mastery empty even though the student just answered real
@@ -84,17 +92,17 @@ export function generateDailyPlan(phase: RunwayPhase, mastery: ConceptMasterySna
       // back to Practice (which already targets the user's weakest category via its
       // own autoStart=weak routing) instead of pointing Learn at an arbitrary concept.
       if (attempted.length === 0) {
-        return { mode: 'practice', conceptIds: [], targetCognitiveLevel: 'application', estimatedMinutes: 15, label: 'Practice — building a baseline before we target specific concepts' }
+        return { mode: 'practice', conceptIds: [], targetCognitiveLevel: 'application', estimatedMinutes: scaled(15), label: 'Practice — building a baseline before we target specific concepts' }
       }
-      return { mode: 'learn', conceptIds: weakestIds, targetCognitiveLevel: 'application', estimatedMinutes: 15, label: 'Build the concepts you\'re weakest in' }
+      return { mode: 'learn', conceptIds: weakestIds, targetCognitiveLevel: 'application', estimatedMinutes: scaled(15), label: 'Build the concepts you\'re weakest in' }
     case 'apply':
-      return { mode: 'practice', conceptIds: dueIds.length > 0 ? dueIds : weakestIds, targetCognitiveLevel: 'scenario', estimatedMinutes: 18, label: 'Apply what you\'ve built, mixed with due reviews' }
+      return { mode: 'practice', conceptIds: dueIds.length > 0 ? dueIds : weakestIds, targetCognitiveLevel: 'scenario', estimatedMinutes: scaled(18), label: 'Apply what you\'ve built, mixed with due reviews' }
     case 'transfer':
-      return { mode: 'transfer', conceptIds: [], targetCognitiveLevel: 'transfer', estimatedMinutes: 15, label: 'Transfer — questions you haven\'t seen before' }
+      return { mode: 'transfer', conceptIds: [], targetCognitiveLevel: 'transfer', estimatedMinutes: scaled(15), label: 'Transfer — questions you haven\'t seen before' }
     case 'simulate':
       return { mode: 'exam', conceptIds: [], targetCognitiveLevel: null, estimatedMinutes: 150, label: 'Full timed simulated exam' }
     case 'remediate':
-      return { mode: 'weakness', conceptIds: weakestIds, targetCognitiveLevel: null, estimatedMinutes: 10, label: 'Attack what the simulated exam exposed' }
+      return { mode: 'weakness', conceptIds: weakestIds, targetCognitiveLevel: null, estimatedMinutes: scaled(10), label: 'Attack what the simulated exam exposed' }
     case 'prove_it':
       return { mode: 'exam', conceptIds: [], targetCognitiveLevel: null, estimatedMinutes: 150, label: 'Prove it — final full exam' }
   }

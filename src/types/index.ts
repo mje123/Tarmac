@@ -40,14 +40,15 @@ export type SessionStatus = 'in_progress' | 'completed' | 'abandoned'
 
 export interface OnboardingData {
   exam_type?: ExamType
+  /** ISO "YYYY-MM-DD" real test date, or undefined if skipped. */
   test_date?: string
+  minutes_per_day?: '10' | '20' | '30' | '45' | '60'
+  referral_source?: string
+  // legacy fields — kept so existing users' stored onboarding data still reads
   studied_before?: 'yes' | 'no'
   taken_faa_written_before?: 'yes' | 'no'
   confidence_level?: 'nervous' | 'unsure' | 'somewhat_confident' | 'very_confident'
-  minutes_per_day?: '10' | '20' | '30' | '45' | '60'
-  referral_source?: string
   recommended_plan?: string
-  // legacy fields — kept so existing users' stored onboarding data still reads
   training_stage?: string
   primary_goal?: string
   biggest_worry?: string
