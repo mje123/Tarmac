@@ -78,6 +78,14 @@ export function generateDailyPlan(phase: RunwayPhase, mastery: ConceptMasterySna
     case 'diagnose':
       return { mode: 'diagnostic', conceptIds: [], targetCognitiveLevel: 'recall', estimatedMinutes: 12, label: 'Diagnostic — a broad first read on where you stand' }
     case 'build':
+      // Most current content is legacy (no concept_id), so a Diagnostic-heavy session
+      // can leave concept_mastery empty even though the student just answered real
+      // questions. Learn mode has nothing concept-level to teach in that case, so fall
+      // back to Practice (which already targets the user's weakest category via its
+      // own autoStart=weak routing) instead of pointing Learn at an arbitrary concept.
+      if (attempted.length === 0) {
+        return { mode: 'practice', conceptIds: [], targetCognitiveLevel: 'application', estimatedMinutes: 15, label: 'Practice — building a baseline before we target specific concepts' }
+      }
       return { mode: 'learn', conceptIds: weakestIds, targetCognitiveLevel: 'application', estimatedMinutes: 15, label: 'Build the concepts you\'re weakest in' }
     case 'apply':
       return { mode: 'practice', conceptIds: dueIds.length > 0 ? dueIds : weakestIds, targetCognitiveLevel: 'scenario', estimatedMinutes: 18, label: 'Apply what you\'ve built, mixed with due reviews' }
