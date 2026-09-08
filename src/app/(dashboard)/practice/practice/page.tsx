@@ -1085,7 +1085,7 @@ function PracticePageInner() {
             let letterBg = isPending ? 'rgba(255,182,39,0.2)' : 'var(--surface-3)'
             let letterColor = isPending ? '#FFB627' : 'var(--text-sec)'
             let textColor = 'var(--text-pri)'
-            const hoverScale = phase === 'question' && !pendingAnswer ? 'hover:scale-[1.005]' : ''
+            const hoverScale = phase === 'question' ? 'hover:scale-[1.005]' : ''
 
             if (revealed) {
               if (isCorrect) {
@@ -1109,9 +1109,9 @@ function PracticePageInner() {
             return (
               <button
                 key={key}
-                onClick={() => phase === 'question' && !pendingAnswer && setPendingAnswer(key)}
+                onClick={() => phase === 'question' && setPendingAnswer(key)}
                 className={`w-full text-left p-4 flex items-center gap-3 transition-all duration-150 rounded-2xl ${hoverScale}`}
-                style={{ background: bg, border: `1px solid ${border}`, cursor: phase === 'question' && !pendingAnswer ? 'pointer' : 'default' }}
+                style={{ background: bg, border: `1px solid ${border}`, cursor: phase === 'question' ? 'pointer' : 'default' }}
               >
                 <span className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-colors"
                   style={{ background: letterBg, color: letterColor }}>
