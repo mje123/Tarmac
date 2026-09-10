@@ -519,10 +519,6 @@ export default function AltitudePage() {
             <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(62,146,204,0.7)' }}>
               {q.category}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider"
-              style={{ color: q.difficulty === 'hard' ? '#ef4444' : q.difficulty === 'medium' ? '#FFB627' : '#22c55e' }}>
-              {q.difficulty}
-            </span>
           </div>
 
           <p className="text-white text-[15px] font-semibold leading-relaxed">{q.question_text}</p>

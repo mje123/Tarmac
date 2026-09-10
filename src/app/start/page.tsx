@@ -44,9 +44,9 @@ function daysUntil(dateStr: string): number {
 }
 
 function testDateFeedback(dateStr: string | null): string {
-  if (!dateStr) return "No problem — pick a target once you're ready and the runway adjusts around it."
+  if (!dateStr) return "No problem — pick a target once you're ready and the Test Runway adjusts around it."
   const days = daysUntil(dateStr)
-  if (days <= 30) return "We'll compress your 30-Day Runway to fit — diagnostic first, then straight into your weak areas."
+  if (days <= 30) return "We'll compress your Test Runway to fit — diagnostic first, then straight into your weak areas."
   if (days <= 90) return "That's enough time to build real understanding, not just cram the last two weeks."
   return "Plenty of runway. We'll pace it so concepts have time to actually stick."
 }
@@ -85,7 +85,7 @@ const QUESTIONS: Question[] = [
       '10': "Short sessions still work — your daily session is sized to fit, not stretched to a fixed length.",
       '20': "That's enough for a real session: review, retrieval, and a novel question or two.",
       '30': "Solid daily block — enough time for concept work, practice, and spaced review.",
-      '45': "You'll move through the 30-Day Runway faster with sessions this size.",
+      '45': "You'll move through the Test Runway faster with sessions this size.",
     },
   },
   {
@@ -142,27 +142,29 @@ interface Recommendation {
 
 function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
   const { exam_type, test_date } = answers
+  const isIfr = exam_type === 'ifr'
+  const examName = isIfr ? 'Instrument Rating' : 'Private Pilot'
   const reasons: string[] = []
 
   // Reason 1: exam
-  if (exam_type === 'ifr') {
+  if (isIfr) {
     reasons.push('Instrument written prep — approaches, holding, navigation, and weather, generated as new scenarios every session')
   } else {
     reasons.push('Private Pilot written prep — regulations, airspace, weather, and performance, generated as new scenarios every session')
   }
 
-  reasons.push('A diagnostic finds out where you actually stand, then the Runway adapts to your weak areas — no guessing from a self-rating')
+  reasons.push('A diagnostic finds out where you actually stand, then the Test Runway adapts to your weak areas — no guessing from a self-rating')
 
   // Reason 3: timeline
   if (test_date && daysUntil(test_date) <= 30) {
-    reasons.push('The 30-Day Runway compresses to fit your timeline, starting with a diagnostic today')
+    reasons.push('The Test Runway compresses to fit your timeline, starting with a diagnostic today')
   } else {
-    reasons.push('The 30-Day Runway takes you from diagnostic to test-ready, adapting to your weak areas')
+    reasons.push('The Test Runway takes you from diagnostic to test-ready, adapting to your weak areas')
   }
 
   return {
     planId: 'beta_monthly',
-    name: 'TARMAC Written',
+    name: `${examName} Written Prep`,
     price: '$29.99/mo',
     reasons: reasons.slice(0, 3),
     cta: 'Start Free Trial',
@@ -170,10 +172,11 @@ function getRecommendation(answers: Partial<OnboardingData>): Recommendation {
 }
 
 function getStats(answers: Partial<OnboardingData>): { stat: string; label: string }[] {
-  const { minutes_per_day } = answers
+  const { minutes_per_day, exam_type } = answers
+  const isIfr = exam_type === 'ifr'
 
-  const s1 = { stat: '2', label: 'exams included — Private + Instrument' }
-  const s2 = { stat: '30 days', label: 'diagnostic-to-test-ready runway' }
+  const s1 = { stat: isIfr ? 'IRA' : 'PAR', label: isIfr ? 'Instrument Rating written, start to finish' : 'Private Pilot written, start to finish' }
+  const s2 = { stat: '30 days', label: 'diagnostic-to-test-ready Test Runway' }
   const s3 = minutes_per_day
     ? { stat: `${minutes_per_day} min`, label: 'a day, optimized — not just more questions' }
     : { stat: 'New', label: 'questions generated every session' }
@@ -322,11 +325,15 @@ function StartPageInner() {
       // shape the plan from Day 1 instead of defaulting to no exam date / 20 min.
       const dailyMinutes = answers.minutes_per_day ? parseInt(answers.minutes_per_day, 10) : null
       if (answers.test_date || dailyMinutes) {
-        await supabase.from('study_plan_state').insert({
+        const { error: planError } = await supabase.from('study_plan_state').insert({
           user_id: data.user.id,
           exam_date: answers.test_date || null,
           daily_minutes_target: dailyMinutes || 20,
         })
+        // Not fatal to signup — getOrCreateRunway's lazy fallback still creates the row
+        // on first Runway visit — but silently losing the real exam_date/minutes
+        // answers the student just gave should at least be visible in logs.
+        if (planError) console.error('study_plan_state insert failed at signup:', planError)
       }
 
       if (answers.exam_type === 'ppl' || answers.exam_type === 'ifr') {
@@ -485,6 +492,14 @@ function StartPageInner() {
                     >
                       Continue
                     </button>
+                    <button
+                      onClick={() => selectDate(null)}
+                      disabled={!!selectedValue}
+                      className="w-full py-3 rounded-2xl text-sm font-semibold transition-all disabled:opacity-40"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
+                    >
+                      I don&apos;t know yet
+                    </button>
                   </motion.div>
                 )}
 
@@ -570,8 +585,8 @@ function StartPageInner() {
                 </motion.div>
                 )}
 
-                {/* Skip */}
-                {currentQuestion.skippable && !selectedValue && (
+                {/* Skip (date step has its own explicit "I don't know yet" button above) */}
+                {currentQuestion.skippable && currentQuestion.type !== 'date' && !selectedValue && (
                   <motion.button
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

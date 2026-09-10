@@ -7,6 +7,7 @@ import { EXAM_QUESTION_DISTRIBUTION, IFR_EXAM_QUESTION_DISTRIBUTION } from '@/li
 import { generateValidatedQuestion } from '@/lib/generation'
 import { CONCEPTS, type ConceptSlug } from '@/lib/generation/concepts'
 import { getUserSessionIds } from '@/lib/userSessions'
+import { hasUnservableFigureReference } from '@/lib/figures'
 
 const PPL_CATEGORIES = new Set(Object.keys(EXAM_QUESTION_DISTRIBUTION))
 const IFR_CATEGORIES = new Set(Object.keys(IFR_EXAM_QUESTION_DISTRIBUTION))
@@ -326,6 +327,11 @@ export async function GET(request: NextRequest) {
     }
 
     let questions = (result.data || []) as CandidateQuestion[]
+    // Never serve a question that references a figure/chart we don't have a real image
+    // for — unlike the other filters below, this one is unconditional (not "only if it
+    // leaves candidates") because a figure-dependent question with no visual is
+    // unanswerable, not just suboptimal.
+    questions = questions.filter(q => !hasUnservableFigureReference(String(q.question_text ?? '')))
     if (lastNoveltyKey) questions = questions.filter(q => q.novelty_key !== lastNoveltyKey)
 
     // Learn/Transfer mode hard filters — legacy content with no cognitive_level always

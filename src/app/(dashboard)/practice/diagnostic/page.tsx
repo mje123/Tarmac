@@ -6,7 +6,10 @@ import { Question, AnswerOption } from '@/types'
 import { useExamType } from '@/components/ExamTypeProvider'
 import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
 import { EXAM_QUESTION_DISTRIBUTION, IFR_EXAM_QUESTION_DISTRIBUTION } from '@/lib/utils'
+import { wilsonLowerBound } from '@/lib/readiness'
 import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
+import SupplementViewer from '@/components/ui/SupplementViewer'
+import { matchFigureReference } from '@/lib/figures'
 import { Compass, Loader2, ChevronRight } from 'lucide-react'
 
 const DIAGNOSTIC_LENGTH = 12
@@ -16,7 +19,7 @@ type Phase = 'intro' | 'loading' | 'question' | 'answered' | 'results'
 interface CategoryTally { correct: number; total: number }
 
 /**
- * The 30-Day Runway's Diagnose phase — deliberately NOT the regular Practice flow.
+ * The Test Runway's Diagnose phase — deliberately NOT the regular Practice flow.
  * It samples broadly across every category (round-robin) instead of narrowing to one
  * topic, drops difficulty labels and the AI tutor/save-for-later affordances that
  * imply a study session rather than an assessment, and ends in a dedicated results
@@ -132,7 +135,7 @@ export default function DiagnosticPage() {
           {DIAGNOSTIC_LENGTH} questions, sampled broadly across every category. No hints, no AI tutor — just answer and rate how sure you are.
         </p>
         <p className="text-xs mb-4 max-w-md" style={{ color: 'var(--text-ter)' }}>
-          This is a starting point, not a verdict. A short sample can&apos;t declare anything permanently strong or weak — it just tells the Runway where to begin.
+          This is a starting point, not a verdict. A short sample can&apos;t declare anything permanently strong or weak — it just tells the Test Runway where to begin.
         </p>
         <p className="text-xs mb-8 max-w-md italic" style={{ color: 'var(--text-ter)' }}>
           Answer as honestly as you can. This isn&apos;t a test of how good you are — it&apos;s how we figure out where to start. The more honestly you answer, including your confidence, the better we can tailor your study plan.
@@ -154,7 +157,12 @@ export default function DiagnosticPage() {
 
   if (phase === 'results') {
     const scored = Object.entries(tally).filter(([, t]) => t.total > 0).map(([cat, t]) => ({ cat, pct: Math.round((t.correct / t.total) * 100), ...t }))
-    const weakest = [...scored].sort((a, b) => a.pct - b.pct).slice(0, 3)
+    // Wilson lower bound, not raw percentage — a single missed guess in a category
+    // that got exactly one question (0/1 = 0%) would otherwise outrank a category
+    // with real signal (e.g. 2/5 = 40%), surfacing the noisiest read as "Early
+    // signals" instead of the most informative one. Same conservative-on-small-n
+    // logic already used for readiness scoring.
+    const weakest = [...scored].sort((a, b) => wilsonLowerBound(a.correct, a.total) - wilsonLowerBound(b.correct, b.total)).slice(0, 3)
     const totalCorrect = scored.reduce((s, c) => s + c.correct, 0)
     const totalAnswered = scored.reduce((s, c) => s + c.total, 0)
 
@@ -206,6 +214,7 @@ export default function DiagnosticPage() {
     { letter: 'C' as AnswerOption, text: question.option_c },
     ...(question.option_d ? [{ letter: 'D' as AnswerOption, text: question.option_d }] : []),
   ]
+  const figureReference = matchFigureReference(question.question_text)
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto">
@@ -223,6 +232,12 @@ export default function DiagnosticPage() {
       <div className="glass-card p-5 mb-4">
         <p className="text-white font-medium leading-relaxed">{question.question_text}</p>
       </div>
+
+      {figureReference && (
+        <div className="mb-4">
+          <SupplementViewer reference={figureReference} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 mb-4">
         {options.map(opt => {

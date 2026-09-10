@@ -48,6 +48,11 @@ export default function RunwayToday({ dayIndex, totalDays, phase, compressed, ex
       })
       setSavedDate(dateValue || null)
       setEditingDate(false)
+      // A new date can change today's phase and session recommendation server-side
+      // (see the runway route's daily_plan_items invalidation) — reload so the
+      // day/phase header and the "Start" card below it both reflect that immediately
+      // instead of showing stale values until the next visit.
+      window.location.reload()
     } finally {
       setSaving(false)
     }

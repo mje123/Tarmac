@@ -136,7 +136,7 @@ export default async function StudyPlanPage({ searchParams }: { searchParams: Pr
           Study Plan
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-3">
-          The 30-Day<br />
+          The Test<br />
           <span style={{ color: '#FFB627' }}>Runway</span>
         </h1>
         <p className="text-white/55 text-lg leading-relaxed max-w-xl">

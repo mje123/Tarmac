@@ -12,7 +12,7 @@ export const TARMAC_PLAN = {
     'Adaptive difficulty that adjusts to what you actually know',
     'AI tutor explains the why behind every answer',
     'Spaced repetition brings weak concepts back until they stick',
-    'The 30-Day Runway — a full arc from diagnostic to test-ready',
+    'The Test Runway — a full arc from diagnostic to test-ready',
     'Full-length timed exam simulations',
     '7-day free trial — cancel before you\'re charged',
   ],

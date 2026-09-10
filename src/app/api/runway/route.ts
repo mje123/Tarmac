@@ -53,6 +53,17 @@ export async function POST(request: NextRequest) {
       await supabase.from('study_plan_state').insert({ user_id: user.id, exam_date: examDate || null })
     }
 
+    // A changed exam date can change today's phase (e.g. compressing into 'build'),
+    // but getOrCreateRunway only generates a daily_plan_items row once per user+day —
+    // without clearing it here, today's session recommendation would keep showing
+    // whatever phase was current before this edit until the calendar rolls over.
+    // Never touch a session the user already completed today.
+    await supabase.from('daily_plan_items')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('plan_date', todayDateString())
+      .eq('completed', false)
+
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error('runway POST error:', error)

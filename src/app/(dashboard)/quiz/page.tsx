@@ -524,10 +524,6 @@ export default function QuizPage() {
               {currentQuestion.category}
             </span>
           )}
-          <span className="text-xs px-3 py-1.5 rounded-full font-medium capitalize"
-            style={{ background: 'var(--surface-2)', color: 'var(--text-sec)', border: '1px solid var(--border-1)' }}>
-            {currentQuestion.difficulty}
-          </span>
         </div>
 
         <p className="text-white text-lg leading-relaxed mb-7 font-medium">{currentQuestion.question_text}</p>

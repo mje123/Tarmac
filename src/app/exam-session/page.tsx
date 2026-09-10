@@ -177,7 +177,7 @@ export default function ExamSessionPage() {
                   {[
                     'Read each question carefully before selecting your answer',
                     'You may flag questions and return to them before submitting',
-                    'All 60 questions must be answered before you can submit',
+                    `All ${questions.length} questions must be answered before you can submit`,
                     'The timer runs continuously and cannot be paused',
                     'The FAA Supplement booklet is available via the link above',
                     'Your score and detailed review will be available after submission',
@@ -252,11 +252,17 @@ export default function ExamSessionPage() {
 
         {/* Right actions */}
         <div className="flex items-center gap-3">
-          <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
-            className="text-xs font-medium transition-colors hover:text-white"
-            style={{ color: '#4ade80' }}>
-            FAA Supplement ↗
-          </a>
+          {examType === 'ifr' ? (
+            <span className="text-xs font-medium text-white/30" title="The Instrument Rating supplement (FAA-CT-8080-3F) isn't available in-app yet">
+              Supplement unavailable
+            </span>
+          ) : (
+            <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
+              className="text-xs font-medium transition-colors hover:text-white"
+              style={{ color: '#4ade80' }}>
+              FAA Supplement ↗
+            </a>
+          )}
           {allAnswered ? (
             <button
               onClick={() => setConfirmSubmit(true)}
@@ -437,7 +443,7 @@ export default function ExamSessionPage() {
             <AlertTriangle className="w-10 h-10 text-[#FFB627] mx-auto mb-4" />
             <h3 className="text-xl font-bold text-white mb-2">Submit Test?</h3>
             <p className="text-white/55 text-sm mb-6 leading-relaxed">
-              You have answered all 60 questions. Once submitted, you cannot change your answers.
+              You have answered all {questions.length} questions. Once submitted, you cannot change your answers.
             </p>
             <div className="flex gap-3">
               <button

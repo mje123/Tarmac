@@ -16,7 +16,7 @@ const STEPS = [
   { icon: RefreshCw, title: 'AI-generated practice', body: 'New approach scenarios, new weather, new navigation situations — generated from the same verified FAA source material, not a fixed bank.' },
   { icon: CheckCircle, title: 'Novel-question mode', body: 'Scenario-based decision-making built to look unfamiliar — the real test of whether you can apply IFR rules, not just recall them.' },
   { icon: Clock, title: 'Timed exams', body: 'Full-length, timed simulations of the FAA Instrument Rating written — fresh question set every attempt.' },
-  { icon: Route, title: '30-Day Runway', body: 'A structured day-by-day arc from diagnostic to test-ready, weighted toward your weakest IFR concepts.' },
+  { icon: Route, title: 'Test Runway', body: 'A structured day-by-day arc from diagnostic to test-ready, weighted toward your weakest IFR concepts.' },
 ]
 
 export default function InstrumentPage() {

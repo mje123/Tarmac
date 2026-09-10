@@ -34,7 +34,6 @@ export default function SavedQuestionCard({ question }: { question: Question }) 
             <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(62,146,204,0.15)', color: '#3E92CC' }}>
               {question.category}
             </span>
-            <span className="text-xs text-white/30">{question.difficulty}</span>
           </div>
           <p className="text-white text-sm leading-relaxed font-medium">{question.question_text}</p>
         </div>

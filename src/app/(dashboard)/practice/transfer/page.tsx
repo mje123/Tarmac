@@ -6,6 +6,8 @@ import { useExamType } from '@/components/ExamTypeProvider'
 import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
 import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
 import AIChat from '@/components/ui/AIChat'
+import SupplementViewer from '@/components/ui/SupplementViewer'
+import { matchFigureReference } from '@/lib/figures'
 import { Zap, Loader2, ChevronRight } from 'lucide-react'
 
 type Phase = 'intro' | 'loading' | 'question' | 'answered' | 'empty' | 'summary'
@@ -177,6 +179,7 @@ export default function TransferModePage() {
     { letter: 'C' as AnswerOption, text: question.option_c },
     ...(question.option_d ? [{ letter: 'D' as AnswerOption, text: question.option_d }] : []),
   ]
+  const figureReference = matchFigureReference(question.question_text)
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto">
@@ -190,6 +193,12 @@ export default function TransferModePage() {
       <div className="glass-card p-5 mb-4">
         <p className="text-white font-medium leading-relaxed">{question.question_text}</p>
       </div>
+
+      {figureReference && (
+        <div className="mb-4">
+          <SupplementViewer reference={figureReference} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 mb-4">
         {options.map(opt => {

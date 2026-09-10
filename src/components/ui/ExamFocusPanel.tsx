@@ -91,7 +91,7 @@ export default function ExamFocusPanel({ progress }: { progress: UserProgress[] 
           <Route className="w-4 h-4 text-[#FFB627]" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-bold text-white">Continue the 30-Day Runway</p>
+          <p className="text-sm font-bold text-white">Continue the Test Runway</p>
           <p className="text-xs" style={{ color: 'var(--text-ter)' }}>Diagnostic → foundation → transfer → test-ready</p>
         </div>
         <ArrowRight className="w-4 h-4 text-[#FFB627] shrink-0" />

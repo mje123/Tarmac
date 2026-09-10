@@ -7,7 +7,7 @@ const LINKS = [
   { href: '/private', label: 'Private' },
   { href: '/instrument', label: 'Instrument' },
   { href: '/how-it-works', label: 'How It Works' },
-  { href: '/30-day-runway', label: '30-Day Runway' },
+  { href: '/30-day-runway', label: 'Test Runway' },
   { href: '/pricing', label: 'Pricing' },
 ]
 

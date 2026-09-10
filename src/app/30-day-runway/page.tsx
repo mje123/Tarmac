@@ -5,7 +5,7 @@ import MarketingNav from '@/components/layout/MarketingNav'
 import MarketingFooter from '@/components/layout/MarketingFooter'
 
 export const metadata: Metadata = {
-  title: 'The 30-Day Runway',
+  title: 'The Test Runway',
   description: '30 days from first question to test-ready — a diagnostic, foundation, application, transfer, and simulation arc for the FAA Private Pilot and Instrument written tests.',
 }
 
@@ -25,7 +25,7 @@ export default function ThirtyDayRunwayPage() {
 
       <section className="pt-40 pb-20 px-6 text-center">
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#FFB627' }}>The 30-Day Runway</p>
+          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#FFB627' }}>The Test Runway</p>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-6">
             30 days from first question<br />to test-ready.
           </h1>

@@ -62,7 +62,11 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What\'s included in the membership?',
-    a: 'Private Pilot and Instrument Rating written test prep — AI-generated practice questions, novel-question mode, adaptive difficulty, spaced repetition, the 30-Day Runway, and full timed exam simulations. One membership, both exams.',
+    a: 'Private Pilot and Instrument Rating written test prep — AI-generated practice questions, novel-question mode, adaptive difficulty, spaced repetition, the Test Runway, and full timed exam simulations. One membership, both exams.',
+  },
+  {
+    q: 'What is the Test Runway?',
+    a: "Your day-by-day study plan from now until test day. It starts with a short diagnostic to find out where you actually stand, then builds a plan around your weak areas — building the foundation, applying it under pressure, then proving you can handle questions you've never seen. If your test date is close, it compresses to fit; if it's further out, it paces the work so concepts actually stick.",
   },
   {
     q: 'What happens after the 7-day free trial?',
@@ -278,7 +282,7 @@ const FEATURES = [
   {
     icon: <Plane className="w-5 h-5" />,
     color: '#3E92CC',
-    label: 'The 30-Day Runway',
+    label: 'The Test Runway',
     body: 'A structured arc from diagnostic to test-ready: build the foundation, apply it under pressure, then prove you can handle questions you\'ve never seen.',
   },
 ]

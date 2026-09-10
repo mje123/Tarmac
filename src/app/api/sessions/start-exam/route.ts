@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { canAccessExam, EXAM_QUESTION_DISTRIBUTION, IFR_EXAM_QUESTION_DISTRIBUTION } from '@/lib/utils'
 import { cookies } from 'next/headers'
 import { getEffectiveExamType } from '@/lib/examType'
+import { hasUnservableFigureReference } from '@/lib/figures'
 
 const TOTAL_QUESTIONS = 60
 
@@ -24,6 +25,18 @@ export async function POST(request: NextRequest) {
     const examType = await getEffectiveExamType(supabase, user.id, cookieStore.get('tarmac-exam-type')?.value)
     const distribution = examType === 'ifr' ? IFR_EXAM_QUESTION_DISTRIBUTION : EXAM_QUESTION_DISTRIBUTION
 
+    // A closed tab or crash never submits, leaving the old session 'in_progress'
+    // forever — with no expiry, a stat query counting "exams taken" would grow
+    // unboundedly with sessions nobody ever finished. Starting a new exam is the one
+    // natural point to clean that up; the 150-minute limit itself still relies on the
+    // client-side timer (see exam-session/page.tsx), this only bounds the mess left
+    // behind when it's never reached.
+    await supabase.from('test_sessions')
+      .update({ status: 'abandoned' })
+      .eq('user_id', user.id)
+      .eq('session_type', 'real_exam')
+      .eq('status', 'in_progress')
+
     // Fetch all questions by category in parallel
     const categories = Object.keys(distribution)
     const categoryResults = await Promise.all(
@@ -32,10 +45,15 @@ export async function POST(request: NextRequest) {
       )
     )
 
-    // Build per-category pools (shuffled)
+    // Build per-category pools (shuffled). A real timed exam is the worst possible
+    // place to serve an unanswerable figure-dependent question, so this filter is
+    // unconditional — a category coming up short as a result is preferable to a
+    // student staring at "refer to the figure below" with nothing rendered.
     const pools: Record<string, Record<string, unknown>[]> = {}
     categories.forEach((cat, i) => {
-      pools[cat] = (categoryResults[i].data || []).sort(() => Math.random() - 0.5)
+      pools[cat] = (categoryResults[i].data || [])
+        .filter(q => !hasUnservableFigureReference(String((q as { question_text?: string }).question_text ?? '')))
+        .sort(() => Math.random() - 0.5)
     })
 
     // Phase 1: allocate min questions from each category

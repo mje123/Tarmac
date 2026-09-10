@@ -16,7 +16,7 @@ const STEPS = [
   { icon: RefreshCw, title: 'AI-generated practice', body: 'New scenarios, new numbers, new wording — generated from the same verified FAA knowledge, so you can\'t just memorize your way through.' },
   { icon: CheckCircle, title: 'Novel-question mode', body: 'A separate mode built to look unfamiliar on purpose — the real test of whether you understand the concept or just recognize a pattern.' },
   { icon: Clock, title: 'Timed exams', body: 'Full-length, timed simulations of the 60-question FAA Private Pilot written — fresh question set every attempt.' },
-  { icon: Route, title: '30-Day Runway', body: 'A structured day-by-day arc from diagnostic to test-ready, built around your weak areas.' },
+  { icon: Route, title: 'Test Runway', body: 'A structured day-by-day arc from diagnostic to test-ready, built around your weak areas.' },
 ]
 
 export default function PrivatePage() {

@@ -43,7 +43,7 @@ export default async function ExamHubPage() {
     : 0
 
   const passRate = examSessions.length > 0
-    ? Math.round((examSessions.filter(s => s.score / s.total_questions >= 0.70).length / examSessions.length) * 100)
+    ? Math.round((examSessions.filter(s => Math.round((s.score / s.total_questions) * 100) >= 70).length / examSessions.length) * 100)
     : 0
 
   function formatExamDate(dateStr: string) {

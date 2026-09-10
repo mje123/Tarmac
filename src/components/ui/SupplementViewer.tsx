@@ -2,44 +2,12 @@
 
 import { useRef, useState } from 'react'
 import { BookOpen, ChevronUp, ChevronDown, Maximize2, X, RotateCcw } from 'lucide-react'
+import { FIGURE_IMAGES, type FigureReference } from '@/lib/figures'
 
 const SUPABASE_URL = 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/figures'
 
-const FIGURE_IMAGES: Record<string, string> = {
-  'Legend 1': 'legend-1',
-  'Figure 1':  'figure-1',
-  'Figure 2':  'figure-2',
-  'Figure 3':  'figure-3',
-  'Figure 4':  'figure-4',
-  'Figure 8':  'figure-8',
-  'Figure 12': 'figure-12',
-  'Figure 13': 'figure-13',
-  'Figure 14': 'figure-14',
-  'Figure 15': 'figure-15',
-  'Figure 17': 'figure-17',
-  'Figure 20': 'figure-20',
-  'Figure 25': 'figure-25',
-  'Figure 26': 'figure-26',
-  'Figure 32': 'figure-32',
-  'Figure 33': 'figure-33',
-  'Figure 35': 'figure-35',
-  'Figure 38': 'figure-38',
-  'Figure 47': 'figure-47',
-  'Figure 48': 'figure-48',
-  'Figure 52': 'figure-52',
-  'Figure 60': 'figure-60',
-  'Figure 64': 'figure-64',
-  'Figure 78': 'figure-78',
-}
-
-function parseFigureKey(ref: string): string {
-  const match = ref.match(/(Figures?|Legend)\s+\d+/i)
-  if (!match) return ref
-  return match[0].replace(/\s+/g, ' ').replace(/^Figures\s/i, 'Figure ').trim()
-}
-
 interface Props {
-  figureRef: string
+  reference: FigureReference
 }
 
 // Two-finger distance, for pinch-to-zoom.
@@ -48,7 +16,7 @@ function touchDistance(touches: React.TouchList): number {
   return Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY)
 }
 
-export default function SupplementViewer({ figureRef }: Props) {
+export default function SupplementViewer({ reference }: Props) {
   const [expanded, setExpanded] = useState(true)
   const [lightbox, setLightbox] = useState(false)
 
@@ -131,7 +99,8 @@ export default function SupplementViewer({ figureRef }: Props) {
     if (e.touches.length < 1) dragRef.current = null
   }
 
-  const figureKey = parseFigureKey(figureRef)
+  const figureKey = reference.key
+  const docCode = reference.doc ?? '2H'
   const slug = FIGURE_IMAGES[figureKey]
   const imgUrl = slug ? `${SUPABASE_URL}/${slug}.png` : null
 
@@ -147,7 +116,7 @@ export default function SupplementViewer({ figureRef }: Props) {
           <div className="flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-[#FFB627]" />
             <span className="text-sm font-semibold text-[#FFB627]">Supplement Required</span>
-            <span className="text-xs text-white/60 ml-1">FAA-CT-8080-2H · {figureKey}</span>
+            <span className="text-xs text-white/60 ml-1">FAA-CT-8080-{docCode} · {figureKey}</span>
           </div>
           {expanded ? <ChevronUp className="w-4 h-4 text-white/50" /> : <ChevronDown className="w-4 h-4 text-white/50" />}
         </button>
@@ -227,7 +196,7 @@ export default function SupplementViewer({ figureRef }: Props) {
             onTouchStart={handleTouchStart}
             draggable={false}
           />
-          <p className="absolute bottom-4 text-white/40 text-sm">{figureKey} · FAA-CT-8080-2H · scroll or pinch to zoom, drag to pan</p>
+          <p className="absolute bottom-4 text-white/40 text-sm">{figureKey} · FAA-CT-8080-{docCode} · scroll or pinch to zoom, drag to pan</p>
         </div>
       )}
     </>

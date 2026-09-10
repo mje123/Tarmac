@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { Question, AnswerOption } from '@/types'
 import { useExamType } from '@/components/ExamTypeProvider'
 import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
+import SupplementViewer from '@/components/ui/SupplementViewer'
+import { matchFigureReference } from '@/lib/figures'
 import { Target, Loader2 } from 'lucide-react'
 
 const TARGET_QUESTIONS = 8
@@ -27,15 +29,20 @@ export default function WeaknessAttackPage() {
   const [correctCount, setCorrectCount] = useState(0)
   const [answeredCount, setAnsweredCount] = useState(0)
   const [askedIds, setAskedIds] = useState<string[]>([])
+  const [conceptHistory, setConceptHistory] = useState<string[]>([])
   const [secondsLeft, setSecondsLeft] = useState(TIME_LIMIT_SECONDS)
   const answeredCountRef = useRef(0)
 
-  const fetchQuestion = useCallback(async (excludeIds: string[]) => {
+  const fetchQuestion = useCallback(async (excludeIds: string[], recentConcepts: string[]) => {
     setPhase('loading')
     const params = new URLSearchParams()
     params.set('examType', examType)
     params.set('weaknessOnly', '1')
     excludeIds.forEach(id => params.append('exclude', id))
+    // With only 2-3 weak concepts in the whole candidate pool, interleaving matters
+    // more here than anywhere else — without it the same concept could repeat
+    // back-to-back for the entire 7-minute drill.
+    recentConcepts.forEach(id => params.append('recentConcept', id))
     const res = await fetch(`/api/questions/random?${params}`)
     const data = await res.json()
     if (!data.question) {
@@ -45,6 +52,9 @@ export default function WeaknessAttackPage() {
     setQuestion(data.question)
     setSelected(null)
     setPhase('question')
+    if (data.question.concept_id) {
+      setConceptHistory(h => [...h, data.question.concept_id].slice(-5))
+    }
   }, [examType])
 
   useEffect(() => {
@@ -56,7 +66,7 @@ export default function WeaknessAttackPage() {
       })
       const data = await res.json()
       setSessionId(data.sessionId)
-      await fetchQuestion([])
+      await fetchQuestion([], [])
     }
     start()
   }, [fetchQuestion])
@@ -98,7 +108,7 @@ export default function WeaknessAttackPage() {
     const newIds = [...askedIds, question.id]
     setAskedIds(newIds)
     if (answeredCountRef.current >= TARGET_QUESTIONS) { setPhase('summary'); return }
-    await fetchQuestion(newIds)
+    await fetchQuestion(newIds, conceptHistory)
   }
 
   const minutes = Math.floor(secondsLeft / 60)
@@ -137,6 +147,7 @@ export default function WeaknessAttackPage() {
     { letter: 'C' as AnswerOption, text: question.option_c },
     ...(question.option_d ? [{ letter: 'D' as AnswerOption, text: question.option_d }] : []),
   ]
+  const figureReference = matchFigureReference(question.question_text)
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto">
@@ -152,6 +163,12 @@ export default function WeaknessAttackPage() {
       <div className="glass-card p-5 mb-4">
         <p className="text-white font-medium leading-relaxed">{question.question_text}</p>
       </div>
+
+      {figureReference && (
+        <div className="mb-4">
+          <SupplementViewer reference={figureReference} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 mb-4">
         {options.map(opt => {

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { RefreshCw, CheckCircle, XCircle, Brain, ChevronRight } from 'lucide-react'
 import { FEATURES } from '@/lib/features'
 import SupplementViewer from '@/components/ui/SupplementViewer'
+import { matchFigureReference } from '@/lib/figures'
 
 interface Question {
   id: string
@@ -64,8 +65,7 @@ export default function ReviewPage() {
     <div className="p-6 text-white/50 text-center mt-20">Daily review is currently disabled.</div>
   )
 
-  const supplementRef = question?.question_text.match(/FAA-CT-8080-2H[,\s]+(Figures?|Legend)\s+\d+/i)?.[0]
-    || question?.question_text.match(/\(Refer to (Figures?|Legend)\s+\d+/i)?.[0]?.replace('(Refer to ', '')
+  const figureReference = question ? matchFigureReference(question.question_text) : null
 
   const options = [
     { letter: 'A', text: question?.option_a },
@@ -132,9 +132,9 @@ export default function ReviewPage() {
           </div>
 
           {/* Figure supplement */}
-          {supplementRef && (
+          {figureReference && (
             <div className="mb-4">
-              <SupplementViewer figureRef={supplementRef} />
+              <SupplementViewer reference={figureReference} />
             </div>
           )}
 

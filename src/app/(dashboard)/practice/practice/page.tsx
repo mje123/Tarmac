@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
+import { matchFigureReference } from '@/lib/figures'
 import GeneralChat from '@/components/ui/GeneralChat'
 import { useExamType } from '@/components/ExamTypeProvider'
 import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
@@ -807,8 +808,7 @@ function PracticePageInner() {
     )
   }
 
-  const supplementRef = question.question_text.match(/FAA-CT-8080-2H[,\s]+(Figures?|Legend)\s+\d+/i)?.[0]
-    || question.question_text.match(/\(Refer to (Figures?|Legend)\s+\d+/i)?.[0]?.replace('(Refer to ', '')
+  const figureReference = matchFigureReference(question.question_text)
 
   const isSaved = savedIds.has(question.id)
   const catInfo = CATEGORIES.find(c => c.value === question.category)
@@ -831,19 +831,25 @@ function PracticePageInner() {
             <span className="text-white text-sm font-semibold">{reviewed} reviewed</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
-              className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
-              Supplement ↗
-            </a>
+            {examType === 'ifr' ? (
+              <span className="text-xs text-white/20 px-2 py-1" title="The Instrument Rating supplement (FAA-CT-8080-3F) isn't available in-app yet">
+                Supplement unavailable
+              </span>
+            ) : (
+              <a href={process.env.NEXT_PUBLIC_SUPPLEMENT_URL || 'https://vdbrfhuzyffipcjifaui.supabase.co/storage/v1/object/public/public/supplement.pdf'} target="_blank" rel="noopener noreferrer"
+                className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
+                Supplement ↗
+              </a>
+            )}
             <button onClick={reset} className="text-xs text-white/30 hover:text-white/60 transition-colors px-2 py-1">
               End
             </button>
           </div>
         </div>
 
-        {supplementRef && (
+        {figureReference && (
           <div className="mb-4">
-            <SupplementViewer figureRef={supplementRef} />
+            <SupplementViewer reference={figureReference} />
           </div>
         )}
 
@@ -1035,9 +1041,9 @@ function PracticePageInner() {
         />
       </div>
 
-      {supplementRef && (
+      {figureReference && (
         <div className="mb-4">
-          <SupplementViewer figureRef={supplementRef} />
+          <SupplementViewer reference={figureReference} />
         </div>
       )}
 
@@ -1052,10 +1058,6 @@ function PracticePageInner() {
               {question.category}
             </span>
           )}
-          <span className="text-xs px-3 py-1.5 rounded-full font-medium capitalize"
-            style={{ background: 'var(--surface-2)', color: 'var(--text-sec)', border: '1px solid var(--border-1)' }}>
-            {question.difficulty}
-          </span>
           <button
             onClick={toggleSave}
             title={isSaved ? 'Remove from Study Later' : 'Save to Study Later'}

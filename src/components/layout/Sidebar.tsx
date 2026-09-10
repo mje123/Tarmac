@@ -26,7 +26,7 @@ const GROUND_SCHOOL_SECTION = {
     { href: '/review',      icon: Brain,        label: 'Daily Review' },
     { href: '/chat',        icon: Bot,          label: 'AI Tutor' },
     { href: '/flashcards',  icon: Layers,       label: 'Flashcards' },
-    { href: '/study-plan',  icon: Route,        label: '30-Day Runway' },
+    { href: '/study-plan',  icon: Route,        label: 'Test Runway' },
   ],
 }
 

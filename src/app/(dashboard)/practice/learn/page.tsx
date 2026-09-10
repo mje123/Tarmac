@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Question, AnswerOption } from '@/types'
 import { useExamType } from '@/components/ExamTypeProvider'
 import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
+import SupplementViewer from '@/components/ui/SupplementViewer'
+import { matchFigureReference } from '@/lib/figures'
 import { GraduationCap, Loader2, ChevronRight } from 'lucide-react'
 
 type Phase = 'loading-concept' | 'intro' | 'loading-question' | 'question' | 'answered' | 'empty'
@@ -132,6 +134,8 @@ export default function LearnModePage() {
 
   if (!question) return null
 
+  const figureReference = matchFigureReference(question.question_text)
+
   const options = [
     { letter: 'A' as AnswerOption, text: question.option_a },
     { letter: 'B' as AnswerOption, text: question.option_b },
@@ -151,6 +155,12 @@ export default function LearnModePage() {
       <div className="glass-card p-5 mb-4">
         <p className="text-white font-medium leading-relaxed">{question.question_text}</p>
       </div>
+
+      {figureReference && (
+        <div className="mb-4">
+          <SupplementViewer reference={figureReference} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 mb-4">
         {options.map(opt => {

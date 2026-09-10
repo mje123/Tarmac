@@ -7,15 +7,28 @@ export interface IntervalState {
   reps: number
 }
 
+// Ease is uncapped-growth-only in vanilla SM-2 because its quality score (0-5) can
+// also pull ease down on a weak-but-correct recall. We only have binary correct/
+// incorrect, so without an explicit ceiling and a decrease-on-failure path, ease only
+// ever climbed — a concept answered correctly a handful of times early on would keep
+// compounding its review interval for years with nothing to ever pull it back toward
+// "due," even after later mistakes on the same concept.
+const MAX_EASE = 2.8
+const MAX_INTERVAL_DAYS = 180
+
 export function computeNextInterval(
   repetitions: number,
   intervalDays: number,
   easeFactor: number,
   correct: boolean
 ): IntervalState {
-  if (!correct) return { interval: 1, ease: easeFactor, reps: 0 }
-  const interval = repetitions === 0 ? 1 : repetitions === 1 ? 3 : Math.round(intervalDays * easeFactor)
-  const ease = Math.max(1.3, easeFactor + 0.1)
+  if (!correct) {
+    const ease = Math.max(1.3, easeFactor - 0.2)
+    return { interval: 1, ease, reps: 0 }
+  }
+  const rawInterval = repetitions === 0 ? 1 : repetitions === 1 ? 3 : Math.round(intervalDays * easeFactor)
+  const interval = Math.min(MAX_INTERVAL_DAYS, rawInterval)
+  const ease = Math.min(MAX_EASE, Math.max(1.3, easeFactor + 0.1))
   return { interval, ease, reps: repetitions + 1 }
 }
 
@@ -66,6 +79,17 @@ export function classifyError(opts: {
   // can draw reliably without AI help.
   if (veryConfident && strongHistory) return 'confidence_error'
   if (somewhatConfident && solidHistory) return 'careless_error'
-  if (veryConfident || somewhatConfident) return 'concept_gap'
-  return 'distractor_trap'
+  // A wrong answer given with real confidence (but not enough concept history to call
+  // it a calibration slip) is the one case that plausibly reads as "fell for a
+  // specific trap" rather than "didn't know it" — still just a heuristic guess, so it
+  // stays a distinct tag rather than defaulting to concept_gap.
+  if (veryConfident || somewhatConfident) return 'distractor_trap'
+  // Wrong AND unsure/guessing — this used to unconditionally land on 'distractor_trap'
+  // too, which reads backwards (a distractor trap is supposed to look right enough to
+  // fool someone, not to be missed by a guess) and, worse, permanently skipped the
+  // AI-refinement queue below (only 'concept_gap' answers get queued). Defaulting to
+  // 'concept_gap' here means an honest "I didn't know" gets classified as exactly that,
+  // and gets a real shot at being refined into figure_misread/misread_question/
+  // transfer_failure instead of sitting mislabeled forever.
+  return 'concept_gap'
 }
