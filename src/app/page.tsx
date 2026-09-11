@@ -62,7 +62,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What\'s included in the membership?',
-    a: 'Private Pilot and Instrument Rating written test prep — AI-generated practice questions, novel-question mode, adaptive difficulty, spaced repetition, the Test Runway, and full timed exam simulations. One membership, both exams.',
+    a: 'Private Pilot written test prep — AI-generated practice questions, novel-question mode, adaptive difficulty, spaced repetition, the Test Runway, and full timed exam simulations. One membership: report your Private Pilot pass and Instrument Rating prep unlocks at no extra cost.',
   },
   {
     q: 'What is the Test Runway?',
@@ -367,7 +367,7 @@ export default function LandingPage() {
         <FadeUp>
           <div className="max-w-4xl mx-auto px-6 py-8 grid grid-cols-3 gap-6 text-center">
             {[
-              { value: '2', label: 'Private + Instrument' },
+              { value: '2', label: 'Exams — Instrument unlocks after Private' },
               { value: 'New', label: 'Questions every session' },
               { value: '$175', label: 'Cost of one FAA retake' },
             ].map(s => (
@@ -509,9 +509,9 @@ export default function LandingPage() {
           <FadeUp>
             <div className="text-center mb-14">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Pricing</p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Private + Instrument included.</h2>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Private now. Instrument next.</h2>
               <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                One membership. No tiers. Both written tests.
+                One membership, no tiers. Instrument unlocks once you report passing Private.
               </p>
             </div>
           </FadeUp>

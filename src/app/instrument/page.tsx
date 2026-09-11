@@ -69,7 +69,7 @@ export default function InstrumentPage() {
 
       <section className="py-24 px-6 text-center" style={{ background: '#060e1f' }}>
         <h2 className="text-3xl font-extrabold text-white mb-4">Start your Instrument prep, free.</h2>
-        <p className="text-base mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>7-day free trial. Private + Instrument both included.</p>
+        <p className="text-base mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>7-day free trial. Already have your Private Pilot? Report your pass and Instrument prep unlocks immediately.</p>
         <Link href="/start?exam=ifr" className="btn-gold inline-flex px-8 py-4 rounded-xl text-base font-bold">
           Start Instrument Prep <ArrowRight className="w-5 h-5" />
         </Link>

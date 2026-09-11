@@ -58,7 +58,7 @@ export default function ThirtyDayRunwayPage() {
 
       <section className="py-24 px-6 text-center" style={{ background: '#060e1f' }}>
         <h2 className="text-3xl font-extrabold text-white mb-4">Day 1 starts whenever you're ready.</h2>
-        <p className="text-base mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>Free to start. Private + Instrument both included.</p>
+        <p className="text-base mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>Free to start. Instrument Rating unlocks once you report passing Private.</p>
         <Link href="/start" className="btn-gold inline-flex px-8 py-4 rounded-xl text-base font-bold">
           Start Training Free <ArrowRight className="w-5 h-5" />
         </Link>

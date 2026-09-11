@@ -90,7 +90,7 @@ export async function PATCH(request: NextRequest) {
 
     const updates: Record<string, unknown> = {}
     if (validation_status !== undefined) {
-      if (!['approved', 'rejected', 'legacy'].includes(validation_status)) {
+      if (!['approved', 'rejected', 'legacy', 'pending', 'generated', 'validating', 'needs_review', 'retired'].includes(validation_status)) {
         return NextResponse.json({ error: 'Invalid validation_status' }, { status: 400 })
       }
       updates.validation_status = validation_status

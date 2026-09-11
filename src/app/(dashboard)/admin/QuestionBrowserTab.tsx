@@ -33,6 +33,10 @@ const STATUS_COLORS: Record<string, string> = {
   legacy: '#3E92CC',
   rejected: '#ef4444',
   pending: '#FFB627',
+  generated: '#8B5CF6',
+  validating: '#FFB627',
+  needs_review: '#f59e0b',
+  retired: '#666',
 }
 
 /** Browse/search/approve/reject/edit the question bank — the admin PATCH/DELETE
@@ -142,6 +146,8 @@ export default function QuestionBrowserTab() {
           <option value="legacy">Legacy</option>
           <option value="rejected">Rejected</option>
           <option value="pending">Pending</option>
+          <option value="needs_review">Needs Review</option>
+          <option value="generated">Generated</option>
         </select>
         <select value={examType} onChange={e => { setPage(0); setExamType(e.target.value) }} className="text-sm px-3 py-2 rounded-lg bg-white/5 text-white/70 outline-none">
           <option value="">PPL + IFR</option>
