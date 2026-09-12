@@ -162,8 +162,6 @@ export default function TermsPage() {
               Content posted in any TARMAC community feature — including Accident Debrief, Ask a CFI, Weather Room, and Route Critique — is posted by community members and is not verified, endorsed, or approved by TARMAC. It does not constitute professional aviation advice, flight instruction, legal counsel, or safety guidance. <strong>Never use community content to make real-world flight decisions.</strong> Always consult qualified, current, authoritative sources for operational decisions.
             </div>
 
-            <p className="mt-3 font-semibold">e. Callsigns</p>
-            <p className="mt-1">You may choose a community callsign (a user-facing display identifier, 3–12 alphanumeric characters). Callsigns must not be offensive, impersonate real individuals or entities, or violate any third-party rights. TARMAC reserves the right to reclaim or change any callsign that violates these requirements. Your callsign is visible to other community members.</p>
           </section>
 
           <section>

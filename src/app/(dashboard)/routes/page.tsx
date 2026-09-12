@@ -15,7 +15,7 @@ interface Route {
   description: string
   date_of_flight: string | null
   created_at: string
-  users: { callsign: string | null; full_name: string | null }
+  users: { full_name: string | null }
 }
 
 function buildSkyVectorUrl(departure: string, destination: string, waypoints?: string | null) {
@@ -218,7 +218,7 @@ export default function RouteCritiquePage() {
 
                   <div className="flex items-center gap-2 mt-3 text-xs" style={{ color: 'var(--text-ter)' }}>
                     <span className="font-mono font-bold" style={{ color: 'var(--text-sec)' }}>
-                      {route.users?.callsign || route.users?.full_name?.split(' ')[0] || 'Pilot'}
+                      {route.users?.full_name?.split(' ')[0] || 'Pilot'}
                     </span>
                     <span>·</span>
                     <span>{timeAgo(route.created_at)}</span>

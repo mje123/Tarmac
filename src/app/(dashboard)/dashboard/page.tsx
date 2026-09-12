@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   const progress = (progressData as UserProgress[]) || []
   const sessions = (recentSessions as TestSession[]) || []
 
-  const displayName = user?.callsign || user?.full_name?.split(' ')[0] || 'Pilot'
+  const displayName = user?.full_name?.split(' ')[0] || 'Pilot'
   const totalAttempted = progress.reduce((s, p) => s + p.questions_attempted, 0)
 
   return (

@@ -7,10 +7,36 @@ import { getOrCreateRunway } from '@/lib/runwayServer'
 import RunwayToday from '@/components/practice/RunwayToday'
 import { getEffectiveExamType } from '@/lib/examType'
 
-const weeks = [
+/** Cumulative fraction of the runway each phase ends at, taken from the original
+ *  static 7/7/7/9-day (out of 30) split. Applied to the student's real totalDays
+ *  (their actual exam-date runway, or the 14-day default with none — see runway.ts)
+ *  so this legend always matches the live RunwayToday widget above it instead of
+ *  always showing a fixed 30-day plan regardless of the student's actual timeline. */
+const PHASE_CUM_FRACTIONS = [7 / 30, 14 / 30, 21 / 30, 1]
+
+function phaseDayRanges(totalDays: number): string[] {
+  const ends: number[] = []
+  let prevEnd = 0
+  for (let i = 0; i < PHASE_CUM_FRACTIONS.length; i++) {
+    const remaining = PHASE_CUM_FRACTIONS.length - 1 - i
+    let end = i === PHASE_CUM_FRACTIONS.length - 1 ? totalDays : Math.round(PHASE_CUM_FRACTIONS[i] * totalDays)
+    end = Math.max(end, prevEnd + 1)
+    end = Math.min(end, totalDays - remaining)
+    ends.push(end)
+    prevEnd = end
+  }
+  return ends.map((end, i) => {
+    const start = i === 0 ? 1 : ends[i - 1] + 1
+    return start === end ? `Day ${start}` : `Days ${start}–${end}`
+  })
+}
+
+function buildWeeks(totalDays: number) {
+  const [days1, days2, days3, days4] = phaseDayRanges(totalDays)
+  return [
   {
     number: 1,
-    days: 'Days 1–7',
+    days: days1,
     theme: 'Diagnostic & Foundation',
     color: '#3E92CC',
     bg: 'rgba(62,146,204,0.08)',
@@ -29,7 +55,7 @@ const weeks = [
   },
   {
     number: 2,
-    days: 'Days 8–14',
+    days: days2,
     theme: 'Application',
     color: '#8B5CF6',
     bg: 'rgba(139,92,246,0.08)',
@@ -48,7 +74,7 @@ const weeks = [
   },
   {
     number: 3,
-    days: 'Days 15–21',
+    days: days3,
     theme: 'Transfer & Simulation',
     color: '#FFB627',
     bg: 'rgba(255,182,39,0.07)',
@@ -68,7 +94,7 @@ const weeks = [
   },
   {
     number: 4,
-    days: 'Days 22–30',
+    days: days4,
     theme: 'Exam Readiness',
     color: '#10B981',
     bg: 'rgba(16,185,129,0.07)',
@@ -85,15 +111,18 @@ const weeks = [
     focusNote: 'If you\'re at 80%+ consistently for three days — stop studying and schedule the test. More studying won\'t help at that point.',
     checkpoint: 'Checkpoint: Three consecutive exams at 80%+. You\'re ready.',
   },
-]
+  ]
+}
 
-const tips = [
-  { icon: Clock, text: 'You need 70% to pass. Aim for 80%+ in practice so you have a comfortable buffer on test day.' },
-  { icon: Zap, text: 'FAA testing is moving toward more dynamic, scenario-based questions. Recognizing a question isn\'t the same as understanding it — practice the concept, not the wording.' },
-  { icon: Target, text: 'Save any question you\'re unsure about, even if you got it right. Certainty matters more than luck.' },
-  { icon: TrendingUp, text: 'Daily Review is the secret weapon. 10 minutes every morning compounds faster than you\'d think.' },
-  { icon: Award, text: 'Book your exam before Day 30. A real deadline makes the last week actually count.' },
-]
+function buildTips(totalDays: number) {
+  return [
+    { icon: Clock, text: 'You need 70% to pass. Aim for 80%+ in practice so you have a comfortable buffer on test day.' },
+    { icon: Zap, text: 'FAA testing is moving toward more dynamic, scenario-based questions. Recognizing a question isn\'t the same as understanding it — practice the concept, not the wording.' },
+    { icon: Target, text: 'Save any question you\'re unsure about, even if you got it right. Certainty matters more than luck.' },
+    { icon: TrendingUp, text: 'Daily Review is the secret weapon. 10 minutes every morning compounds faster than you\'d think.' },
+    { icon: Award, text: `Book your exam before Day ${totalDays}. A real deadline makes the last week actually count.` },
+  ]
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -108,6 +137,8 @@ export default async function StudyPlanPage({ searchParams }: { searchParams: Pr
   const cookieStore = await cookies()
   const examType = await getEffectiveExamType(supabase, user.id, cookieStore.get('tarmac-exam-type')?.value)
   const { runway, examDate, today } = await getOrCreateRunway(supabase, user.id, examType)
+  const weeks = buildWeeks(runway.totalDays)
+  const tips = buildTips(runway.totalDays)
 
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-3xl mx-auto">

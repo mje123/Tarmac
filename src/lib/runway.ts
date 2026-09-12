@@ -4,10 +4,13 @@
 
 export type RunwayPhase = 'diagnose' | 'build' | 'apply' | 'transfer' | 'simulate' | 'remediate' | 'prove_it'
 
-// Phase boundaries as fractions of a 30-day runway (Days 1-3 Diagnose, 4-10 Build,
-// 11-17 Apply, 18-23 Transfer, 24-27 Simulate, 28-29 Remediate, 30 Prove It). A
-// shorter runway (real exam date < 30 days out) scales these fractions down rather
-// than dropping phases — every user passes through the same shape, compressed.
+// Phase boundaries as fractions of the runway (Days 1-3 Diagnose, 4-10 Build, 11-17
+// Apply, 18-23 Transfer, 24-27 Simulate, 28-29 Remediate, 30 Prove It, at the 30-day
+// default). Every runway length — 3 days or 90 — scales these SAME fractions rather
+// than dropping or reordering phases: a shorter runway compresses them (spec section
+// 10), a longer one expands them, which is exactly how more calendar time buys more
+// spaced retrieval/retention cycles within each phase (section 11) without a second
+// curriculum to maintain.
 const PHASE_FRACTIONS: { phase: RunwayPhase; endFraction: number }[] = [
   { phase: 'diagnose', endFraction: 3 / 30 },
   { phase: 'build', endFraction: 10 / 30 },
@@ -32,9 +35,20 @@ function daysBetween(a: Date, b: Date): number {
 /** Computes today's day-in-plan and phase from stored state + wall-clock time. Always
  *  recomputed live (never trusted as stored truth) so a user who doesn't visit for a
  *  few days lands on the correct phase immediately, not a stale one. */
+// Sanity ceiling only — not a claim that ~6 months is an optimal study window, just a
+// guard against a mistyped far-future date producing a degenerate multi-year plan.
+const MAX_RUNWAY_DAYS = 180
+
 export function computeRunwayState(planStartedAt: Date, examDate: Date | null, now: Date): RunwayState {
   const planLengthToExam = examDate ? daysBetween(planStartedAt, examDate) + 1 : null
-  const totalDays = planLengthToExam != null ? Math.max(3, Math.min(30, planLengthToExam)) : 30
+  // No exam date on file: 30 days is the evidence-informed PRODUCT DEFAULT — enough
+  // calendar time for repeated retrieval, expanding spacing, interleaving, and
+  // transfer practice without a multi-month commitment. It is not a claim that FAA
+  // PAR/IRA students learn best in exactly 30 calendar days; nothing in the spaced-
+  // practice/retrieval-practice literature establishes one universal number, and this
+  // system doesn't assert one. With a real exam date, the runway is simply however
+  // many days remain (down to 3, up to MAX_RUNWAY_DAYS) — never forced to 30.
+  const totalDays = planLengthToExam != null ? Math.max(3, Math.min(MAX_RUNWAY_DAYS, planLengthToExam)) : 30
   const compressed = totalDays < 30
 
   const rawDayIndex = daysBetween(planStartedAt, now) + 1

@@ -35,9 +35,8 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 mt-1 space-y-1">
               <li>Name and email address (provided at signup)</li>
               <li>Password (hashed — never stored in plain text)</li>
-              <li><strong>Callsign</strong> — a community display name you choose (3–12 alphanumeric characters). Visible to other TARMAC members.</li>
               <li><strong>CFI status</strong> — a self-reported boolean indicating whether you are a Certificated Flight Instructor. We do not verify this claim.</li>
-              <li><strong>Debrief anonymity preference</strong> — whether you prefer to post in Accident Debrief using your callsign or anonymously.</li>
+              <li><strong>Debrief anonymity preference</strong> — whether you prefer to post in Accident Debrief using your name or anonymously.</li>
               <li>Profile avatar (if uploaded)</li>
             </ul>
 
@@ -56,7 +55,7 @@ export default function PrivacyPage() {
               <li>Votes, flags, and reactions on community content</li>
               <li>Feedback and suggestions submitted via the in-app suggestion box</li>
             </ul>
-            <p className="mt-2 text-sm" style={{ color: '#0A2463', opacity: 0.6 }}>Community content may be visible to other TARMAC members. Anonymous posting options in Accident Debrief display your chosen callsign rather than your real name.</p>
+            <p className="mt-2 text-sm" style={{ color: '#0A2463', opacity: 0.6 }}>Community content may be visible to other TARMAC members. Anonymous posting options in Accident Debrief display &quot;Anonymous Pilot&quot; rather than your real name.</p>
 
             <p className="mt-3 font-semibold">Payment Information</p>
             <p className="mt-1">Billing is handled entirely by Stripe. We do not store your credit card number or full payment details. We receive a Stripe customer ID, subscription status, and subscription metadata only.</p>
@@ -69,7 +68,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">2. How We Use Your Information</h2>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>To provide, operate, and improve the Service — including personalized Ground School practice, weak-area detection, AI tutoring, and community features</li>
-              <li>To display your callsign and participation in community features to other TARMAC members</li>
+              <li>To display your name and participation in community features to other TARMAC members</li>
               <li>To moderate community content using automated AI systems (see Section 4)</li>
               <li>To manage your account, subscription, and billing</li>
               <li>To send transactional emails (billing receipts, account alerts)</li>
@@ -109,13 +108,13 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">5. Community Content Visibility</h2>
             <p>Content you post in TARMAC community features may be visible to other TARMAC members. Specifically:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>Your <strong>callsign</strong> is displayed alongside your community contributions by default.</li>
-              <li>In <strong>Accident Debrief</strong>, you may choose to post with your callsign or anonymously. Admins can always see the author regardless of anonymity setting.</li>
-              <li><strong>Ask a CFI</strong> questions and answers are attributed to your callsign.</li>
+              <li>Your <strong>name</strong> is displayed alongside your community contributions by default.</li>
+              <li>In <strong>Accident Debrief</strong>, you may choose to post with your name or anonymously. Admins can always see the author regardless of anonymity setting.</li>
+              <li><strong>Ask a CFI</strong> questions and answers are attributed to your name.</li>
               <li><strong>Weather Room</strong> vote choices (go/no-go) are aggregated; individual votes may be visible to other members.</li>
               <li>Your <strong>CFI status</strong> badge is visible if you have marked yourself as a CFI in your profile.</li>
             </ul>
-            <p className="mt-3">Community content you have posted remains stored in our database even if you later change your callsign or anonymity settings. To request removal of specific posts, contact us at <a href="mailto:support@tarmac.study" className="text-[#3E92CC] underline">support@tarmac.study</a>.</p>
+            <p className="mt-3">Community content you have posted remains stored in our database even if you later change your name or anonymity settings. To request removal of specific posts, contact us at <a href="mailto:support@tarmac.study" className="text-[#3E92CC] underline">support@tarmac.study</a>.</p>
           </section>
 
           <section>

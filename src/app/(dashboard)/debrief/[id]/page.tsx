@@ -55,7 +55,7 @@ export default function DebriefDetailPage() {
   const [body, setBody] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [currentUser, setCurrentUser] = useState<{ id: string; callsign: string | null; debrief_anonymous: boolean } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ id: string; full_name: string | null; debrief_anonymous: boolean } | null>(null)
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set())
   const [flagTarget, setFlagTarget] = useState<string | null>(null)
   const [flagReason, setFlagReason] = useState('Inappropriate language')
@@ -83,8 +83,8 @@ export default function DebriefDetailPage() {
     ]).then(async ([{ data: acc }, { data: { user } }]) => {
       setAccident(acc)
       if (user) {
-        const { data: profile } = await supabase.from('users').select('callsign, debrief_anonymous').eq('id', user.id).single()
-        setCurrentUser({ id: user.id, callsign: profile?.callsign || null, debrief_anonymous: profile?.debrief_anonymous || false })
+        const { data: profile } = await supabase.from('users').select('full_name, debrief_anonymous').eq('id', user.id).single()
+        setCurrentUser({ id: user.id, full_name: profile?.full_name || null, debrief_anonymous: profile?.debrief_anonymous || false })
       }
       setLoading(false)
     })
@@ -149,7 +149,7 @@ export default function DebriefDetailPage() {
 
   const previewName = currentUser?.debrief_anonymous
     ? 'Anonymous Pilot'
-    : (currentUser?.callsign || 'Pilot')
+    : (currentUser?.full_name?.split(' ')[0] || 'Pilot')
 
   if (loading) {
     return (
@@ -278,9 +278,6 @@ export default function DebriefDetailPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs" style={{ color: 'var(--text-ter)' }}>
               Posting as: <span className="font-medium text-white/70">{previewName}</span>
-              {!currentUser?.debrief_anonymous && !currentUser?.callsign && (
-                <Link href="/settings" className="ml-2 text-[#3E92CC] hover:underline">Set callsign →</Link>
-              )}
             </span>
             <button
               type="submit"

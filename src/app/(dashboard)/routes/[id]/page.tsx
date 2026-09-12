@@ -17,7 +17,7 @@ interface RouteDetail {
   date_of_flight: string | null
   created_at: string
   user_id: string
-  users: { callsign: string | null; full_name: string | null }
+  users: { full_name: string | null }
 }
 
 interface Comment {
@@ -25,7 +25,7 @@ interface Comment {
   body: string
   created_at: string
   user_id: string
-  users: { callsign: string | null; full_name: string | null; is_cfi: boolean; cfi_verified: boolean }
+  users: { full_name: string | null; is_cfi: boolean; cfi_verified: boolean }
 }
 
 function buildSkyVectorUrl(departure: string, destination: string, waypoints?: string | null) {
@@ -42,8 +42,8 @@ function timeAgo(ts: string) {
   return `${Math.floor(h / 24)}d ago`
 }
 
-function displayName(u: { callsign: string | null; full_name: string | null }) {
-  return u.callsign || u.full_name?.split(' ')[0] || 'Pilot'
+function displayName(u: { full_name: string | null }) {
+  return u.full_name?.split(' ')[0] || 'Pilot'
 }
 
 export default function RouteDetailPage() {

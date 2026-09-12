@@ -10,7 +10,7 @@ export async function GET() {
       .select(`
         id, title, departure, destination, waypoints, altitude,
         description, date_of_flight, created_at, user_id,
-        users!inner(callsign, full_name)
+        users!inner(full_name)
       `)
       .eq('is_removed', false)
       .order('created_at', { ascending: false })

@@ -10,13 +10,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const [routeRes, commentsRes] = await Promise.all([
       admin
         .from('route_critiques')
-        .select(`id, title, departure, destination, waypoints, altitude, description, date_of_flight, created_at, user_id, users!inner(callsign, full_name)`)
+        .select(`id, title, departure, destination, waypoints, altitude, description, date_of_flight, created_at, user_id, users!inner(full_name)`)
         .eq('id', id)
         .eq('is_removed', false)
         .single(),
       admin
         .from('route_critique_comments')
-        .select(`id, body, created_at, user_id, users!inner(callsign, full_name, is_cfi, cfi_verified)`)
+        .select(`id, body, created_at, user_id, users!inner(full_name, is_cfi, cfi_verified)`)
         .eq('route_id', id)
         .eq('is_removed', false)
         .order('created_at', { ascending: true }),
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { data: comment, error } = await admin
       .from('route_critique_comments')
       .insert({ route_id: id, user_id: user.id, body: body.trim() })
-      .select('id, body, created_at, user_id, users!inner(callsign, full_name, is_cfi, cfi_verified)')
+      .select('id, body, created_at, user_id, users!inner(full_name, is_cfi, cfi_verified)')
       .single()
 
     if (error) return NextResponse.json({ error: 'Failed to post comment' }, { status: 500 })

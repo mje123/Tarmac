@@ -91,7 +91,6 @@ export default function Sidebar({ user }: SidebarProps) {
   }
 
   const isPaid = user.subscription_status !== 'free'
-  const displayName = user.callsign ? user.callsign : (user.full_name?.split(' ')[0] || 'Pilot')
 
   function NavLink({ href, icon: Icon, label, accent, badge }: NavItem) {
     const active = pathname === href || pathname.startsWith(href + '/')
@@ -196,21 +195,12 @@ export default function Sidebar({ user }: SidebarProps) {
       <div className="px-3 pb-4 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px' }}>
         <div className="px-3 py-3 rounded-xl mb-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center gap-2">
-            {user.callsign ? (
-              <span className="font-mono font-bold text-white text-sm">{user.callsign}</span>
-            ) : (
-              <span className="font-semibold text-white text-sm truncate">{user.full_name || 'Pilot'}</span>
-            )}
+            <span className="font-semibold text-white text-sm truncate">{user.full_name || 'Pilot'}</span>
           </div>
           {subscriptionLabels[user.subscription_status] && (
             <div className={cn('text-xs mt-0.5 font-medium', subscriptionColors[user.subscription_status])}>
               {subscriptionLabels[user.subscription_status]}
             </div>
-          )}
-          {!user.callsign && isPaid && (
-            <Link href="/settings" className="text-xs text-[#3E92CC]/70 hover:text-[#3E92CC] mt-1 block transition-colors">
-              Set your callsign →
-            </Link>
           )}
         </div>
 

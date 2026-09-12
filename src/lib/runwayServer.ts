@@ -22,9 +22,19 @@ export async function getOrCreateRunway(supabase: SupabaseClient, userId: string
     .single()
 
   if (!state) {
+    // initial_runway_type/initial_runway_days are written once, here, and never
+    // touched again — exam_date can change later (api/runway/route.ts), but what the
+    // runway actually started as stays queryable for outcome analysis (spec section
+    // 25). This lazy-create path only ever fires with no exam_date yet (a student who
+    // reaches Study Plan without one from onboarding — see start/page.tsx for the
+    // other creation path, which sets these from a real signup-time test date).
     const { data: created } = await supabase
       .from('study_plan_state')
-      .insert({ user_id: userId })
+      .insert({
+        user_id: userId,
+        initial_runway_type: 'default',
+        initial_runway_days: computeRunwayState(new Date(), null, new Date()).totalDays,
+      })
       .select('*')
       .single()
     state = created

@@ -15,14 +15,14 @@ export async function POST(request: NextRequest) {
     // Get user profile for display_name and anonymous preference
     const { data: profile } = await supabase
       .from('users')
-      .select('callsign, full_name, debrief_anonymous')
+      .select('full_name, debrief_anonymous')
       .eq('id', user.id)
       .single()
 
     const isAnon = profile?.debrief_anonymous ?? false
     const displayName = isAnon
       ? 'Anonymous Pilot'
-      : (profile?.callsign || profile?.full_name?.split(' ')[0] || 'Pilot')
+      : (profile?.full_name?.split(' ')[0] || 'Pilot')
 
     // Moderate with Claude
     const modResp = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/accidents/moderate`, {

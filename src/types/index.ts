@@ -62,8 +62,6 @@ export interface User {
   id: string
   email: string
   full_name: string | null
-  callsign: string | null
-  callsign_set_at: string | null
   debrief_anonymous: boolean
   is_cfi: boolean
   cfi_verified: boolean

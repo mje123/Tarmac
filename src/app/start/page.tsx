@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Eye, EyeOff, Loader2, CheckCircle, ArrowLeft, Plane } from 'lucide-react'
 import type { OnboardingData } from '@/types'
+import { computeRunwayState } from '@/lib/runway'
 
 // ─── Quiz data ────────────────────────────────────────────────────────────────
 
@@ -325,10 +326,15 @@ function StartPageInner() {
       // shape the plan from Day 1 instead of defaulting to no exam date / 20 min.
       const dailyMinutes = answers.minutes_per_day ? parseInt(answers.minutes_per_day, 10) : null
       if (answers.test_date || dailyMinutes) {
+        const examDateObj = answers.test_date ? new Date(answers.test_date) : null
         const { error: planError } = await supabase.from('study_plan_state').insert({
           user_id: data.user.id,
           exam_date: answers.test_date || null,
           daily_minutes_target: dailyMinutes || 20,
+          // Snapshot at signup — see runwayServer.ts's comment on why this is never
+          // updated again even if the student changes their test date later.
+          initial_runway_type: examDateObj ? 'dated' : 'default',
+          initial_runway_days: computeRunwayState(new Date(), examDateObj, new Date()).totalDays,
         })
         // Not fatal to signup — getOrCreateRunway's lazy fallback still creates the row
         // on first Runway visit — but silently losing the real exam_date/minutes

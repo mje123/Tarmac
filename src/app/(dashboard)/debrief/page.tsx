@@ -51,7 +51,7 @@ export default function DebriefPage() {
   const [body, setBody] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [currentUser, setCurrentUser] = useState<{ id: string; callsign: string | null; debrief_anonymous: boolean } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ id: string; full_name: string | null; debrief_anonymous: boolean } | null>(null)
   const [votedIds, setVotedIds] = useState<Set<string>>(new Set())
   const [flagTarget, setFlagTarget] = useState<string | null>(null)
   const [flagReason, setFlagReason] = useState('Inappropriate language')
@@ -86,8 +86,8 @@ export default function DebriefPage() {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
-      const { data } = await supabase.from('users').select('callsign, debrief_anonymous').eq('id', user.id).single()
-      setCurrentUser({ id: user.id, callsign: data?.callsign || null, debrief_anonymous: data?.debrief_anonymous || false })
+      const { data } = await supabase.from('users').select('full_name, debrief_anonymous').eq('id', user.id).single()
+      setCurrentUser({ id: user.id, full_name: data?.full_name || null, debrief_anonymous: data?.debrief_anonymous || false })
     })
     loadAccident()
   }, [loadAccident])
@@ -153,7 +153,7 @@ export default function DebriefPage() {
 
   const previewName = currentUser?.debrief_anonymous
     ? 'Anonymous Pilot'
-    : (currentUser?.callsign || 'Pilot')
+    : (currentUser?.full_name?.split(' ')[0] || 'Pilot')
 
   if (loading) {
     return (
@@ -283,9 +283,6 @@ export default function DebriefPage() {
           <div className="flex items-center justify-between">
             <span className="text-xs" style={{ color: 'var(--text-ter)' }}>
               Posting as: <span className="font-medium text-white/70">{previewName}</span>
-              {!currentUser?.debrief_anonymous && !currentUser?.callsign && (
-                <Link href="/settings" className="ml-2 text-[#3E92CC] hover:underline">Set callsign →</Link>
-              )}
             </span>
             <button
               type="submit"

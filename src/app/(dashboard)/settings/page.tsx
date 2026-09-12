@@ -16,8 +16,6 @@ export default async function SettingsPage() {
     id: authUser.id,
     email: authUser.email ?? '',
     full_name: authUser.user_metadata?.full_name || 'Pilot',
-    callsign: null,
-    callsign_set_at: null,
     debrief_anonymous: false,
     is_cfi: false,
     cfi_verified: false,
