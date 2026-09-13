@@ -13,50 +13,55 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { sessionId, questionId, answer, isCorrect, confidence: rawConfidence } = await request.json()
+    const { sessionId, questionId, answer, confidence: rawConfidence } = await request.json()
     const confidence: ConfidenceLevel | null = VALID_CONFIDENCE.includes(rawConfidence) ? rawConfidence : null
 
+    // correct_answer is fetched and compared here — isCorrect is NEVER accepted from
+    // the client. A client claiming an answer is correct when it isn't would otherwise
+    // inflate concept_mastery/user_progress/readiness with no server-side check at all.
+    // See src/app/api/sessions/submit-exam/route.ts, which already computed correctness
+    // this way — this route was the one place that didn't.
     const { data: question } = await supabase
       .from('questions')
-      .select('category, concept_id, scenario_type, archetype_id, cognitive_level, novelty_key')
+      .select('category, concept_id, scenario_type, archetype_id, cognitive_level, novelty_key, correct_answer')
       .eq('id', questionId)
       .single()
 
-    let errorTag: ReturnType<typeof classifyError> = null
-    let errorTagSource: 'heuristic' | 'ai' | null = null
-    let isNovel = false
-    let priorAccuracy: number | null = null
-
-    if (question) {
-      const sessionIds = await getUserSessionIds(supabase, user.id)
-      isNovel = await isQuestionNovelForUser(supabase, sessionIds, {
-        concept_id: question.concept_id,
-        archetype_id: question.archetype_id,
-        cognitive_level: question.cognitive_level,
-        novelty_key: question.novelty_key,
-      })
-
-      if (question.concept_id) {
-        const { data: existingMastery } = await supabase
-          .from('concept_mastery')
-          .select('correct, attempts')
-          .eq('user_id', user.id)
-          .eq('concept_id', question.concept_id)
-          .single()
-        priorAccuracy = existingMastery && existingMastery.attempts > 0
-          ? existingMastery.correct / existingMastery.attempts
-          : null
-      }
-
-      errorTag = classifyError({
-        isCorrect,
-        scenarioType: question.scenario_type,
-        confidence,
-        category: question.category,
-        priorAccuracy,
-      })
-      errorTagSource = errorTag ? 'heuristic' : null
+    if (!question) {
+      return NextResponse.json({ error: 'Question not found' }, { status: 400 })
     }
+
+    const isCorrect = answer === question.correct_answer
+
+    const sessionIds = await getUserSessionIds(supabase, user.id)
+    const isNovel = await isQuestionNovelForUser(supabase, sessionIds, {
+      concept_id: question.concept_id,
+      archetype_id: question.archetype_id,
+      cognitive_level: question.cognitive_level,
+      novelty_key: question.novelty_key,
+    })
+
+    let priorAccuracy: number | null = null
+    if (question.concept_id) {
+      const { data: existingMastery } = await supabase
+        .from('concept_mastery')
+        .select('correct, attempts')
+        .eq('user_id', user.id)
+        .eq('concept_id', question.concept_id)
+        .single()
+      priorAccuracy = existingMastery && existingMastery.attempts > 0
+        ? existingMastery.correct / existingMastery.attempts
+        : null
+    }
+
+    const errorTag = classifyError({
+      isCorrect,
+      scenarioType: question.scenario_type,
+      confidence,
+      category: question.category,
+      priorAccuracy,
+    })
+    const errorTagSource: 'heuristic' | 'ai' | null = errorTag ? 'heuristic' : null
 
     const { data: insertedAnswer } = await supabase.from('test_answers').insert({
       session_id: sessionId,
@@ -78,49 +83,47 @@ export async function POST(request: NextRequest) {
     if (errorTag === 'concept_gap' && insertedAnswer) {
       await supabase.from('pending_error_classifications').insert({
         test_answer_id: insertedAnswer.id,
-        concept_id: question?.concept_id ?? null,
+        concept_id: question.concept_id ?? null,
       })
     }
 
-    if (question) {
-      const { data: existing } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('category', question.category)
-        .single()
+    const { data: existing } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('category', question.category)
+      .single()
 
-      if (existing) {
-        const newAttempted = existing.questions_attempted + 1
-        const newCorrect = existing.questions_correct + (isCorrect ? 1 : 0)
-        await supabase.from('user_progress').update({
-          questions_attempted: newAttempted,
-          questions_correct: newCorrect,
-          accuracy_percentage: (newCorrect / newAttempted) * 100,
-          last_practiced: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }).eq('id', existing.id)
-      } else {
-        await supabase.from('user_progress').insert({
-          user_id: user.id,
-          category: question.category,
-          questions_attempted: 1,
-          questions_correct: isCorrect ? 1 : 0,
-          accuracy_percentage: isCorrect ? 100 : 0,
-          last_practiced: new Date().toISOString(),
-        })
-      }
-
-      // Concept-level mastery signal — additive alongside user_progress. Only
-      // questions from the validated concept pipeline carry a concept_id; legacy bank
-      // questions leave this untouched. See lib/masteryUpdate.ts for the scheduling +
-      // confidence + novelty-counter logic shared with api/srs/review.
-      if (question.concept_id) {
-        await updateConceptMastery(supabase, user.id, question.concept_id, isCorrect, confidence, isNovel)
-      }
+    if (existing) {
+      const newAttempted = existing.questions_attempted + 1
+      const newCorrect = existing.questions_correct + (isCorrect ? 1 : 0)
+      await supabase.from('user_progress').update({
+        questions_attempted: newAttempted,
+        questions_correct: newCorrect,
+        accuracy_percentage: (newCorrect / newAttempted) * 100,
+        last_practiced: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }).eq('id', existing.id)
+    } else {
+      await supabase.from('user_progress').insert({
+        user_id: user.id,
+        category: question.category,
+        questions_attempted: 1,
+        questions_correct: isCorrect ? 1 : 0,
+        accuracy_percentage: isCorrect ? 100 : 0,
+        last_practiced: new Date().toISOString(),
+      })
     }
 
-    return NextResponse.json({ ok: true })
+    // Concept-level mastery signal — additive alongside user_progress. Only
+    // questions from the validated concept pipeline carry a concept_id; legacy bank
+    // questions leave this untouched. See lib/masteryUpdate.ts for the scheduling +
+    // confidence + novelty-counter logic shared with api/srs/review.
+    if (question.concept_id) {
+      await updateConceptMastery(supabase, user.id, question.concept_id, isCorrect, confidence, isNovel)
+    }
+
+    return NextResponse.json({ ok: true, isCorrect })
   } catch (error) {
     console.error('Answer submit error:', error)
     return NextResponse.json({ error: 'Failed to submit answer' }, { status: 500 })

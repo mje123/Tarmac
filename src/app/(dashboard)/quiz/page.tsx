@@ -6,6 +6,7 @@ import AIChat from '@/components/ui/AIChat'
 import GeneralChat from '@/components/ui/GeneralChat'
 import { useExamType } from '@/components/ExamTypeProvider'
 import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
+import { submitAnswer } from '@/lib/submitAnswer'
 import {
   CheckCircle, XCircle, ChevronRight, Loader2, ListChecks,
   Trophy, RotateCcw, BookOpen, Compass, Cloud, Wind,
@@ -113,11 +114,13 @@ export default function QuizPage() {
     const answer = selectedAnswer
     const isCorrect = answer === currentQuestion.correct_answer
 
-    fetch('/api/sessions/answer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, questionId: currentQuestion.id, answer, isCorrect, confidence }),
-    })
+    // Previously a bare, unawaited fetch() with no error handling at all — the most
+    // fragile version of this pattern in the app (see the shared submitAnswer()
+    // helper's doc comment for the confirmed production data-loss this class of bug
+    // caused elsewhere). Awaited here with a retry; the quiz's own results/score
+    // display is computed from local `results` state regardless, so this doesn't
+    // block quiz UX, it just makes the persisted mastery/progress data reliable.
+    submitAnswer({ sessionId, questionId: currentQuestion.id, answer, confidence }).catch(() => {})
 
     const newResults = [...results, { question: currentQuestion, userAnswer: answer, isCorrect }]
     setResults(newResults)

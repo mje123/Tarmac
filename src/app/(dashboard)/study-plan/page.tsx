@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getOrCreateRunway } from '@/lib/runwayServer'
 import RunwayToday from '@/components/practice/RunwayToday'
 import { getEffectiveExamType } from '@/lib/examType'
+import { scaleDailyTime } from '@/lib/studyPlanTime'
 
 /** Cumulative fraction of the runway each phase ends at, taken from the original
  *  static 7/7/7/9-day (out of 30) split. Applied to the student's real totalDays
@@ -31,7 +32,7 @@ function phaseDayRanges(totalDays: number): string[] {
   })
 }
 
-function buildWeeks(totalDays: number) {
+function buildWeeks(totalDays: number, dailyMinutesTarget: number) {
   const [days1, days2, days3, days4] = phaseDayRanges(totalDays)
   return [
   {
@@ -42,7 +43,7 @@ function buildWeeks(totalDays: number) {
     bg: 'rgba(62,146,204,0.08)',
     border: 'rgba(62,146,204,0.2)',
     badgeBg: 'rgba(62,146,204,0.15)',
-    dailyTime: '45 min/day',
+    dailyTime: scaleDailyTime(45, dailyMinutesTarget),
     goal: 'Find your real starting point first, then build the concepts you\'re actually missing — not the ones you already know.',
     features: [
       { icon: Eye, label: 'Read-Through Mode', desc: 'Start here. Question and correct answer shown together. Run through All Topics to build a first pass of familiarity — not mastery.' },
@@ -61,7 +62,7 @@ function buildWeeks(totalDays: number) {
     bg: 'rgba(139,92,246,0.08)',
     border: 'rgba(139,92,246,0.2)',
     badgeBg: 'rgba(139,92,246,0.15)',
-    dailyTime: '60 min/day',
+    dailyTime: scaleDailyTime(60, dailyMinutesTarget),
     goal: 'Switch from reading to retrieval. Practice Mode forces you to commit to an answer and apply the concept — that\'s where real learning happens.',
     features: [
       { icon: BookOpen, label: 'Practice Mode', desc: 'Go category by category. Answer questions, get them wrong, understand why. The explanation is the lesson, not the letter.' },
@@ -80,7 +81,7 @@ function buildWeeks(totalDays: number) {
     bg: 'rgba(255,182,39,0.07)',
     border: 'rgba(255,182,39,0.2)',
     badgeBg: 'rgba(255,182,39,0.12)',
-    dailyTime: '60 min/day',
+    dailyTime: scaleDailyTime(60, dailyMinutesTarget),
     goal: 'Quiz Mode adds time pressure and unfamiliar phrasing. Your first Practice Exam shows whether you can apply what you know, not just recall it.',
     features: [
       { icon: ListChecks, label: 'Quiz Mode', desc: 'Timed sessions with mixed, less-familiar question framing. Do this before jumping to full exams.' },
@@ -100,7 +101,7 @@ function buildWeeks(totalDays: number) {
     bg: 'rgba(16,185,129,0.07)',
     border: 'rgba(16,185,129,0.2)',
     badgeBg: 'rgba(16,185,129,0.12)',
-    dailyTime: '45 min/day',
+    dailyTime: scaleDailyTime(45, dailyMinutesTarget),
     goal: 'One full Practice Exam every day, with fresh questions each time. Hit 80%+ three days in a row — then book the real thing.',
     features: [
       { icon: ClipboardList, label: 'Practice Exam', desc: 'Daily. Timed. No distractions. Replicate real test conditions every single session.' },
@@ -137,7 +138,13 @@ export default async function StudyPlanPage({ searchParams }: { searchParams: Pr
   const cookieStore = await cookies()
   const examType = await getEffectiveExamType(supabase, user.id, cookieStore.get('tarmac-exam-type')?.value)
   const { runway, examDate, today } = await getOrCreateRunway(supabase, user.id, examType)
-  const weeks = buildWeeks(runway.totalDays)
+  const { data: planState } = await supabase
+    .from('study_plan_state')
+    .select('daily_minutes_target')
+    .eq('user_id', user.id)
+    .single()
+  const dailyMinutesTarget = planState?.daily_minutes_target ?? 20
+  const weeks = buildWeeks(runway.totalDays, dailyMinutesTarget)
   const tips = buildTips(runway.totalDays)
 
   return (

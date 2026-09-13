@@ -6,12 +6,14 @@ import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
 import { matchFigureReference } from '@/lib/figures'
+import { submitAnswer as postAnswer } from '@/lib/submitAnswer'
 import GeneralChat from '@/components/ui/GeneralChat'
 import { useExamType } from '@/components/ExamTypeProvider'
 import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
 import {
   CheckCircle,
   XCircle,
+  AlertTriangle,
   ChevronRight,
   ChevronLeft,
   RotateCcw,
@@ -92,7 +94,11 @@ function loadPracticeState(): PracticeState | null {
 
 export default function PracticePage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-10 h-10 text-[#3E92CC] animate-spin" />
+      </div>
+    }>
       <PracticePageInner />
     </Suspense>
   )
@@ -111,6 +117,7 @@ function PracticePageInner() {
   const [pendingAnswer, setPendingAnswer] = useState<AnswerOption | null>(null)
   const [correctCount, setCorrectCount] = useState(0)
   const [totalAnswered, setTotalAnswered] = useState(0)
+  const [submitError, setSubmitError] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showAI, setShowAI] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -383,11 +390,8 @@ function PracticePageInner() {
     } else {
       setStreak(0)
     }
-    await fetch('/api/sessions/answer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect, confidence }),
-    })
+    const result = await postAnswer({ sessionId, questionId: question.id, answer, confidence })
+    setSubmitError(!result.ok)
     savePracticeProgress(sessionId, category, newCorrect, newTotal, askedIds, [...selectedCategories])
     if (isCorrect) setPhase('correct')
     else setPhase('wrong')
@@ -1143,6 +1147,13 @@ function PracticePageInner() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {(phase === 'correct' || phase === 'wrong') && submitError && (
+          <div className="flex items-center gap-2 mt-5 p-3 rounded-xl text-xs" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            This answer couldn&apos;t be saved — it may not count toward your progress.
           </div>
         )}
 

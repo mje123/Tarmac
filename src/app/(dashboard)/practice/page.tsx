@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Play, BookOpen, Shuffle, Zap, GraduationCap, ChevronRight, Target } from 'lucide-react'
 import { getReadiness } from '@/lib/readinessServer'
 import { getEffectiveExamType } from '@/lib/examType'
+import { getOrCreateRunway } from '@/lib/runwayServer'
+import { getModeRoute } from '@/lib/dailyPlanRoutes'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +20,8 @@ export default async function PracticeHomePage() {
   const examLabel = examType === 'ifr' ? 'Instrument' : 'Private Pilot'
 
   const { score: readiness, biggestRisks } = await getReadiness(supabase, user.id, examType)
+  const { today } = await getOrCreateRunway(supabase, user.id, examType)
+  const todayHref = getModeRoute(today.mode)
   let focusLabel: string | null = biggestRisks[0]?.conceptName ?? null
 
   if (!focusLabel) {
@@ -76,13 +80,14 @@ export default async function PracticeHomePage() {
       </div>
 
       <Link
-        href="/practice/practice?autoStart=weak"
-        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-bold transition-all hover:opacity-90 mb-6"
+        href={todayHref}
+        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-bold transition-all hover:opacity-90 mb-1"
         style={{ background: 'linear-gradient(135deg, #FFB627, #e09e1a)', color: '#0A2463', boxShadow: '0 4px 20px rgba(255,182,39,0.35)' }}
       >
         <Play className="w-5 h-5" />
         Start Today&apos;s Training
       </Link>
+      <p className="text-xs text-center mb-6" style={{ color: 'var(--text-ter)' }}>{today.label}</p>
 
       <div className="grid grid-cols-2 gap-3">
         <Link

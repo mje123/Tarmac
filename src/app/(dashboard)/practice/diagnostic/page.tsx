@@ -8,6 +8,8 @@ import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
 import { EXAM_QUESTION_DISTRIBUTION, IFR_EXAM_QUESTION_DISTRIBUTION } from '@/lib/utils'
 import { wilsonLowerBound } from '@/lib/readiness'
 import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
+import { submitAnswer } from '@/lib/submitAnswer'
+import { AlertTriangle } from 'lucide-react'
 import SupplementViewer from '@/components/ui/SupplementViewer'
 import { matchFigureReference } from '@/lib/figures'
 import { Compass, Loader2, ChevronRight } from 'lucide-react'
@@ -45,6 +47,7 @@ export default function DiagnosticPage() {
   const [selected, setSelected] = useState<AnswerOption | null>(null)
   const [isCorrect, setIsCorrect] = useState(false)
   const [tally, setTally] = useState<Record<string, CategoryTally>>({})
+  const [submitError, setSubmitError] = useState(false)
 
   const fetchQuestion = useCallback(async (idx: number, excludeIds: string[]) => {
     setPhase('loading')
@@ -94,11 +97,8 @@ export default function DiagnosticPage() {
       const prev = t[question.category] ?? { correct: 0, total: 0 }
       return { ...t, [question.category]: { correct: prev.correct + (correct ? 1 : 0), total: prev.total + 1 } }
     })
-    await fetch('/api/sessions/answer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect: correct, confidence }),
-    })
+    const result = await submitAnswer({ sessionId, questionId: question.id, answer, confidence })
+    setSubmitError(!result.ok)
     setPhase('answered')
   }
 
@@ -114,13 +114,24 @@ export default function DiagnosticPage() {
 
   async function finish() {
     setPhase('loading')
-    // Mark today's runway item done — fire-and-forget-safe, doesn't block the results
-    // screen. Deliberately NOT fetching /api/readiness here: a 12-question sample is
-    // exactly the case that formula should never be asked to summarize into a single
-    // number for display. The raw score below is the honest artifact of today's
-    // session; readiness as a concept belongs to the Readiness page once there's
-    // enough accumulated practice history to mean something.
-    fetch('/api/runway', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ markTodayComplete: true }) }).catch(() => {})
+    // Mark today's runway item done — AWAITED (not fire-and-forget) so the write is
+    // guaranteed to at least be attempted before the student can navigate away from
+    // the results screen. This used to be an unawaited fetch with only a .catch(),
+    // which the browser could abandon on navigation — confirmed in production: a
+    // fully-completed diagnostic left daily_plan_items.completed = false, and the Test
+    // Runway kept prompting to start the diagnostic over from scratch. A failure here
+    // still isn't allowed to block showing results (deliberately not re-thrown) —
+    // losing the "day marked done" flag is bad but shouldn't trap the student on a
+    // loading screen for a session they already finished.
+    //
+    // Deliberately NOT fetching /api/readiness here: a 12-question sample is exactly
+    // the case that formula should never be asked to summarize into a single number
+    // for display. The raw score below is the honest artifact of today's session;
+    // readiness as a concept belongs to the Readiness page once there's enough
+    // accumulated practice history to mean something.
+    try {
+      await fetch('/api/runway', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ markTodayComplete: true }) })
+    } catch { /* see comment above — don't block results on this failing */ }
     setPhase('results')
   }
 
@@ -275,6 +286,13 @@ export default function DiagnosticPage() {
               {opt.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {phase === 'answered' && submitError && (
+        <div className="flex items-center gap-2 mb-4 p-3 rounded-xl text-xs" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          This answer couldn&apos;t be saved — your starting-point results may be slightly off for this question.
         </div>
       )}
 

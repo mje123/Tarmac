@@ -7,7 +7,8 @@ import { useExamType } from '@/components/ExamTypeProvider'
 import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
 import SupplementViewer from '@/components/ui/SupplementViewer'
 import { matchFigureReference } from '@/lib/figures'
-import { GraduationCap, Loader2, ChevronRight } from 'lucide-react'
+import { submitAnswer } from '@/lib/submitAnswer'
+import { GraduationCap, Loader2, ChevronRight, AlertTriangle } from 'lucide-react'
 
 type Phase = 'loading-concept' | 'intro' | 'loading-question' | 'question' | 'answered' | 'empty'
 
@@ -32,6 +33,7 @@ export default function LearnModePage() {
   const [question, setQuestion] = useState<Question | null>(null)
   const [selected, setSelected] = useState<AnswerOption | null>(null)
   const [isCorrect, setIsCorrect] = useState(false)
+  const [submitError, setSubmitError] = useState(false)
   const [askedIds, setAskedIds] = useState<string[]>([])
   const [answeredCount, setAnsweredCount] = useState(0)
 
@@ -81,11 +83,8 @@ export default function LearnModePage() {
     setSelected(answer)
     setIsCorrect(correct)
     setAnsweredCount(c => c + 1)
-    await fetch('/api/sessions/answer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect: correct, confidence: null }),
-    })
+    const result = await submitAnswer({ sessionId, questionId: question.id, answer, confidence: null })
+    setSubmitError(!result.ok)
     setPhase('answered')
   }
 
@@ -184,6 +183,13 @@ export default function LearnModePage() {
           )
         })}
       </div>
+
+      {phase === 'answered' && submitError && (
+        <div className="flex items-center gap-2 mb-4 p-3 rounded-xl text-xs" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          This answer couldn&apos;t be saved — it may not count toward your progress.
+        </div>
+      )}
 
       {phase === 'answered' && (
         <AnswerFeedbackPanel question={question} isCorrect={isCorrect} onNext={next} nextLabel="Another one" />

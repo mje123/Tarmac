@@ -8,7 +8,8 @@ import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
 import { matchFigureReference } from '@/lib/figures'
-import { Zap, Loader2, ChevronRight } from 'lucide-react'
+import { submitAnswer } from '@/lib/submitAnswer'
+import { Zap, Loader2, ChevronRight, AlertTriangle } from 'lucide-react'
 
 type Phase = 'intro' | 'loading' | 'question' | 'answered' | 'empty' | 'summary'
 
@@ -27,6 +28,7 @@ export default function TransferModePage() {
   const [selected, setSelected] = useState<AnswerOption | null>(null)
   const [pending, setPending] = useState<AnswerOption | null>(null)
   const [isCorrect, setIsCorrect] = useState(false)
+  const [submitError, setSubmitError] = useState(false)
   const [correctCount, setCorrectCount] = useState(0)
   const [totalAnswered, setTotalAnswered] = useState(0)
   const [askedIds, setAskedIds] = useState<string[]>([])
@@ -82,11 +84,8 @@ export default function TransferModePage() {
     setIsCorrect(correct)
     setTotalAnswered(t => t + 1)
     if (correct) setCorrectCount(c => c + 1)
-    await fetch('/api/sessions/answer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, questionId: question.id, answer, isCorrect: correct, confidence }),
-    })
+    const result = await submitAnswer({ sessionId, questionId: question.id, answer, confidence })
+    setSubmitError(!result.ok)
     setPhase('answered')
   }
 
@@ -236,6 +235,13 @@ export default function TransferModePage() {
               {opt.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {phase === 'answered' && submitError && (
+        <div className="flex items-center gap-2 mb-4 p-3 rounded-xl text-xs" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          This answer couldn&apos;t be saved — it may not count toward your progress.
         </div>
       )}
 

@@ -46,7 +46,16 @@ export interface FigureReference {
 // version of this regex only matched 2H, so every IFR (3F) figure reference silently
 // failed to render anything, anywhere.
 const SUPPLEMENT_REF_RE = /FAA-CT-8080-(2H|3F)[,\s]+(Figures?|Legend)\s+\d+/i
-const GENERIC_REF_RE = /\(Refer to (Figures?|Legend)\s+\d+/i
+// Catches any other phrasing that names a figure/legend by number — "(Refer to
+// Figure 8", "Using Figure 8, ...", "Per Figure 2, ...", "According to Legend 1, ...".
+// Previously only the parenthetical "(Refer to Figure N" form matched, so every
+// hand-authored question using natural phrasing (no supplement doc named, no
+// parenthetical) silently rendered with no chart at all despite a real image
+// existing in FIGURE_IMAGES — confirmed live for "Using Figure 8, ..." questions.
+// Checked against the full question bank for false positives (e.g. a maneuver
+// literally named "figure eight"): none — this only ever matches "Figure"/"Legend"
+// immediately followed by a digit, which no maneuver name does.
+const GENERIC_REF_RE = /\b(Figures?|Legend)\s+\d+\b/i
 
 function normalizeKey(raw: string): string {
   return raw.replace(/\s+/g, ' ').replace(/^Figures\s/i, 'Figure ').trim()
@@ -61,9 +70,7 @@ export function matchFigureReference(text: string): FigureReference | null {
   }
   const genericMatch = text.match(GENERIC_REF_RE)
   if (genericMatch) {
-    const keyMatch = genericMatch[0].match(/(Figures?|Legend)\s+\d+/i)
-    if (!keyMatch) return null
-    return { key: normalizeKey(keyMatch[0]), doc: null }
+    return { key: normalizeKey(genericMatch[0]), doc: null }
   }
   return null
 }
