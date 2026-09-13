@@ -81,7 +81,7 @@ export default function UpgradeModal({
                   'AI-generated practice — unlimited, never a fixed bank',
                   'AI tutor explains every wrong answer',
                   'Full 60-question timed practice exams',
-                  'Instrument unlocks once you report passing Private',
+                  'Private Pilot and Instrument Rating prep, both included',
                   '7-day free trial — no charge until trial ends',
                 ].map(f => (
                   <div key={f} className="flex items-center gap-2.5">

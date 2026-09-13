@@ -7,7 +7,7 @@ import { TARMAC_PLAN } from '@/lib/pricing'
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'One membership, $29.99/month with a 7-day free trial. Private Pilot written prep now — Instrument Rating unlocks once you report passing.',
+  description: 'One membership, $29.99/month with a 7-day free trial. Private Pilot and Instrument Rating written prep, both included from day one.',
 }
 
 export default function PricingPage() {
@@ -19,9 +19,9 @@ export default function PricingPage() {
         <div className="max-w-lg mx-auto">
           <div className="text-center mb-14">
             <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Pricing</p>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Private now. Instrument next.</h1>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Private and Instrument. One membership.</h1>
             <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              One membership, no tiers. Report your Private Pilot pass and Instrument Rating unlocks — no upgrade needed.
+              One membership, no tiers. Private Pilot and Instrument Rating prep are both included from day one — switch between them anytime, no upgrade needed.
             </p>
           </div>
           <div className="rounded-2xl p-8 relative" style={{ background: 'rgba(255,182,39,0.06)', border: '2px solid rgba(255,182,39,0.5)' }}>

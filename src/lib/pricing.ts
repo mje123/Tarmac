@@ -6,7 +6,7 @@ export const TARMAC_PLAN = {
   trialDays: 7,
   tagline: 'Free for 7 days, then $29.99/mo. Cancel anytime.',
   features: [
-    'Private Pilot written prep — Instrument Rating unlocks once you report passing',
+    'Private Pilot and Instrument Rating written prep — both included, switch anytime',
     'AI-generated practice questions and scenarios — not a fixed bank',
     'Novel-question mode trains you on unfamiliar variations, not repeats',
     'Adaptive difficulty that adjusts to what you actually know',

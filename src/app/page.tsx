@@ -509,9 +509,9 @@ export default function LandingPage() {
           <FadeUp>
             <div className="text-center mb-14">
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Pricing</p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Private now. Instrument next.</h2>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3">Private and Instrument. One membership.</h2>
               <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                One membership, no tiers. Instrument unlocks once you report passing Private.
+                One membership, no tiers. Private Pilot and Instrument Rating prep are both included from day one.
               </p>
             </div>
           </FadeUp>

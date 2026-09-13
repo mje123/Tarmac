@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { createClient } from '@/lib/supabase/server'
+import { OPENAI_MODEL } from '@/lib/ai/providers/openai'
 
 
 
@@ -100,20 +101,19 @@ export async function POST(request: NextRequest) {
       ? `${SYSTEM_PROMPT}\n\n${AIRSPACE_FACTS}\n\n## Current Question Being Studied\n${currentQuestionContext}`
       : `${SYSTEM_PROMPT}\n\n${AIRSPACE_FACTS}`
 
-    const anthropicMessages = messages.map((m: { role: string; content: string }) => ({
+    const chatMessages = messages.map((m: { role: string; content: string }) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
     }))
 
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
+    const response = await openai.chat.completions.create({
+      model: OPENAI_MODEL,
       max_tokens: 500,
-      system: systemPrompt,
-      messages: anthropicMessages,
+      messages: [{ role: 'system', content: systemPrompt }, ...chatMessages],
     })
 
-    const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : ''
+    const assistantMessage = response.choices[0]?.message?.content || ''
 
     return NextResponse.json({ message: assistantMessage })
   } catch (error) {

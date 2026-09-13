@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { createClient } from '@/lib/supabase/server'
+import { OPENAI_MODEL } from '@/lib/ai/providers/openai'
 
 
 
@@ -217,7 +218,7 @@ Base explanation from FAA database: ${explanation}${reference ? `\nFAA Reference
 
     const fullSystemPrompt = `${SYSTEM_PROMPT}\n\n${AIRSPACE_FACTS}\n\n${contextBlock}`
 
-    let anthropicMessages = messages.map((m: { role: string; content: string }) => ({
+    let chatMessages = messages.map((m: { role: string; content: string }) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
     }))
@@ -227,21 +228,20 @@ Base explanation from FAA database: ${explanation}${reference ? `\nFAA Reference
         ? `I just answered this question correctly — I chose ${userAnswer}. ${userAnswerText}. Can you explain why that's right and give me a real-world tip to remember it?`
         : `I answered ${userAnswer}. ${userAnswerText} — but that's wrong. The correct answer is ${correctAnswer}. ${correctAnswerText}. Can you explain what I was missing?`
 
-      anthropicMessages = [{ role: 'user' as const, content: initialUserMsg }]
+      chatMessages = [{ role: 'user' as const, content: initialUserMsg }]
     }
 
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
+    const response = await openai.chat.completions.create({
+      model: OPENAI_MODEL,
       max_tokens: 600,
-      system: fullSystemPrompt,
-      messages: anthropicMessages,
+      messages: [{ role: 'system', content: fullSystemPrompt }, ...chatMessages],
     })
 
-    const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : ''
+    const assistantMessage = response.choices[0]?.message?.content || ''
 
     const allMessages = isInitial
-      ? [{ role: 'user', content: anthropicMessages[0].content }, { role: 'assistant', content: assistantMessage }]
+      ? [{ role: 'user', content: chatMessages[0].content }, { role: 'assistant', content: assistantMessage }]
       : [...messages, { role: 'assistant', content: assistantMessage }]
 
     let newConvId = conversationId
