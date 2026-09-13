@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { MessageSquare, Plus } from 'lucide-react'
 
-export const metadata = { title: 'Community — Tarmac' }
+export const metadata = { title: 'Forum — TARMAC' }
 
 export default async function ForumLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()

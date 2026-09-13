@@ -2,12 +2,12 @@ import Link from 'next/link'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | TARMAC',
-  description: 'Privacy Policy for TARMAC — The community that makes you a better pilot.',
+  title: 'Privacy Policy',
+  description: 'How TARMAC collects, uses, and protects your information while you prepare for the FAA written test.',
 }
 
 export default function PrivacyPage() {
-  const updated = 'June 13, 2026'
+  const updated = 'September 12, 2026'
 
   return (
     <div className="min-h-screen" style={{ background: '#f8fafc' }}>
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
 
         <div className="space-y-10 text-[#1e3a6e] leading-relaxed">
 
-          <p className="text-sm text-[#0A2463]/60 mb-8">TARMAC is operated by <strong>Legion Systems LLC</strong>. This policy describes how we collect, use, and protect your data when you use TARMAC — including our Ground School, Accident Debrief, Ask a CFI, Weather Room, and other community features.</p>
+          <p className="text-sm text-[#0A2463]/60 mb-8">TARMAC is operated by <strong>Legion Systems LLC</strong>. This policy describes how we collect, use, and protect your data when you use TARMAC's FAA written-test preparation tools — including Diagnostic, Test Runway, Practice, Learn, Transfer, Weakness Attack, Prove It, spaced review, full practice exams, and Tarmac Readiness — as well as certain legacy community features that remain accessible to some users.</p>
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">1. Information We Collect</h2>
@@ -35,18 +35,25 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 mt-1 space-y-1">
               <li>Name and email address (provided at signup)</li>
               <li>Password (hashed — never stored in plain text)</li>
-              <li><strong>CFI status</strong> — a self-reported boolean indicating whether you are a Certificated Flight Instructor. We do not verify this claim.</li>
-              <li><strong>Debrief anonymity preference</strong> — whether you prefer to post in Accident Debrief using your name or anonymously.</li>
+              <li>Your selected exam type (Private Pilot or Instrument Rating) and, if provided, your target FAA test date and daily study-time preference</li>
+              <li>The date and Terms of Service version you accepted at signup</li>
+              <li><strong>CFI status</strong> — a self-reported boolean relevant only if you use the legacy Ask a CFI feature. We do not verify this claim.</li>
+              <li><strong>Debrief anonymity preference</strong> — relevant only if you use the legacy Accident Debrief feature.</li>
               <li>Profile avatar (if uploaded)</li>
             </ul>
 
-            <p className="mt-3 font-semibold">Ground School Usage Data</p>
+            <p className="mt-3 font-semibold">Study &amp; Practice Data</p>
             <ul className="list-disc pl-6 mt-1 space-y-1">
-              <li>Practice sessions, questions answered, scores, quiz results, and exam performance — used to power your personalized study experience and spaced repetition system.</li>
-              <li>AI Tutor chat conversations — stored to provide session continuity and personalized tutoring.</li>
+              <li>Your Diagnostic results, and your answers, confidence selections, and results across Practice, Learn, Transfer, Weakness Attack, Quiz, and full practice exam sessions</li>
+              <li>Concept mastery and spaced-review scheduling data, used to personalize what you study next</li>
+              <li>Test Runway / Study Plan progress — your current study phase, daily plan, and completion status</li>
+              <li>Your Tarmac Readiness score and its underlying components</li>
+              <li>Questions you have saved to study later</li>
+              <li>AI Tutor conversations — including the question text, your selected answer, and whether it was correct, which are sent along with your chat messages to generate a relevant response</li>
+              <li>If you choose to report it, your actual FAA exam outcome (pass/fail, score, and how it compared to your practice) — this is entirely optional and self-reported</li>
             </ul>
 
-            <p className="mt-3 font-semibold">Community Content</p>
+            <p className="mt-3 font-semibold">Community Content (legacy features)</p>
             <ul className="list-disc pl-6 mt-1 space-y-1">
               <li>Comments you post in Accident Debrief</li>
               <li>Questions and answers you post in Ask a CFI</li>
@@ -60,22 +67,27 @@ export default function PrivacyPage() {
             <p className="mt-3 font-semibold">Payment Information</p>
             <p className="mt-1">Billing is handled entirely by Stripe. We do not store your credit card number or full payment details. We receive a Stripe customer ID, subscription status, and subscription metadata only.</p>
 
+            <p className="mt-3 font-semibold">Support Requests</p>
+            <p className="mt-1">If you contact us, report a bug, submit a suggestion, or apply to TARMAC's influencer/referral program, we collect the information you provide — such as your name, email, message, and the page you were on, and (for influencer applications) your social media handles and audience size.</p>
+
             <p className="mt-3 font-semibold">Device &amp; Technical Data</p>
-            <p className="mt-1">Standard server logs including IP address, browser type, and pages visited — used for security, error monitoring, and performance analysis.</p>
+            <p className="mt-1">TARMAC's application code does not itself collect or log your IP address, device information, or browsing activity. Our hosting provider, Vercel, may log standard technical information (such as IP address and browser type) as part of operating and securing its infrastructure, consistent with Vercel's own privacy policy.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">2. How We Use Your Information</h2>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>To provide, operate, and improve the Service — including personalized Ground School practice, weak-area detection, AI tutoring, and community features</li>
-              <li>To display your name and participation in community features to other TARMAC members</li>
+              <li>To provide, operate, and improve the Service — including your Diagnostic, Test Runway, personalized practice, concept mastery, spaced review, and Tarmac Readiness</li>
+              <li>To generate and refine AI-assisted practice content</li>
+              <li>To send transactional emails related to your account and study activity (such as billing receipts and quiz/exam results) — some of these emails include your specific answers and performance details</li>
+              <li>To display your name and participation in legacy community features to other TARMAC members, if you choose to use them</li>
               <li>To moderate community content using automated AI systems (see Section 4)</li>
               <li>To manage your account, subscription, and billing</li>
-              <li>To send transactional emails (billing receipts, account alerts)</li>
+              <li>To respond to support requests, bug reports, suggestions, and influencer program applications</li>
               <li>To monitor for abuse, spam, fraud, and Terms of Service violations</li>
               <li>To analyze aggregate usage patterns to improve the platform</li>
             </ul>
-            <p className="mt-3">We do not sell your personal information to third parties. We do not use your data to train AI models.</p>
+            <p className="mt-3">We do not sell your personal information to third parties. We do not use your data to train our own AI models.</p>
           </section>
 
           <section>
@@ -83,30 +95,32 @@ export default function PrivacyPage() {
             <p>We use the following trusted third parties to operate the Service:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li><strong>Supabase</strong> — database hosting and authentication</li>
-              <li><strong>Stripe</strong> — payment processing and subscription management</li>
-              <li><strong>Anthropic</strong> — AI-powered explanations, tutoring, accident anonymization, and community content moderation (your messages and community posts may be processed by Anthropic's API)</li>
-              <li><strong>Resend</strong> — transactional email delivery</li>
-              <li><strong>Vercel</strong> — application hosting and edge infrastructure</li>
-              <li><strong>NTSB / Socrata</strong> — public aviation accident data used to populate Accident Debrief scenarios</li>
+              <li><strong>Stripe</strong> — payment processing and subscription management (Stripe receives your email and an internal account identifier; TARMAC never receives or stores your full card details)</li>
+              <li><strong>Anthropic</strong> — processes your AI Tutor conversations, including related question and performance context, to generate tutoring responses and explanations; also used for legacy community-content moderation and NTSB-data anonymization, where those features remain in use</li>
+              <li><strong>OpenAI and Google (Gemini)</strong> — used internally to help generate practice question content. These providers do not receive your personal account information, answers, or activity — only non-personal question and concept material</li>
+              <li><strong>Resend</strong> — transactional email delivery (some emails, such as quiz/exam results, include your performance details in the email content itself)</li>
+              <li><strong>Vercel</strong> — application hosting and infrastructure</li>
+              <li><strong>NTSB / Socrata</strong> — public aviation accident data used in the legacy Accident Debrief feature, where applicable</li>
             </ul>
             <p className="mt-3">Each of these providers has their own privacy policy governing data they receive. We encourage you to review them.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">4. AI Processing of Community Content</h2>
-            <p>TARMAC uses AI (powered by Anthropic) in several ways that may involve your content:</p>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">4. AI Processing of Your Content and Data</h2>
+            <p>TARMAC uses AI in several ways that may involve your content:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Content moderation:</strong> Community posts (Accident Debrief comments, CFI answers, Weather Room scenarios) are reviewed by an AI system before being published to check for policy violations.</li>
-              <li><strong>NTSB anonymization:</strong> Raw NTSB accident records are processed by AI to remove or alter identifying information (names, tail numbers, specific airport codes) before being presented as community scenarios.</li>
-              <li><strong>AI Tutor:</strong> Your chat messages in the AI Tutor are sent to Anthropic's API for processing. We do not use these to train AI models.</li>
-              <li><strong>Community summaries:</strong> Top community comments on Accident Debrief scenarios may be synthesized by AI into educational summaries.</li>
+              <li><strong>AI Tutor and study support:</strong> when you ask the AI Tutor about a question, TARMAC sends that question's text and answer choices, your selected answer, whether it was correct, and your chat messages to Anthropic's API to generate a response.</li>
+              <li><strong>Practice question generation:</strong> some practice questions, scenarios, and explanations are generated with the help of AI systems — including Anthropic, OpenAI, and Google's Gemini models — grounded in authoritative FAA source material and reviewed through TARMAC's validation process before publication. This generation process does not involve your personal data.</li>
+              <li><strong>Content moderation (legacy features):</strong> community posts (Accident Debrief comments, CFI answers, Weather Room scenarios) are reviewed by an AI system before being published to check for policy violations.</li>
+              <li><strong>NTSB anonymization (legacy):</strong> raw NTSB accident records are processed by AI to remove or alter identifying information (names, tail numbers, specific airport codes) before being presented as community scenarios.</li>
+              <li><strong>Community summaries (legacy):</strong> top community comments on Accident Debrief scenarios may be synthesized by AI into educational summaries.</li>
             </ul>
             <p className="mt-3">Anthropic processes your content in accordance with their privacy policy and API usage terms. Anthropic does not use API inputs to train their models by default.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">5. Community Content Visibility</h2>
-            <p>Content you post in TARMAC community features may be visible to other TARMAC members. Specifically:</p>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">5. Community Content Visibility (Legacy Features)</h2>
+            <p>If you choose to use TARMAC's legacy community features, content you post there may be visible to other TARMAC members. Specifically:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>Your <strong>name</strong> is displayed alongside your community contributions by default.</li>
               <li>In <strong>Accident Debrief</strong>, you may choose to post with your name or anonymously. Admins can always see the author regardless of anonymity setting.</li>
@@ -119,12 +133,12 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">6. Data Retention</h2>
-            <p>We retain your account data for as long as your account is active. Community content you have posted (comments, answers, scenarios) may remain visible after account deletion if it has received meaningful engagement, though it will be disassociated from your personal account. If you delete your account, we will delete your personal profile information within 30 days, except where retention is required by law or for legitimate business purposes (such as billing records and fraud prevention).</p>
+            <p>We retain your account data, including your study and practice history, for as long as your account is active. Community content you have posted (comments, answers, scenarios) may remain visible after account deletion if it has received meaningful engagement, though it will be disassociated from your personal account. If you delete your account, we will delete your personal profile information within 30 days, except where retention is required by law or for legitimate business purposes (such as billing records and fraud prevention).</p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">7. Cookies and Local Storage</h2>
-            <p>We use session cookies required for authentication (via Supabase). We may also use browser localStorage for UI state and free-tier usage tracking. We do not use third-party advertising cookies or tracking pixels.</p>
+            <p>We use a session cookie required for authentication (via Supabase) and a cookie that remembers your selected exam type (Private Pilot or Instrument Rating). We may also use browser localStorage for UI state, session progress, and free-tier usage tracking. We do not use third-party advertising cookies or tracking pixels.</p>
           </section>
 
           <section>
@@ -142,12 +156,12 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">9. Security</h2>
-            <p>We use industry-standard security measures including HTTPS encryption, hashed passwords, and row-level security policies in our database. Access to community content and user data is restricted by authentication and authorization controls. No method of transmission over the internet is 100% secure — we cannot guarantee absolute security, but we take reasonable precautions to protect your data.</p>
+            <p>We use industry-standard security measures including HTTPS encryption, hashed passwords, and row-level security policies in our database. Access to your data is restricted by authentication and authorization controls. No method of transmission over the internet is 100% secure — we cannot guarantee absolute security, but we take reasonable precautions to protect your data.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">10. Children's Privacy</h2>
-            <p>TARMAC is not directed at children under 13. We do not knowingly collect personal information from children under 13. If you believe we have collected such information, contact us and we will delete it promptly.</p>
+            <p>TARMAC is not directed at children under 13, and use of TARMAC by anyone under 13 is prohibited. Users between 13 and 18 must have parental or guardian consent, as described in our Terms of Service. We do not knowingly collect personal information from children under 13. If you believe we have collected such information, contact us and we will delete it promptly.</p>
           </section>
 
           <section>

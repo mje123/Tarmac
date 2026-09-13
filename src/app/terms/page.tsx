@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import { Metadata } from 'next'
+import { TERMS_VERSION } from '@/lib/legal'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | TARMAC',
-  description: 'Terms of Service for TARMAC — The community that makes you a better pilot.',
+  title: 'Terms of Service',
+  description: 'Terms of Service for TARMAC — the FAA written-test preparation platform for student and instrument pilots.',
 }
 
 export default function TermsPage() {
-  const updated = 'June 13, 2026'
+  const updated = TERMS_VERSION
 
   return (
     <div className="min-h-screen" style={{ background: '#f8fafc' }}>
@@ -27,8 +28,9 @@ export default function TermsPage() {
           <p className="font-extrabold text-red-700 text-base uppercase tracking-wide">Read This Before Using TARMAC</p>
           <ul className="list-disc pl-5 space-y-2 text-red-800 text-sm font-medium">
             <li>TARMAC is an <strong>independent study tool</strong>. We are <strong>not affiliated with, endorsed by, or approved by the FAA</strong> or any government agency.</li>
-            <li>TARMAC questions are <strong>not official FAA questions</strong>. They are independently created practice questions designed to help you study.</li>
+            <li>TARMAC questions are <strong>not official FAA questions</strong>. They are independently created (and in some cases AI-generated or AI-assisted) practice questions designed to help you study.</li>
             <li>We make <strong>no guarantee</strong> that you will pass any FAA exam, written test, checkride, or receive any aviation certification.</li>
+            <li><strong>Tarmac Readiness</strong> and the <strong>Test Runway</strong> are internal study tools — not predictions or guarantees of your actual FAA exam outcome or the time you personally need to prepare.</li>
             <li>Features may be incomplete, inaccurate, or change without notice.</li>
             <li><strong>All sales are final. No refunds under any circumstances.</strong></li>
             <li>By creating an account or making a purchase, you agree to these Terms in full.</li>
@@ -43,13 +45,21 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">2. Nature of the Service — Community Learning Platform</h2>
-            <p>TARMAC is an <strong>independent pilot community learning platform</strong> designed to help student and certificated pilots learn through community discussion, real-world accident analysis, peer Q&amp;A, and ground school practice. The Service includes: Ground School (practice questions, simulated exams, AI tutoring), Accident Debrief (NTSB case analysis and community discussion), Ask a CFI (peer Q&amp;A with community members and self-identified flight instructors), Weather Room (go/no-go scenario debates), Route Critique (preflight route review), and Daily Question.</p>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">2. Nature of the Service</h2>
+            <p>TARMAC is an FAA written-test preparation platform for student and certificated pilots. For the Private Pilot Airplane (PAR) and Instrument Rating Airplane (IRA) FAA Airman Knowledge Tests, the Service includes: a Diagnostic assessment of your starting knowledge; an adaptive Test Runway / Study Plan; Learn, Practice, Transfer, and Weakness Attack practice modes; concept-specific "Prove It" practice; confidence tracking, concept mastery tracking, and spaced review; full timed practice exams; Tarmac Readiness, an internal study-progress indicator described in Section 4a below; and practice questions and explanations that are, in whole or in part, generated or assisted by artificial intelligence and grounded in authoritative FAA source material.</p>
+            <p className="mt-3">TARMAC has previously offered, and in some cases continues to make available, additional community-oriented features — including Ground School notes, Accident Debrief, Ask a CFI, Weather Room, Route Critique, and Daily Question. These features are not the current core focus of the Service, may not be actively maintained or promoted, and may be modified, limited, or discontinued at any time without notice. Sections 10, 10a, and 10b of these Terms continue to govern any such feature you access.</p>
             <div className="mt-3 font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm">
               TARMAC IS NOT a flight school, certified aviation training program, FAA-approved ground school, Part 141 provider, or Part 61 training provider. TARMAC IS NOT affiliated with, endorsed by, sponsored by, or approved by the Federal Aviation Administration (FAA), the Department of Transportation (DOT), or any other government agency or aviation authority. Nothing on this platform constitutes official FAA instructional material or certified ground training.
             </div>
-            <p className="mt-3"><strong>TARMAC questions are not official FAA Airman Knowledge Test questions.</strong> They are independently authored practice questions created to help students study the subject matter covered by the FAA Private Pilot Airman Knowledge Test. The actual test questions used on FAA exams are proprietary to the FAA and its authorized testing vendors. We make no claim that our questions are identical to, sourced from, or represent the current official FAA test bank.</p>
-            <p className="mt-3">The FAA updates its Airman Certification Standards (ACS) and test bank periodically. TARMAC does not guarantee that its question bank reflects the most current FAA test content at any given time. It is your responsibility to verify that your study materials are current and complete.</p>
+            <p className="mt-3"><strong>TARMAC questions are not official FAA Airman Knowledge Test questions.</strong> They are independently authored (and in some cases AI-generated or AI-assisted) practice questions created to help students study the subject matter covered by the applicable FAA Airman Knowledge Test. The actual test questions used on FAA exams are proprietary to the FAA and its authorized testing vendors. We make no claim that our questions are identical to, sourced from, or represent the current official FAA test bank.</p>
+            <p className="mt-3">The FAA updates its Airman Certification Standards (ACS) and test content periodically, and FAA knowledge testing continues to evolve over time. TARMAC does not guarantee that its content reflects the most current FAA test content at any given time, and TARMAC does not have visibility into, and makes no claim to understand, the FAA's own proprietary test-item process. It is your responsibility to verify that your study materials are current and complete.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">2a. Educational and Aviation Disclaimer</h2>
+            <p>TARMAC provides educational content to help you prepare for FAA knowledge testing. TARMAC does <strong>not</strong>: provide flight instruction; serve as, or substitute for, a flight instructor, ground instructor, or an FAA-approved training program; provide legal or medical advice; authorize any flight; determine whether a flight is safe to conduct; determine whether you are legally qualified to act as pilot in command; or replace the FAR/AIM, current FAA publications, or the judgment of a qualified instructor.</p>
+            <p className="mt-3">Aviation regulations, procedures, weather information, charts, NOTAMs, and other operational information change — sometimes frequently. For any real-world flight operation, you must consult current, authoritative FAA sources and a qualified flight instructor as appropriate. <strong>Never use TARMAC content to plan, conduct, or make a go/no-go decision about an actual flight.</strong></p>
+            <p className="mt-3">TARMAC is intended as one part of a well-rounded approach to FAA test preparation, not a replacement for every other resource. We recommend using current, authoritative FAA materials — such as the FAR/AIM and the applicable Airman Certification Standards — alongside TARMAC, and, where you find it helpful, other established test-preparation resources appropriate to your specific FAA knowledge test.</p>
           </section>
 
           <section>
@@ -67,15 +77,33 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">4. No Guarantee of Exam Results or Certification</h2>
             <p className="font-bold uppercase tracking-wide text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm">
-              TARMAC MAKES NO GUARANTEE, WARRANTY, PROMISE, OR REPRESENTATION — EXPRESS OR IMPLIED — THAT USE OF THE SERVICE WILL RESULT IN: PASSING THE FAA PRIVATE PILOT AIRMAN KNOWLEDGE TEST OR ANY OTHER FAA EXAMINATION; OBTAINING A STUDENT PILOT CERTIFICATE, PRIVATE PILOT CERTIFICATE, OR ANY OTHER AVIATION CERTIFICATION OR LICENSE; PASSING A CHECKRIDE OR PRACTICAL TEST; OR ACHIEVING ANY SPECIFIC SCORE ON ANY EXAMINATION.
+              TARMAC MAKES NO GUARANTEE, WARRANTY, PROMISE, OR REPRESENTATION — EXPRESS OR IMPLIED — THAT USE OF THE SERVICE WILL RESULT IN: PASSING THE FAA PRIVATE PILOT AIRMAN KNOWLEDGE TEST OR ANY OTHER FAA EXAMINATION; OBTAINING A STUDENT PILOT CERTIFICATE, PRIVATE PILOT CERTIFICATE, INSTRUMENT RATING, OR ANY OTHER AVIATION CERTIFICATION OR LICENSE; PASSING A CHECKRIDE OR PRACTICAL TEST; ACHIEVING ANY SPECIFIC SCORE ON ANY EXAMINATION; OR ACHIEVING ANY PARTICULAR TARMAC READINESS SCORE OR COMPLETING THE TEST RUNWAY.
             </p>
-            <p className="mt-3">Exam outcomes depend entirely on each individual's effort, preparation, prior knowledge, test-taking ability, health on the day of the exam, and other factors entirely outside our control. Any statistics displayed on our platform (such as average scores or pass rates) reflect aggregate historical data and do not predict, imply, or guarantee your individual result.</p>
+            <p className="mt-3">TARMAC cannot predict, and does not attempt to predict, the specific questions, wording, figures, charts, or scenarios that will appear on your individual FAA knowledge test. Using TARMAC — including completing the Test Runway or achieving a particular Tarmac Readiness score — does not guarantee that you will encounter every topic or question type covered on the actual FAA exam, and does not guarantee that TARMAC's practice questions will match, resemble, or predict the specific questions on your exam.</p>
+            <p className="mt-3">Exam outcomes depend entirely on each individual's effort, preparation, prior knowledge, test-taking ability, health on the day of the exam, and other factors entirely outside our control. Any statistics displayed on our platform (such as average scores, Tarmac Readiness, or pass rates) reflect your own or aggregate historical performance data and do not predict, imply, or guarantee your individual result.</p>
             <p className="mt-3">You assume full and sole responsibility for your own exam preparation and performance. A poor exam result, a failing score, a required retake, or failure to obtain certification does not entitle you to a refund, credit, or any other remedy from TARMAC.</p>
           </section>
 
           <section>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">4a. Tarmac Readiness</h2>
+            <p>Tarmac Readiness is an internal measure of your demonstrated preparation, calculated from factors such as concept mastery, your performance on unfamiliar ("Transfer") questions, retention of material over time, full practice-exam performance, and how well your stated confidence in an answer matches whether you were actually correct.</p>
+            <div className="mt-3 font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm">
+              Tarmac Readiness is informational only. It is NOT your probability or percentage chance of passing the FAA exam, is NOT a prediction of your actual FAA test score, and is NOT a guarantee of readiness at any score. A Tarmac Readiness score of 90, for example, does not mean a 90% chance of passing — it means your measured preparation across these areas is strong on TARMAC's own internal scale. We have not validated Tarmac Readiness against real FAA pass/fail outcomes and make no claim that it predicts them.
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">4b. Test Runway</h2>
+            <p>The Test Runway creates an adaptive study path based on your available study time, your performance and progress, retention over time, and — when you provide one — your target test date. When no test date is provided, the Test Runway defaults to an approximately 30-day study path.</p>
+            <div className="mt-3 font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm">
+              This default, and any Test Runway timeline, is a planning estimate only. It is NOT a promise that you will be ready for, or will pass, the FAA exam within 30 days or any other specific timeframe. The actual time you personally need to prepare may be shorter or longer than any Test Runway estimate.
+            </div>
+          </section>
+
+          <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">5. AI-Generated Content — Accuracy Disclaimer</h2>
-            <p>Portions of the Service — including explanations, tutoring responses, and some practice question content — are generated or assisted by artificial intelligence (AI) systems. <strong>AI-generated content may contain errors, inaccuracies, outdated information, hallucinations, fabrications, or omissions.</strong> TARMAC does not guarantee the accuracy, completeness, or currency of any AI-generated content.</p>
+            <p>Portions of the Service — including practice questions, answer choices, distractors, scenarios, and explanations — are generated or assisted by artificial intelligence (AI) systems, which may include large language models from more than one provider. TARMAC uses a validation process and authoritative FAA source material as part of generating this content, but validation does not make AI-generated output infallible. <strong>AI-generated content may contain errors, inaccuracies, outdated information, hallucinations, fabrications, or omissions.</strong> TARMAC does not guarantee the accuracy, completeness, or currency of any AI-generated content.</p>
+            <p className="mt-3">TARMAC is not the FAA, is not an FAA-authorized testing provider or vendor, does not control or have visibility into FAA testing content, and cannot guarantee that any TARMAC content — AI-generated or otherwise — matches, resembles, or predicts the current FAA exam.</p>
             <p className="mt-3">You must always verify critical aviation information against official, authoritative FAA publications, including but not limited to: the FAR/AIM, Pilot's Handbook of Aeronautical Knowledge (PHAK), Airplane Flying Handbook (AFH), Airman Certification Standards (ACS), and applicable Advisory Circulars.</p>
             <p className="mt-3 font-semibold">TARMAC AI content is for study purposes only. Never use TARMAC content, AI explanations, or any other part of this Service to make real-world flight planning or operational decisions. Doing so could be dangerous. TARMAC accepts no liability for any outcome resulting from reliance on AI-generated content for operational, flight planning, or real-world aviation purposes.</p>
           </section>
@@ -83,14 +111,14 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">6. Free Trial and Automatic Billing</h2>
             <div className="font-bold text-red-700 bg-red-50 border-2 border-red-300 rounded-lg px-4 py-4 text-sm mb-4">
-              BY STARTING A FREE TRIAL, YOU AUTHORIZE TARMAC TO AUTOMATICALLY CHARGE YOUR PAYMENT METHOD $29.99/MONTH WHEN THE TRIAL ENDS. IF YOU DO NOT CANCEL BEFORE THE TRIAL PERIOD EXPIRES, YOU WILL BE CHARGED. NO EXCEPTIONS.
+              BY STARTING THE 7-DAY FREE TRIAL, YOU AUTHORIZE TARMAC TO AUTOMATICALLY CHARGE YOUR PAYMENT METHOD $29.99/MONTH WHEN THE TRIAL ENDS. IF YOU DO NOT CANCEL BEFORE THE TRIAL PERIOD EXPIRES, YOU WILL BE CHARGED. NO EXCEPTIONS.
             </div>
-            <p>TARMAC may offer a free trial period for new subscribers ("Free Trial"). By starting a Free Trial, you agree to the following:</p>
+            <p>TARMAC offers a 7-day free trial period for eligible new subscribers ("Free Trial"). By starting a Free Trial, you agree to the following:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Automatic charge:</strong> You must provide a valid payment method to start a Free Trial. If you do not cancel before the trial period expires, your payment method <strong>will be automatically charged</strong> at the standard subscription rate ($29.99/month as of the date these Terms were last updated) on the day the trial ends, and every month thereafter.</li>
+              <li><strong>Automatic charge:</strong> You must provide a valid payment method to start a Free Trial. If you do not cancel before the 7-day trial period expires, your payment method <strong>will be automatically charged</strong> at the standard subscription rate ($29.99/month as of the date these Terms were last updated) on the day the trial ends, and every month thereafter.</li>
               <li><strong>Your responsibility to cancel:</strong> It is your sole responsibility to cancel your subscription before the trial ends if you do not wish to be charged. We do not send a separate reminder before charging. Forgetting to cancel is not grounds for a refund.</li>
               <li><strong>No refund for trial conversion:</strong> If you are charged because you did not cancel before the trial ended, that charge is final and non-refundable under Section 8 of these Terms.</li>
-              <li>Free Trials are available to new customers only — one per person and one per household. You may not start a new Free Trial if you have previously had a Free Trial under any account or email address.</li>
+              <li>Free Trials are available to eligible new customers only — one per person and one per household. You may not start a new Free Trial if you have previously had a Free Trial under any account or email address.</li>
               <li>Creating multiple accounts to obtain additional Free Trials is prohibited and constitutes fraud. We reserve the right to immediately terminate any such account without refund and to seek damages.</li>
               <li>If you cancel during a Free Trial, your access continues until the trial period ends, at which point it terminates and you are not charged.</li>
               <li>We reserve the right to modify or discontinue the Free Trial offer at any time without notice.</li>
@@ -99,7 +127,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">7. Subscriptions and Billing</h2>
-            <p>TARMAC offers a paid Tarmac Membership subscription billed on a recurring monthly basis. By subscribing, you authorize TARMAC (via its payment processor, Stripe) to charge your payment method automatically at the start of each billing period until you cancel.</p>
+            <p>TARMAC offers a paid subscription billed on a recurring monthly basis. By subscribing, you authorize TARMAC (via its payment processor, Stripe) to charge your payment method automatically at the start of each billing period until you cancel.</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>Subscriptions automatically renew each billing period unless cancelled before the renewal date.</li>
               <li>You may cancel at any time through the billing portal in your account settings. Cancellation takes effect at the end of the current paid period — you retain access until that date.</li>
@@ -118,7 +146,7 @@ export default function TermsPage() {
             <p className="mt-3">TARMAC does not issue refunds, credits, partial refunds, or pro-rated charges for any reason, including but not limited to:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>Failure to pass any FAA examination, written test, checkride, or failure to obtain any aviation certification</li>
-              <li>Dissatisfaction with the content, questions, AI explanations, features, or overall quality of the Service</li>
+              <li>Dissatisfaction with the content, questions, AI explanations, Tarmac Readiness score, Test Runway, features, or overall quality of the Service</li>
               <li>Partial use of a subscription period or failure to use the Service during a paid period</li>
               <li>Accidental purchases, forgotten cancellations, or automatic subscription renewals</li>
               <li>Technical issues, downtime, outages, bugs, or service interruptions experienced during your subscription</li>
@@ -145,8 +173,8 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#0A2463] mb-3">10. Community Features and User-Generated Content</h2>
-            <p>TARMAC includes community features that allow members to post content, including accident analysis comments (Accident Debrief), aviation questions and answers (Ask a CFI), weather scenario discussions (Weather Room), and route critiques. By posting content through any community feature, you agree to the following:</p>
+            <h2 className="text-xl font-bold text-[#0A2463] mb-3">10. Legacy Community Features and User-Generated Content</h2>
+            <p>Some parts of TARMAC allow, or have allowed, members to post content, including accident-analysis comments (Accident Debrief), aviation questions and answers (Ask a CFI), weather-scenario discussions (Weather Room), and route critiques. As described in Section 2, these features are not part of the current core Service. Where any such feature remains accessible and you choose to use it, the following applies:</p>
 
             <p className="mt-3 font-semibold">a. License Grant</p>
             <p className="mt-1">You retain ownership of content you post. However, by submitting content to TARMAC, you grant Legion Systems LLC a worldwide, non-exclusive, royalty-free, perpetual, irrevocable license to use, reproduce, display, distribute, and create derivative works of that content in connection with operating and improving the Service.</p>
@@ -198,16 +226,17 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">12. Intellectual Property</h2>
             <p>All content on TARMAC — including questions, explanations, UI design, branding, logos, and underlying code — is owned by or licensed to Legion Systems LLC and protected by applicable intellectual property laws. You are granted a limited, non-exclusive, non-transferable, revocable license to access and use the Service for your own personal, non-commercial study purposes only. No other rights are granted. Any unauthorized use of TARMAC content will constitute infringement of our intellectual property rights.</p>
+            <p className="mt-3">TARMAC does not claim ownership of, and this license does not extend to, public-domain government material such as FAA regulations, publications, Airman Certification Standards, or official government data. TARMAC's intellectual property rights are limited to its own original software, interface, branding, explanations, question architecture, AI-assisted generated content, adaptive study-planning logic, and other original works.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">13. Communications and Email</h2>
-            <p>By creating an account, you consent to receive transactional emails related to your account (such as exam results, billing notices, and account alerts). You may also receive occasional product-related emails. You may opt out of non-transactional emails at any time by following the unsubscribe link in any such email or contacting us directly. You may not opt out of emails that are required for the operation of your account (such as billing notices).</p>
+            <p>By creating an account, you consent to receive transactional emails related to your account and study activity (such as exam and quiz results, billing notices, and account alerts). Some of these emails may include your specific answers, missed questions, and performance details. You may also receive occasional product-related emails. You may opt out of non-transactional emails at any time by following the unsubscribe link in any such email or contacting us directly. You may not opt out of emails that are required for the operation of your account (such as billing notices).</p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-[#0A2463] mb-3">14. Disclaimer of Warranties</h2>
-            <p className="font-semibold uppercase tracking-wide text-sm">THE SERVICE IS PROVIDED STRICTLY "AS IS" AND "AS AVAILABLE," WITHOUT ANY WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, LEGION SYSTEMS LLC EXPRESSLY DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO: IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, COMPLETENESS, CURRENTNESS, AND NON-INFRINGEMENT. TARMAC DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, SECURE, OR FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS. TARMAC DOES NOT WARRANT THAT ITS QUESTIONS REFLECT CURRENT FAA TEST CONTENT OR THAT USE OF THE SERVICE WILL PREPARE YOU ADEQUATELY FOR ANY EXAMINATION.</p>
+            <p className="font-semibold uppercase tracking-wide text-sm">THE SERVICE IS PROVIDED STRICTLY "AS IS" AND "AS AVAILABLE," WITHOUT ANY WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, LEGION SYSTEMS LLC EXPRESSLY DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO: IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, COMPLETENESS, CURRENTNESS, AND NON-INFRINGEMENT. TARMAC DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, SECURE, OR FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS. TARMAC DOES NOT WARRANT THAT ITS QUESTIONS REFLECT CURRENT FAA TEST CONTENT, THAT ITS TARMAC READINESS SCORE OR TEST RUNWAY REFLECT YOUR ACTUAL EXAM READINESS, OR THAT USE OF THE SERVICE WILL PREPARE YOU ADEQUATELY FOR ANY EXAMINATION.</p>
           </section>
 
           <section>
@@ -218,7 +247,7 @@ export default function TermsPage() {
               <li>Cost of FAA exam retakes or any associated fees</li>
               <li>Loss of revenue, profit, data, business opportunity, or employment</li>
               <li>Reliance on AI-generated content that is inaccurate, incomplete, or outdated</li>
-              <li>Reliance on any question, explanation, or content that is inaccurate or not reflective of current FAA standards</li>
+              <li>Reliance on any question, explanation, Tarmac Readiness score, Test Runway timeline, or other content that is inaccurate or not reflective of current FAA standards</li>
               <li>Service interruptions, outages, bugs, or data loss</li>
               <li>Any outcome resulting from use or inability to use the Service</li>
               <li>Any flight-related incident, accident, injury, or death arising from reliance on content obtained through this Service</li>

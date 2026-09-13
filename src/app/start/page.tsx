@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Eye, EyeOff, Loader2, CheckCircle, ArrowLeft, Plane } from 'lucide-react'
 import type { OnboardingData } from '@/types'
 import { computeRunwayState } from '@/lib/runway'
+import { TERMS_VERSION } from '@/lib/legal'
 
 // ─── Quiz data ────────────────────────────────────────────────────────────────
 
@@ -319,6 +320,15 @@ function StartPageInner() {
       const userUpdates: Record<string, unknown> = { onboarding_data: answers }
       if (!marketingEmails) userUpdates.marketing_emails = false
       if (answers.exam_type === 'ppl' || answers.exam_type === 'ifr') userUpdates.preferred_exam_type = answers.exam_type
+      // The "I agree to the Terms and Privacy Policy" checkbox below is required to
+      // enable this submit button, but until now that acceptance was never recorded
+      // anywhere — only enforced client-side. TERMS_VERSION must be kept in sync with
+      // the `updated` date in src/app/terms/page.tsx so this always reflects which
+      // version of the Terms the user actually agreed to.
+      if (agreedToTerms) {
+        userUpdates.terms_accepted_at = new Date().toISOString()
+        userUpdates.terms_version = TERMS_VERSION
+      }
       await supabase.from('users').update(userUpdates).eq('id', data.user.id)
 
       // Seed study_plan_state at signup (rather than waiting for the lazy

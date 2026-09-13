@@ -85,13 +85,7 @@ function SignupForm() {
     <div className="animate-fade-in">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Create your account</h1>
-        <p className="text-white/60">
-          {plan === 'monthly' ? 'Getting started with Monthly ($44.99/mo)' :
-           plan === 'quick_prep' ? 'Getting started with Quick Prep ($69)' :
-           plan === 'study_pass' ? 'Getting started with Tarmac Membership ($89)' :
-           plan === 'founding_member' ? 'Getting started with Founding Member ($199)' :
-           'Start your 7-day free trial'}
-        </p>
+        <p className="text-white/60">Start your 7-day free trial</p>
       </div>
 
       <div className="glass-card p-6 md:p-8">
