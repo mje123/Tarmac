@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { FEATURES } from '@/lib/features'
+import { HIDDEN_VALIDATION_STATUSES_FILTER } from '@/lib/questionVisibility'
 
 export async function GET() {
   if (!FEATURES.SRS) return NextResponse.json({ question: null, done: true })
@@ -29,6 +30,7 @@ export async function GET() {
         .from('questions')
         .select('*')
         .eq('concept_id', conceptId)
+        .not('validation_status', 'in', HIDDEN_VALIDATION_STATUSES_FILTER)
         .limit(20)
       if (candidates && candidates.length > 0) {
         const question = candidates[Math.floor(Math.random() * candidates.length)]
@@ -50,6 +52,7 @@ export async function GET() {
         .from('questions')
         .select('*')
         .eq('id', dueCards[0].question_id)
+        .not('validation_status', 'in', HIDDEN_VALIDATION_STATUSES_FILTER)
         .single()
       if (question) return NextResponse.json({ question, isNew: false })
     }
@@ -87,6 +90,7 @@ export async function GET() {
         .from('questions')
         .select('*')
         .eq('id', missed[0].question_id)
+        .not('validation_status', 'in', HIDDEN_VALIDATION_STATUSES_FILTER)
         .single()
       if (question) return NextResponse.json({ question, isNew: true })
     }

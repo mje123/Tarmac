@@ -1,6 +1,7 @@
 import type { FigureAsset, FigureGenerator, FigureSpec } from './types'
 import { renderVorSvg, vorAccessibilityDescription, type VorScenario } from './vor'
 import { renderInstrumentPanelSvg, instrumentAccessibilityDescription, type InstrumentScenario } from './instrumentPanel'
+import { renderIapNotesSymbolSvg, iapNotesSymbolAccessibilityDescription, type IapNotesSymbolScenario } from './iapNotesSymbol'
 
 /** Deterministic, no-AI-call renderer — every aviation fact in the output comes from
  *  the scenario object handed in, which Tarmac's own code computed; nothing here can
@@ -28,6 +29,16 @@ export const ProgrammaticFigureGenerator: FigureGenerator = {
         svg: renderInstrumentPanelSvg(scenario),
         accessibilityDescription: instrumentAccessibilityDescription(scenario),
         generatedBy: 'programmatic:instrument-panel-v1',
+      }
+    }
+    if (spec.type === 'iap_notes_symbol') {
+      const scenario = spec.scenario as IapNotesSymbolScenario
+      return {
+        figureType: spec.type,
+        sourceType: 'synthetic_programmatic',
+        svg: renderIapNotesSymbolSvg(scenario),
+        accessibilityDescription: iapNotesSymbolAccessibilityDescription(scenario),
+        generatedBy: 'programmatic:iap-notes-symbol-v1',
       }
     }
     throw new Error(`ProgrammaticFigureGenerator has no renderer for figure type "${spec.type}"`)
@@ -58,6 +69,6 @@ export const GeminiFigureGenerator: FigureGenerator = {
 }
 
 export function getFigureGenerator(spec: FigureSpec): FigureGenerator {
-  if (spec.type === 'vor_navigation' || spec.type === 'instrument_panel') return ProgrammaticFigureGenerator
+  if (spec.type === 'vor_navigation' || spec.type === 'instrument_panel' || spec.type === 'iap_notes_symbol') return ProgrammaticFigureGenerator
   throw new Error(`No figure generator registered for figure type "${spec.type}"`)
 }

@@ -8,6 +8,7 @@ import { generateValidatedQuestion } from '@/lib/generation'
 import { CONCEPTS, type ConceptSlug } from '@/lib/generation/concepts'
 import { getUserSessionIds } from '@/lib/userSessions'
 import { hasUnservableFigureReference } from '@/lib/figures'
+import { HIDDEN_VALIDATION_STATUSES_FILTER } from '@/lib/questionVisibility'
 
 const PPL_CATEGORIES = new Set(Object.keys(EXAM_QUESTION_DISTRIBUTION))
 const IFR_CATEGORIES = new Set(Object.keys(IFR_EXAM_QUESTION_DISTRIBUTION))
@@ -124,7 +125,16 @@ async function runQuery(
   conceptId: string | null,
   weaknessConceptIds: string[] | null
 ): Promise<{ data: Record<string, unknown>[] | null; empty?: boolean; error?: unknown }> {
+  // Hard validation gate (content-audit finding): validation_status was previously
+  // never checked here at all — a row marked 'rejected' (confirmed factually wrong,
+  // or its figure irreparably mismatched) was served exactly like any other question.
+  // Excludes only the statuses that mean "never show this," not everything short of
+  // 'approved' — the bulk of the bank is still 'legacy' and hasn't been individually
+  // re-verified yet; pulling all of it from rotation before that audit is done would
+  // be the "massive irreversible change" the audit's own production-safety rule warns
+  // against, not a safety improvement.
   let query = supabase.from('questions').select('*').eq('exam_type', examType)
+    .not('validation_status', 'in', HIDDEN_VALIDATION_STATUSES_FILTER)
 
   if (conceptId) {
     // Prove It / concept-scoped requests ignore category filters entirely — a concept

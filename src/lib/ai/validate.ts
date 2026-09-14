@@ -67,7 +67,7 @@ function structuralCheck(candidate: GeneratedQuestionStructured, blueprint: Ques
 // derives the question from a locked scenario object and inserts directly. This gate
 // exists for the day a concept's blueprint sets figureRequired for a servable type and
 // the model claims one back, at which point this must not auto-reject a real figure.
-const SERVABLE_FIGURE_TYPES = ['vor_navigation', 'instrument_panel']
+const SERVABLE_FIGURE_TYPES = ['vor_navigation', 'instrument_panel', 'iap_notes_symbol']
 
 function figureCheck(candidate: GeneratedQuestionStructured): ValidationOutcome | null {
   if (!candidate.figure_required) return null

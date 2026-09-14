@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { HIDDEN_VALIDATION_STATUSES_FILTER } from '@/lib/questionVisibility'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -14,6 +15,7 @@ export async function GET(request: NextRequest) {
     .from('questions')
     .select('id, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation, category, difficulty')
     .not('explanation', 'is', null)
+    .not('validation_status', 'in', HIDDEN_VALIDATION_STATUSES_FILTER)
     .eq('exam_type', examType)
 
   if (category && category !== 'all') {

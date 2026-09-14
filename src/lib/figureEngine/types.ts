@@ -7,7 +7,7 @@
  *  Gemini is never the authority on the underlying aviation fact — whatever generator
  *  runs, it renders a scenario object that Tarmac's own code already computed. */
 
-export type FigureType = 'vor_navigation' | 'instrument_panel'
+export type FigureType = 'vor_navigation' | 'instrument_panel' | 'iap_notes_symbol'
 export type FigureSourceType = 'synthetic_programmatic' | 'synthetic_gemini' | 'hybrid'
 
 export interface FigureSpec<TScenario = unknown> {

@@ -4,6 +4,7 @@ import { canAccessExam, EXAM_QUESTION_DISTRIBUTION, IFR_EXAM_QUESTION_DISTRIBUTI
 import { cookies } from 'next/headers'
 import { getEffectiveExamType } from '@/lib/examType'
 import { hasUnservableFigureReference } from '@/lib/figures'
+import { HIDDEN_VALIDATION_STATUSES_FILTER } from '@/lib/questionVisibility'
 
 const TOTAL_QUESTIONS = 60
 
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
     const categoryResults = await Promise.all(
       categories.map(cat =>
         supabase.from('questions').select('*').eq('category', cat).eq('exam_type', examType)
+          .not('validation_status', 'in', HIDDEN_VALIDATION_STATUSES_FILTER)
       )
     )
 
