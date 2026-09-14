@@ -1,22 +1,36 @@
 import type { FigureAsset, FigureGenerator, FigureSpec } from './types'
 import { renderVorSvg, vorAccessibilityDescription, type VorScenario } from './vor'
+import { renderInstrumentPanelSvg, instrumentAccessibilityDescription, type InstrumentScenario } from './instrumentPanel'
 
-/** Deterministic, no-AI-call renderer — the only generator implemented so far. Every
- *  aviation fact in the output comes from the scenario object handed in, which Tarmac's
- *  own code computed; nothing here can hallucinate a radial or CDI reading. */
-export const ProgrammaticFigureGenerator: FigureGenerator<VorScenario> = {
+/** Deterministic, no-AI-call renderer — every aviation fact in the output comes from
+ *  the scenario object handed in, which Tarmac's own code computed; nothing here can
+ *  hallucinate a radial, CDI reading, or instrument indication. Each figure type's
+ *  actual geometry lives in its own module (vor.ts, instrumentPanel.ts, ...) — this
+ *  is just the dispatch + FigureAsset wrapping. */
+export const ProgrammaticFigureGenerator: FigureGenerator = {
   name: 'programmatic',
-  async generate(spec: FigureSpec<VorScenario>): Promise<FigureAsset> {
-    if (spec.type !== 'vor_navigation') {
-      throw new Error(`ProgrammaticFigureGenerator has no renderer for figure type "${spec.type}"`)
+  async generate(spec: FigureSpec): Promise<FigureAsset> {
+    if (spec.type === 'vor_navigation') {
+      const scenario = spec.scenario as VorScenario
+      return {
+        figureType: spec.type,
+        sourceType: 'synthetic_programmatic',
+        svg: renderVorSvg(scenario),
+        accessibilityDescription: vorAccessibilityDescription(scenario),
+        generatedBy: 'programmatic:vor-v1',
+      }
     }
-    return {
-      figureType: spec.type,
-      sourceType: 'synthetic_programmatic',
-      svg: renderVorSvg(spec.scenario),
-      accessibilityDescription: vorAccessibilityDescription(spec.scenario),
-      generatedBy: 'programmatic:vor-v1',
+    if (spec.type === 'instrument_panel') {
+      const scenario = spec.scenario as InstrumentScenario
+      return {
+        figureType: spec.type,
+        sourceType: 'synthetic_programmatic',
+        svg: renderInstrumentPanelSvg(scenario),
+        accessibilityDescription: instrumentAccessibilityDescription(scenario),
+        generatedBy: 'programmatic:instrument-panel-v1',
+      }
     }
+    throw new Error(`ProgrammaticFigureGenerator has no renderer for figure type "${spec.type}"`)
   },
 }
 
@@ -44,6 +58,6 @@ export const GeminiFigureGenerator: FigureGenerator = {
 }
 
 export function getFigureGenerator(spec: FigureSpec): FigureGenerator {
-  if (spec.type === 'vor_navigation') return ProgrammaticFigureGenerator
+  if (spec.type === 'vor_navigation' || spec.type === 'instrument_panel') return ProgrammaticFigureGenerator
   throw new Error(`No figure generator registered for figure type "${spec.type}"`)
 }

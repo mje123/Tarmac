@@ -17,6 +17,9 @@ export default function MarketingFooter() {
           <Link href="/terms" className="hover:text-white/60 transition-colors">Terms</Link>
           <Link href="/privacy" className="hover:text-white/60 transition-colors">Privacy</Link>
           <Link href="/partners" className="hover:text-white/60 transition-colors">Partners</Link>
+          <a href="https://discord.gg/qDVUyRe7Np" target="_blank" rel="noopener noreferrer" className="font-semibold transition-colors" style={{ color: '#FFB627' }}>
+            Join our Discord
+          </a>
         </div>
         <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.18)' }}>
           Legion Systems LLC · TARMAC is not affiliated with or endorsed by the FAA.
