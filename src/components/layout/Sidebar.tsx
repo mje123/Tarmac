@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, ClipboardList, Bookmark,
   Settings, LogOut, Shield, Bot, Menu, X, ListChecks, Layers,
-  Brain, Route, Sun, Moon,
+  Brain, Route, Sun, Moon, MessageCircle,
 } from 'lucide-react'
 import BugReportButton from '@/components/ui/BugReportButton'
 import SuggestionButton from '@/components/ui/SuggestionButton'
@@ -238,6 +238,16 @@ export default function Sidebar({ user }: SidebarProps) {
 
         <SuggestionButton />
         <BugReportButton />
+        <a
+          href="https://discord.gg/qDVUyRe7Np"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm transition-all hover:bg-white/5"
+          style={{ color: 'rgba(255,255,255,0.38)' }}
+        >
+          <MessageCircle className="w-4 h-4" />
+          Support / Discord
+        </a>
 
         <button
           onClick={toggle}

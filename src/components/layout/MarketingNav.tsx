@@ -23,6 +23,7 @@ export default function MarketingNav() {
         {LINKS.map(l => (
           <Link key={l.href} href={l.href} className="hover:text-white transition-colors">{l.label}</Link>
         ))}
+        <a href="https://discord.gg/qDVUyRe7Np" target="_blank" rel="noopener noreferrer" className="transition-colors" style={{ color: '#FFB627' }}>Discord</a>
       </div>
       <div className="flex items-center gap-2">
         <Link href="/login" className="text-sm px-4 py-2 transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>Log in</Link>

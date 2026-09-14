@@ -572,7 +572,10 @@ export default function LandingPage() {
               <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#FFB627' }}>Get in touch</p>
               <h2 className="text-3xl font-extrabold text-white mb-3">Have a question?</h2>
               <p className="text-base" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Pricing, your account, or feedback — we read everything.
+                Pricing, your account, or feedback — we read everything. Or jump into our{' '}
+                <a href="https://discord.gg/qDVUyRe7Np" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: '#FFB627' }}>
+                  Discord
+                </a>{' '}for real-time help.
               </p>
             </div>
           </FadeUp>
