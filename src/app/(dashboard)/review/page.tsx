@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { RefreshCw, CheckCircle, XCircle, Brain, ChevronRight } from 'lucide-react'
 import { FEATURES } from '@/lib/features'
 import SupplementViewer from '@/components/ui/SupplementViewer'
+import GeneratedFigureViewer from '@/components/ui/GeneratedFigureViewer'
 import { matchFigureReference } from '@/lib/figures'
 
 interface Question {
@@ -16,6 +17,7 @@ interface Question {
   correct_answer: string
   explanation: string
   category: string
+  figure_metadata?: { svg?: string; accessibilityDescription?: string } | null
 }
 
 type Phase = 'loading' | 'question' | 'revealed' | 'done' | 'empty'
@@ -135,6 +137,11 @@ export default function ReviewPage() {
           {figureReference && (
             <div className="mb-4">
               <SupplementViewer reference={figureReference} />
+            </div>
+          )}
+          {question.figure_metadata?.svg && (
+            <div className="mb-4">
+              <GeneratedFigureViewer svg={question.figure_metadata.svg} accessibilityDescription={question.figure_metadata.accessibilityDescription} />
             </div>
           )}
 

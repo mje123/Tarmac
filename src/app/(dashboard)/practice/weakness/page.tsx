@@ -5,6 +5,7 @@ import { Question, AnswerOption } from '@/types'
 import { useExamType } from '@/components/ExamTypeProvider'
 import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
 import SupplementViewer from '@/components/ui/SupplementViewer'
+import GeneratedFigureViewer from '@/components/ui/GeneratedFigureViewer'
 import { matchFigureReference } from '@/lib/figures'
 import { submitAnswer } from '@/lib/submitAnswer'
 import { Target, Loader2, AlertTriangle } from 'lucide-react'
@@ -166,6 +167,11 @@ export default function WeaknessAttackPage() {
       {figureReference && (
         <div className="mb-4">
           <SupplementViewer reference={figureReference} />
+        </div>
+      )}
+      {question.figure_metadata?.svg && (
+        <div className="mb-4">
+          <GeneratedFigureViewer svg={question.figure_metadata.svg} accessibilityDescription={question.figure_metadata.accessibilityDescription} />
         </div>
       )}
 

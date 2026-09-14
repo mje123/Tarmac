@@ -7,6 +7,7 @@ import { CONFIDENCE_OPTIONS, type ConfidenceLevel } from '@/lib/confidence'
 import AnswerFeedbackPanel from '@/components/practice/AnswerFeedbackPanel'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
+import GeneratedFigureViewer from '@/components/ui/GeneratedFigureViewer'
 import { matchFigureReference } from '@/lib/figures'
 import { submitAnswer } from '@/lib/submitAnswer'
 import { Zap, Loader2, ChevronRight, AlertTriangle } from 'lucide-react'
@@ -196,6 +197,11 @@ export default function TransferModePage() {
       {figureReference && (
         <div className="mb-4">
           <SupplementViewer reference={figureReference} />
+        </div>
+      )}
+      {question.figure_metadata?.svg && (
+        <div className="mb-4">
+          <GeneratedFigureViewer svg={question.figure_metadata.svg} accessibilityDescription={question.figure_metadata.accessibilityDescription} />
         </div>
       )}
 

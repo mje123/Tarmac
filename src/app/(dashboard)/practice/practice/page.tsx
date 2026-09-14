@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { Question, AnswerOption, QuestionCategory } from '@/types'
 import AIChat from '@/components/ui/AIChat'
 import SupplementViewer from '@/components/ui/SupplementViewer'
+import GeneratedFigureViewer from '@/components/ui/GeneratedFigureViewer'
 import { matchFigureReference } from '@/lib/figures'
 import { submitAnswer as postAnswer } from '@/lib/submitAnswer'
 import GeneralChat from '@/components/ui/GeneralChat'
@@ -856,6 +857,11 @@ function PracticePageInner() {
             <SupplementViewer reference={figureReference} />
           </div>
         )}
+        {question.figure_metadata?.svg && (
+          <div className="mb-4">
+            <GeneratedFigureViewer svg={question.figure_metadata.svg} accessibilityDescription={question.figure_metadata.accessibilityDescription} />
+          </div>
+        )}
 
         {/* Read-through card */}
         <div className="glass-card flex flex-col animate-fade-in" style={{ borderRadius: '20px', boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)' }}>
@@ -1048,6 +1054,11 @@ function PracticePageInner() {
       {figureReference && (
         <div className="mb-4">
           <SupplementViewer reference={figureReference} />
+        </div>
+      )}
+      {question.figure_metadata?.svg && (
+        <div className="mb-4">
+          <GeneratedFigureViewer svg={question.figure_metadata.svg} accessibilityDescription={question.figure_metadata.accessibilityDescription} />
         </div>
       )}
 

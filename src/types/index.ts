@@ -99,6 +99,11 @@ export interface Question {
   common_trap?: string | null
   validation_status?: 'legacy' | 'pending' | 'approved' | 'rejected'
   novelty_key?: string | null
+  // Figure pipeline (src/lib/figures) — figure_metadata.svg is inline SVG markup for
+  // the "programmatic" source type; null/undefined on every question without a figure.
+  figure_required?: boolean
+  figure_type?: string | null
+  figure_metadata?: { svg?: string; accessibilityDescription?: string } | null
 }
 
 export interface TestSession {

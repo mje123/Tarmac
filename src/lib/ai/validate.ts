@@ -59,15 +59,26 @@ function structuralCheck(candidate: GeneratedQuestionStructured, blueprint: Ques
 }
 
 // --- 2. Figure validation (spec 5 + 11: never serve an unservable figure claim) -----
+// SERVABLE_FIGURE_TYPES lists figure types with a real generator in src/lib/figures —
+// keep this in sync with generators.ts's getFigureGenerator(). Everything else still
+// falls through to the reject-and-hold path below; this pipeline never fabricates a
+// chart/figure it can't actually produce. Note: the standalone VOR generation script
+// (scripts/generate-vor-questions.mts) doesn't route through this pipeline at all — it
+// derives the question from a locked scenario object and inserts directly. This gate
+// exists for the day a concept's blueprint sets figureRequired for a servable type and
+// the model claims one back, at which point this must not auto-reject a real figure.
+const SERVABLE_FIGURE_TYPES = ['vor_navigation']
+
 function figureCheck(candidate: GeneratedQuestionStructured): ValidationOutcome | null {
   if (!candidate.figure_required) return null
-  // No concept currently has a real backing figure in this phase (see blueprint.ts —
-  // figureRequired is always false in the blueprint itself). A model claiming one is
-  // needed anyway must be held, never approved and never given a fabricated chart.
+  if (candidate.figure_type && SERVABLE_FIGURE_TYPES.includes(candidate.figure_type)) return null
+  // No generator exists for this figure type yet (see src/lib/figures/generators.ts).
+  // A model claiming one is needed anyway must be held, never approved and never given
+  // a fabricated chart.
   return {
     approved: false,
     reason: 'figure_unavailable',
-    detail: `Candidate claims a figure is required (${candidate.figure_type ?? 'unspecified type'}, ${candidate.figure_source ?? 'no source given'}) but Phase 5 has no figure pipeline — held for review, not approved.`,
+    detail: `Candidate claims a figure is required (${candidate.figure_type ?? 'unspecified type'}, ${candidate.figure_source ?? 'no source given'}) but no figure generator exists for that type — held for review, not approved.`,
   }
 }
 // Also reuses the existing text-pattern check, in case a candidate references a figure
