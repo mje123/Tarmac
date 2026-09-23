@@ -21,7 +21,11 @@ export const FIGURE_IMAGES: Record<string, string> = {
   'Figure 20': 'figure-20',
   'Figure 25': 'figure-25',
   'Figure 26': 'figure-26',
-  'Figure 32': 'figure-32',
+  // 'Figure 32' intentionally omitted: the uploaded asset at figures/figure-32.png is
+  // not actually a PNG (it's a QuickTime .mov file with a .png extension — confirmed
+  // via `file` on the downloaded bytes during the 2026-09 content audit). Every
+  // question that cites it renders a broken image. Do not re-add until a real chart
+  // image has been uploaded and verified with `file` (not just an HTTP 200 check).
   'Figure 33': 'figure-33',
   'Figure 35': 'figure-35',
   'Figure 38': 'figure-38',
