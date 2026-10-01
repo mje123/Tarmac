@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Brain } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { FEATURES } from '@/lib/features'
 
@@ -24,18 +23,21 @@ export default async function SRSWidget({ userId }: { userId: string }) {
     if (due === 0) return null
 
     return (
-      <Link href="/review" className="block glass-card p-4 mb-4 transition-all hover:scale-[1.01]" style={{ borderColor: 'rgba(62,146,204,0.25)', background: 'linear-gradient(135deg, rgba(62,146,204,0.08) 0%, rgba(62,146,204,0.03) 100%)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(62,146,204,0.15)' }}>
-            <Brain className="w-4 h-4 text-[#3E92CC]" />
+      <Link
+        href="/review"
+        className="block transition-opacity hover:opacity-80"
+        style={{ borderTop: '1px solid var(--ac-rule)', paddingTop: 16, fontFamily: 'var(--ac-sans)' }}
+      >
+        <div className="flex items-center gap-2 mb-3" style={{ fontFamily: 'var(--ac-mono)', fontSize: 11, letterSpacing: '.03em', color: 'var(--ac-ivory-faint)' }}>
+          <span style={{ width: 14, height: 1, background: 'var(--ac-brass)', display: 'inline-block' }} />
+          DUE FOR REVIEW
+        </div>
+        <div className="flex items-end justify-between">
+          <div>
+            <div style={{ fontFamily: 'var(--ac-mono)', fontSize: 32, color: 'var(--ac-brass)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{due}</div>
+            <div className="text-xs mt-1" style={{ color: 'var(--ac-ivory-faint)' }}>spaced repetition — missed questions</div>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-white font-semibold text-sm">
-              {due} review{due !== 1 ? 's' : ''} due today
-            </div>
-            <div className="text-white/45 text-xs">Spaced repetition — questions you missed</div>
-          </div>
-          <div className="text-[#3E92CC] text-sm font-semibold whitespace-nowrap">Review →</div>
+          <span style={{ fontFamily: 'var(--ac-mono)', fontSize: 13, color: 'var(--ac-brass)' }}>REVIEW</span>
         </div>
       </Link>
     )

@@ -1,7 +1,13 @@
 import type { Metadata } from 'next'
+import { Newsreader, Public_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { ExamTypeProvider } from '@/components/ExamTypeProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
+
+// Sectional Chart Studio type system — see globals.css "Academy design tokens"
+const newsreader = Newsreader({ subsets: ['latin'], style: ['normal', 'italic'], weight: ['400', '500'], variable: '--font-newsreader', display: 'swap' })
+const publicSans = Public_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-public-sans', display: 'swap' })
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains-mono', display: 'swap' })
 
 export const metadata: Metadata = {
   title: {
@@ -62,7 +68,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full dark" suppressHydrationWarning>
+    <html lang="en" className={`h-full dark ${newsreader.variable} ${publicSans.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
         {/* Anti-FOUC: apply saved theme class before first paint */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('tarmac-theme');document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t==='light'?'light':'dark');}catch(e){}})();` }} />

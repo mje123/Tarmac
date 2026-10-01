@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { User, UserProgress, TestSession } from '@/types'
 import Link from 'next/link'
-import { Brain } from 'lucide-react'
 import SRSWidget from '@/components/ui/SRSWidget'
 import ExamFocusPanel from '@/components/ui/ExamFocusPanel'
 import { Suspense } from 'react'
@@ -31,62 +30,66 @@ export default async function DashboardPage() {
 
   const displayName = user?.full_name?.split(' ')[0] || 'Pilot'
   const totalAttempted = progress.reduce((s, p) => s + p.questions_attempted, 0)
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit' }).toUpperCase()
 
   return (
-    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
+    <div className="p-5 sm:p-8 max-w-5xl mx-auto" style={{ fontFamily: 'var(--ac-sans)' }}>
       <CheckoutSuccessBanner />
 
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Welcome back, {displayName}</h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--text-ter)' }}>
-          {totalAttempted > 0
-            ? `${totalAttempted.toLocaleString()} questions practiced`
-            : 'Prepare for questions you haven\'t seen before'}
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-10">
+        <div>
+          <h1 style={{ fontFamily: 'var(--ac-serif)', fontStyle: 'italic', fontSize: 28, fontWeight: 500, color: 'var(--ac-ivory)' }}>
+            Good day, {displayName}.
+          </h1>
+          <p className="mt-1" style={{ fontFamily: 'var(--ac-mono)', fontSize: 11.5, letterSpacing: '.03em', color: 'var(--ac-ivory-faint)' }}>
+            {totalAttempted > 0 ? `${totalAttempted.toLocaleString()} QUESTIONS LOGGED` : 'READY FOR YOUR FIRST SESSION'}
+          </p>
+        </div>
+        <div className="text-right" style={{ fontFamily: 'var(--ac-mono)', fontSize: 12, color: 'var(--ac-brass)' }}>
+          {today}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
         {/* Left — exam focus + readiness (3/5 width) */}
         <div className="lg:col-span-3">
           <ExamFocusPanel progress={progress} />
         </div>
 
         {/* Right rail — SRS + recent exams (2/5 width) */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
           <Suspense fallback={null}>
             <SRSWidget userId={authUser.id} />
           </Suspense>
 
           {/* Recent exams */}
           {sessions.length > 0 && (
-            <div className="rounded-xl p-4" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-1)' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Brain style={{ width: '14px', height: '14px', color: 'var(--text-ter)' }} />
-                <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-ter)' }}>
-                  Recent Exams
-                </h3>
+            <div style={{ borderTop: '1px solid var(--ac-rule)', paddingTop: 16 }}>
+              <div className="flex items-center gap-2 mb-3" style={{ fontFamily: 'var(--ac-mono)', fontSize: 11, letterSpacing: '.03em', color: 'var(--ac-ivory-faint)' }}>
+                <span style={{ width: 14, height: 1, background: 'var(--ac-brass)', display: 'inline-block' }} />
+                RECENT EXAMS
               </div>
-              <div className="space-y-2">
+              <div>
                 {sessions.map(s => {
                   const pct = s.score && s.total_questions
                     ? Math.round((s.score / s.total_questions) * 100)
                     : null
-                  const color = pct == null ? 'var(--text-ter)' : pct >= 70 ? '#22c55e' : '#ef4444'
+                  const color = pct == null ? 'var(--ac-ivory-faint)' : pct >= 70 ? 'var(--ac-good)' : 'var(--ac-chart-wine)'
                   return (
-                    <div key={s.id} className="flex items-center justify-between text-xs">
-                      <span style={{ color: 'var(--text-sec)' }}>
+                    <div key={s.id} className="flex items-center justify-between text-sm py-2" style={{ borderBottom: '1px solid var(--ac-rule)' }}>
+                      <span style={{ color: 'var(--ac-ivory-dim)' }}>
                         {s.completed_at ? new Date(s.completed_at).toLocaleDateString() : '—'}
                       </span>
                       {pct != null && (
-                        <span className="font-bold" style={{ color }}>{pct}%</span>
+                        <span style={{ fontFamily: 'var(--ac-mono)', color, fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
                       )}
                     </div>
                   )
                 })}
               </div>
-              <Link href="/exam" className="text-xs text-[#3E92CC] hover:underline mt-3 inline-block">
-                Take a practice exam →
+              <Link href="/exam" className="text-sm mt-3 inline-block" style={{ color: 'var(--ac-brass)' }}>
+                Take a practice exam
               </Link>
             </div>
           )}

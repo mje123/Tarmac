@@ -1,6 +1,47 @@
 @import "tailwindcss";
 
-/* ── Theme tokens ── */
+/* ── Academy design tokens ("Sectional Chart Studio") ──
+   New visual identity, introduced incrementally screen by screen. Namespaced
+   under --ac- so unmigrated screens keep using the legacy tokens below
+   untouched until every screen has moved over. See the design proposal for
+   the full rationale. Fonts are loaded via next/font/google in layout.tsx. */
+:root {
+  --ac-navy: #101B2D;
+  --ac-navy-2: #16273D;
+  --ac-navy-3: #1D3048;
+  --ac-ivory: #F2ECDD;
+  --ac-ivory-dim: rgba(242,236,221,.62);
+  --ac-ivory-faint: rgba(242,236,221,.38);
+  --ac-brass: #C7A05C;
+  --ac-brass-dim: rgba(199,160,92,.4);
+  --ac-chart-blue: #6E9BC0;
+  --ac-chart-wine: #C17086;
+  --ac-good: #8FB389;
+  --ac-rule: rgba(242,236,221,.14);
+  --ac-rule-strong: rgba(242,236,221,.26);
+
+  --ac-serif: var(--font-newsreader), Georgia, 'Times New Roman', serif;
+  --ac-sans: var(--font-public-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  --ac-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html.light {
+  --ac-navy: #F2ECDD;
+  --ac-navy-2: #EAE2CC;
+  --ac-navy-3: #E3D9BE;
+  --ac-ivory: #20231C;
+  --ac-ivory-dim: rgba(32,35,28,.68);
+  --ac-ivory-faint: rgba(32,35,28,.42);
+  --ac-brass: #8C6A2E;
+  --ac-brass-dim: rgba(140,106,46,.4);
+  --ac-chart-blue: #2E5A80;
+  --ac-chart-wine: #8A2E44;
+  --ac-good: #3F6B3A;
+  --ac-rule: rgba(32,35,28,.14);
+  --ac-rule-strong: rgba(32,35,28,.26);
+}
+
+/* ── Theme tokens (legacy — being migrated to --ac- tokens above) ── */
 :root {
   --navy: #0a1530;
   --sky: #3E92CC;
